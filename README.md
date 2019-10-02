@@ -22,7 +22,7 @@ $ npm install -g hutte
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-hutte/0.0.2 darwin-x64 node-v12.9.0
+hutte/0.0.3 darwin-x64 node-v12.9.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -57,7 +57,7 @@ EXAMPLE
      My hub org id is: 00Dxx000000001234
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.2/lib/commands/hutte/auth/login.js)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.3/lib/commands/hutte/auth/login.js)_
 
 ## `sfdx hutte:org:authorize [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -74,7 +74,7 @@ OPTIONS
                                                                                     this command invocation
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.2/lib/commands/hutte/org/authorize.js)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.3/lib/commands/hutte/org/authorize.js)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin

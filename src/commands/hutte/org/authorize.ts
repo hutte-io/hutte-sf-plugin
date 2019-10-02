@@ -23,9 +23,9 @@ export default class Login extends SfdxCommand {
       .then(scratchOrgs => this.chooseScratchOrg(scratchOrgs))
       .then(scratchOrg => this.sfdxLogin(scratchOrg))
       .then(scratchOrg => this.flagAsScratchOrg(scratchOrg))
+      .then(scratchOrg => this.checkoutGitBranch(scratchOrg))
       .then(scratchOrg => this.sfdxPull(scratchOrg))
-      .then(scratchOrg => this.markFilesAsUntracked(scratchOrg))
-      .then(scratchOrg => this.checkoutGitBranch(scratchOrg));
+      .then(scratchOrg => this.markFilesAsUnchanged(scratchOrg));
   }
 
   private sfdxLogin(org: ScratchOrg): Promise<ScratchOrg> {
@@ -82,7 +82,7 @@ export default class Login extends SfdxCommand {
     return Promise.resolve(org);
   }
 
-  private markFilesAsUntracked(org: ScratchOrg): Promise<ScratchOrg> {
+  private markFilesAsUnchanged(org: ScratchOrg): Promise<void> {
     const orgInfo = JSON.parse(
       execSync('sfdx force:org:display --json').toString(),
     );
@@ -101,7 +101,7 @@ export default class Login extends SfdxCommand {
 
     writeFileSync(configFile, JSON.stringify(config, null, 4));
 
-    return Promise.resolve(org);
+    return Promise.resolve();
   }
 
   private chooseScratchOrg(orgs: ScratchOrg[]): Promise<ScratchOrg> {
@@ -116,9 +116,9 @@ export default class Login extends SfdxCommand {
     return Promise.resolve(orgs[index]);
   }
 
-  private checkoutGitBranch(org: ScratchOrg): Promise<void> {
+  private checkoutGitBranch(org: ScratchOrg): Promise<ScratchOrg> {
     execSync(`git fetch origin && git checkout ${org.branchName}`);
-    return Promise.resolve();
+    return Promise.resolve(org);
   }
 
   private extractGithubRepoName(remoteUrl: string): Promise<string> {
