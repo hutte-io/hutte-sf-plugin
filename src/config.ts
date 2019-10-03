@@ -13,7 +13,7 @@ interface UserInfo {
 
 function storeUserInfo(params: UserInfo) {
   promises
-    .mkdir(CONFIG_FILE_DIR, { recursive: true, mode: 0o644 })
+    .mkdir(CONFIG_FILE_DIR, { recursive: true })
     .then(() => {
       return promises.writeFile(
         CONFIG_FILE_PATH,

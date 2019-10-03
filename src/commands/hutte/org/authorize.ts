@@ -25,7 +25,8 @@ export default class Login extends SfdxCommand {
       .then(scratchOrg => this.flagAsScratchOrg(scratchOrg))
       .then(scratchOrg => this.checkoutGitBranch(scratchOrg))
       .then(scratchOrg => this.sfdxPull(scratchOrg))
-      .then(scratchOrg => this.markFilesAsUnchanged(scratchOrg));
+      .then(scratchOrg => this.markFilesAsUnchanged(scratchOrg))
+      .then(() => Promise.resolve());
   }
 
   private sfdxLogin(org: ScratchOrg): Promise<ScratchOrg> {
@@ -78,11 +79,16 @@ export default class Login extends SfdxCommand {
   }
 
   private sfdxPull(org: ScratchOrg): Promise<ScratchOrg> {
-    execSync('sfdx force:source:pull');
-    return Promise.resolve(org);
+    return new Promise((resolve, reject) => {
+      const child = spawn('sfdx', ['force:source:pull']);
+
+      child.on('close', code => {
+        resolve(org);
+      });
+    });
   }
 
-  private markFilesAsUnchanged(org: ScratchOrg): Promise<void> {
+  private markFilesAsUnchanged(org: ScratchOrg): Promise<ScratchOrg> {
     const orgInfo = JSON.parse(
       execSync('sfdx force:org:display --json').toString(),
     );
@@ -101,7 +107,7 @@ export default class Login extends SfdxCommand {
 
     writeFileSync(configFile, JSON.stringify(config, null, 4));
 
-    return Promise.resolve();
+    return Promise.resolve(org);
   }
 
   private chooseScratchOrg(orgs: ScratchOrg[]): Promise<ScratchOrg> {
