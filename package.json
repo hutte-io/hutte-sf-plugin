@@ -1,7 +1,7 @@
 {
   "name": "hutte",
   "description": "CLI for hutte.io",
-  "version": "0.0.7",
+  "version": "0.0.13",
   "author": "@hutte-io",
   "bugs": "https://github.com/hutte-io/cli/issues",
   "dependencies": {
@@ -15,11 +15,13 @@
     "@types/nodegit": "^0.24.11",
     "@types/readline-sync": "^1.4.3",
     "@types/request": "^2.48.3",
+    "chalk": "^2.4.2",
     "js-yaml": "^3.13.1",
     "keytar": "^5.0.0-beta.3",
     "nodegit": "^0.26.2",
     "readline-sync": "^1.4.10",
     "request": "^2.88.0",
+    "slugify": "^1.3.5",
     "tslib": "^1"
   },
   "devDependencies": {

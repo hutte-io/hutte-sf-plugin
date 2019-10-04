@@ -1,11 +1,13 @@
 import { SfdxCommand } from '@salesforce/command';
 
+import chalk from 'chalk';
 import { execSync, spawn } from 'child_process';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { Repository } from 'nodegit';
 import { homedir } from 'os';
 import { join as joinPath } from 'path';
 import { keyInSelect } from 'readline-sync';
+import slugify from 'slugify';
 import { parse as parseUrl } from 'url';
 
 import { getScratchOrgs, ScratchOrg } from '../../../api';
@@ -21,6 +23,7 @@ export default class Login extends SfdxCommand {
       .then(remote => this.extractGithubRepoName(remote.url()))
       .then(repoName => getScratchOrgs(repoName))
       .then(scratchOrgs => this.chooseScratchOrg(scratchOrgs))
+      .then(scratchOrg => this.devHubSfdxLogin(scratchOrg))
       .then(scratchOrg => this.sfdxLogin(scratchOrg))
       .then(scratchOrg => this.flagAsScratchOrg(scratchOrg))
       .then(scratchOrg => this.checkoutGitBranch(scratchOrg))
@@ -58,6 +61,39 @@ export default class Login extends SfdxCommand {
     });
   }
 
+  private devHubSfdxLogin(org: ScratchOrg): Promise<ScratchOrg> {
+    const AUTH_URL_FILE = 'tmp_hutte_login';
+
+    return new Promise((resolve, reject) => {
+      writeFileSync(AUTH_URL_FILE, org.devhubSfdxAuthUrl);
+      const child = spawn('sfdx', [
+        'force:auth:sfdxurl:store',
+        '-f',
+        AUTH_URL_FILE,
+        '-a',
+        this.devHubAlias(org),
+        '-d',
+      ]);
+
+      child.stdout.pipe(process.stdout);
+      child.stderr.pipe(process.stderr);
+
+      child.on('close', code => {
+        unlinkSync(AUTH_URL_FILE);
+
+        if (code === 0) {
+          resolve(org);
+        } else {
+          reject('The devhub login failed.');
+        }
+      });
+    });
+  }
+
+  private devHubAlias(org: ScratchOrg): string {
+    return `hutte-${slugify(org.devhubId)}`;
+  }
+
   private flagAsScratchOrg(org: ScratchOrg): Promise<ScratchOrg> {
     const orgInfo = JSON.parse(
       execSync('sfdx force:org:display --json').toString(),
@@ -72,7 +108,11 @@ export default class Login extends SfdxCommand {
 
     writeFileSync(
       configFile,
-      JSON.stringify({ ...config, devHubUsername: 'hutte.io' }),
+      JSON.stringify(
+        { ...config, devHubUsername: this.devHubAlias(org) },
+        null,
+        4,
+      ),
     );
 
     return Promise.resolve(org);
@@ -111,13 +151,27 @@ export default class Login extends SfdxCommand {
   }
 
   private chooseScratchOrg(orgs: ScratchOrg[]): Promise<ScratchOrg> {
+    if (orgs.length === 0) {
+      return Promise.reject(
+        "You don't have any scratch orgs to authorize. Access https://app.hutte.io to create one",
+      );
+    }
+
     if (orgs.length === 1) {
       return Promise.resolve(orgs[0]);
     }
 
-    const index = keyInSelect(orgs.map(org => org.name), 'Which scratch org?', {
-      cancel: false,
-    });
+    const index = keyInSelect(
+      orgs.map(org => `${org.name} ${chalk.gray(`- ${org.projectName}`)}`),
+      'Which scratch org?',
+      {
+        cancel: 'Cancel',
+      },
+    );
+
+    if (index === -1) {
+      process.exit(0);
+    }
 
     return Promise.resolve(orgs[index]);
   }
@@ -133,6 +187,10 @@ export default class Login extends SfdxCommand {
 
       if (url[0] === '/') {
         url = url.substr(1);
+      }
+
+      if (url.indexOf(':') >= 0) {
+        url = url.slice(url.indexOf(':') + 1);
       }
 
       if (url.slice(-4) === '.git') {

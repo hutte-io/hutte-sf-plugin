@@ -36,7 +36,10 @@ function login(email: string, password: string): Promise<LoginResponse> {
 
 interface ScratchOrg {
   branchName: string;
+  devhubId: string;
+  devhubSfdxAuthUrl: string;
   name: string;
+  projectName: string;
   sfdxAuthUrl: string;
   slug: string;
 }
@@ -58,7 +61,10 @@ function getScratchOrgs(repoName: string): Promise<ScratchOrg[]> {
     .then(({ body }) =>
       body.data.map(org => ({
         branchName: org.branch_name,
+        devhubId: org.devhub_id,
+        devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
         name: org.name,
+        projectName: org.project_name,
         sfdxAuthUrl: org.sfdx_auth_url,
         slug: org.slug,
       })),
