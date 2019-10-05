@@ -7,7 +7,6 @@ import { Repository } from 'nodegit';
 import { homedir } from 'os';
 import { join as joinPath } from 'path';
 import { keyInSelect } from 'readline-sync';
-import slugify from 'slugify';
 import { parse as parseUrl } from 'url';
 
 import { getScratchOrgs, ScratchOrg } from '../../../api';
@@ -91,7 +90,7 @@ export default class Login extends SfdxCommand {
   }
 
   private devHubAlias(org: ScratchOrg): string {
-    return `hutte-${slugify(org.devhubId)}`;
+    return 'cli@hutte.io';
   }
 
   private flagAsScratchOrg(org: ScratchOrg): Promise<ScratchOrg> {
