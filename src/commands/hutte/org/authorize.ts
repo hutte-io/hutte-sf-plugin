@@ -1,4 +1,4 @@
-import { SfdxCommand } from '@salesforce/command';
+import { SfdxCommand, flags } from '@salesforce/command';
 
 import chalk from 'chalk';
 import { execSync, spawn } from 'child_process';
@@ -15,6 +15,17 @@ export default class Login extends SfdxCommand {
   public static description = 'authorize a scratch org from hutte.io';
 
   protected static requiresProject = true;
+
+  protected static flagsConfig = {
+    'no-git': flags.boolean({
+      default: false,
+      description: "doesn't checkout the scratch org's git branch",
+    }),
+    'no-pull': flags.boolean({
+      default: false,
+      description: "doesn't pull the source code from the scratch org",
+    }),
+  };
 
   public async run(): Promise<void> {
     return Repository.open(process.cwd())
@@ -118,6 +129,10 @@ export default class Login extends SfdxCommand {
   }
 
   private sfdxPull(org: ScratchOrg): Promise<ScratchOrg> {
+    if (this.flags['no-pull']) {
+      return Promise.resolve(org);
+    }
+
     return new Promise((resolve, reject) => {
       const child = spawn('sfdx', ['force:source:pull']);
 
@@ -176,6 +191,10 @@ export default class Login extends SfdxCommand {
   }
 
   private checkoutGitBranch(org: ScratchOrg): Promise<ScratchOrg> {
+    if (this.flags['no-git']) {
+      return Promise.resolve(org);
+    }
+
     execSync(`git fetch origin && git checkout ${org.branchName}`);
     return Promise.resolve(org);
   }
