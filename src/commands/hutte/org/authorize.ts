@@ -2,7 +2,7 @@ import { SfdxCommand, flags } from '@salesforce/command';
 
 import chalk from 'chalk';
 import { execSync, spawn } from 'child_process';
-import { readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { readFileSync, unlinkSync, writeFileSync, existsSync } from 'fs';
 import { Repository } from 'nodegit';
 import { homedir } from 'os';
 import { join as joinPath } from 'path';
@@ -143,6 +143,10 @@ export default class Login extends SfdxCommand {
   }
 
   private markFilesAsUnchanged(org: ScratchOrg): Promise<ScratchOrg> {
+    if (this.flags['no-pull']) {
+      return Promise.resolve(org);
+    }
+
     const orgInfo = JSON.parse(
       execSync('sfdx force:org:display --json').toString(),
     );
@@ -153,6 +157,10 @@ export default class Login extends SfdxCommand {
       orgInfo.result.username,
       'sourcePathInfos.json',
     );
+
+    if (!existsSync(configFile)) {
+      return Promise.resolve(org);
+    }
 
     const config = JSON.parse(readFileSync(configFile).toString()).map(row => [
       row[0],

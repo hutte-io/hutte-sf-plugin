@@ -1,14 +1,14 @@
 {
   "name": "hutte",
   "description": "CLI for hutte.io",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "author": "@hutte-io",
   "bugs": "https://github.com/hutte-io/cli/issues",
   "dependencies": {
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/errors": "^1",
-    "@salesforce/command": "^1.4.1",
+    "@salesforce/command": "^2.1.3",
     "@salesforce/core": "^2.1.2",
     "@types/js-yaml": "^3.12.1",
     "@types/keytar": "^4.4.0",
