@@ -1,8 +1,8 @@
-import { SfdxCommand, flags } from '@salesforce/command';
+import { flags, SfdxCommand } from '@salesforce/command';
 
 import chalk from 'chalk';
 import { execSync, spawn } from 'child_process';
-import { readFileSync, unlinkSync, writeFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { Repository } from 'nodegit';
 import { homedir } from 'os';
 import { join as joinPath } from 'path';
@@ -203,7 +203,9 @@ export default class Login extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    execSync(`git fetch origin && git checkout ${org.branchName}`);
+    execSync(
+      `git fetch origin && git checkout ${org.branchName} || git checkout -b ${org.branchName}`,
+    );
     return Promise.resolve(org);
   }
 

@@ -1,4 +1,10 @@
 {
-    "extends": "@salesforce/dev-config/tslint"
-  }
-  
+  "extends": "@salesforce/dev-config/tslint",
+  "trailing-comma": [
+    true,
+    {
+      "multiline": "always",
+      "singleline": "never"
+    }
+  ]
+}
