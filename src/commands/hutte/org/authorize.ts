@@ -15,7 +15,7 @@ import {
   sfdxLogin,
 } from '../../../common';
 
-export default class Login extends SfdxCommand {
+export default class Authorize extends SfdxCommand {
   public static description = 'authorize a scratch org from hutte.io';
 
   protected static requiresProject = true;

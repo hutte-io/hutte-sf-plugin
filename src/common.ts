@@ -62,15 +62,28 @@ export const devHubSfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
     });
   });
 
-export const flagAsScratchOrg = (org: IScratchOrg): Promise<IScratchOrg> => {
-  const orgInfo = JSON.parse(
-    execSync('sfdx force:org:display --json').toString(),
-  );
-  const configFile = join(
-    homedir(),
-    '.sfdx',
-    `${orgInfo.result.username}.json`,
-  );
+export const logoutFromDefault = async () =>
+  new Promise<void>((resolve, reject) => {
+    const child = cross_spawn('sfdx', ['force:auth:logout', '-p']);
+
+    child.stdout.pipe(process.stdout);
+    child.stderr.pipe(process.stderr);
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject('Failed logging out from the org');
+      }
+    });
+  });
+
+export const flagAsScratchOrg = async (
+  org: IScratchOrg,
+): Promise<IScratchOrg> => {
+  const orgInfo = await getDefaultOrgInfo();
+
+  const configFile = join(homedir(), '.sfdx', `${orgInfo.username}.json`);
 
   const config = JSON.parse(readFileSync(configFile).toString());
 
@@ -81,6 +94,24 @@ export const flagAsScratchOrg = (org: IScratchOrg): Promise<IScratchOrg> => {
 
   return Promise.resolve(org);
 };
+
+interface IDefaultOrgInfo {
+  id: string;
+  username: string;
+}
+
+export const getDefaultOrgInfo = async (): Promise<IDefaultOrgInfo> =>
+  new Promise((resolve, reject) => {
+    const data = JSON.parse(
+      execSync('sfdx force:org:display --json').toString(),
+    );
+
+    if (data.status === 1) {
+      return reject('Error reading the default scratch org');
+    }
+
+    return resolve(data.result);
+  });
 
 export const projectRepoFromOrigin = (): Promise<string> =>
   Repository.open(process.cwd())

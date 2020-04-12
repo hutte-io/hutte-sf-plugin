@@ -118,6 +118,24 @@ const takeOrgFromPool = async (
       };
     });
 
+export const terminateOrg = async (
+  repoName: string,
+  orgId: string,
+): Promise<{ response: request.Response; body }> =>
+  getCurrentUserInfo()
+    .then((userInfo) => getUserApiToken(userInfo))
+    .then((apiToken) =>
+      promiseRequest({
+        headers: {
+          Authorization: `Token token=${apiToken}`,
+        },
+        json: true,
+        method: 'POST',
+        qs: { repo_name: repoName },
+        uri: _apiUrl(`/scratch_orgs/${orgId}/terminate`),
+      }),
+    );
+
 const promiseRequest = async (
   options: request.UriOptions & request.CoreOptions,
 ): Promise<{ response: request.Response; body }> =>
