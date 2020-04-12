@@ -1,13 +1,12 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 
-import { execSync, spawn } from 'child_process';
-import { readFileSync, unlinkSync, writeFileSync } from 'fs';
-import { Repository } from 'nodegit';
-import { homedir } from 'os';
-import { join as joinPath } from 'path';
-import { parse as parseUrl } from 'url';
-
 import { IScratchOrg, takeOrgFromPool } from '../../../api';
+import {
+  devHubSfdxLogin,
+  flagAsScratchOrg,
+  projectRepoFromOrigin,
+  sfdxLogin,
+} from '../../../common';
 
 export default class Take extends SfdxCommand {
   public static description = 'take a scratch org from the pool';
@@ -36,10 +35,8 @@ export default class Take extends SfdxCommand {
       .then(() => Promise.resolve());
   }
 
-  private fetchOrg(): Promise<IScratchOrg> {
-    return Repository.open(process.cwd())
-      .then((repo) => repo.getRemote('origin'))
-      .then((remote) => this.extractGithubRepoName(remote.url()))
+  private async fetchOrg(): Promise<IScratchOrg> {
+    return projectRepoFromOrigin()
       .then((repoName) =>
         takeOrgFromPool(repoName, this.flags['project-id'], this.flags.name),
       )
@@ -72,114 +69,8 @@ export default class Take extends SfdxCommand {
   }
 
   private processOrg(scratchOrg: IScratchOrg): Promise<IScratchOrg> {
-    return this.devHubSfdxLogin(scratchOrg)
-      .then(() => this.sfdxLogin(scratchOrg))
-      .then(() => this.flagAsScratchOrg(scratchOrg));
-  }
-
-  private sfdxLogin(org: IScratchOrg): Promise<IScratchOrg> {
-    const AUTH_URL_FILE = 'tmp_hutte_login';
-
-    return new Promise((resolve, reject) => {
-      writeFileSync(AUTH_URL_FILE, org.sfdxAuthUrl);
-      const child = spawn('sfdx', [
-        'force:auth:sfdxurl:store',
-        '-f',
-        AUTH_URL_FILE,
-        '-a',
-        `hutte-${org.slug}`,
-        '--setdefaultusername',
-      ]);
-
-      child.stdout.pipe(process.stdout);
-      child.stderr.pipe(process.stderr);
-
-      child.on('close', (code) => {
-        unlinkSync(AUTH_URL_FILE);
-
-        if (code === 0) {
-          resolve(org);
-        } else {
-          reject('The sfdx login failed.');
-        }
-      });
-    });
-  }
-
-  private devHubSfdxLogin(org: IScratchOrg): Promise<IScratchOrg> {
-    const AUTH_URL_FILE = 'tmp_hutte_login';
-
-    return new Promise((resolve, reject) => {
-      writeFileSync(AUTH_URL_FILE, org.devhubSfdxAuthUrl);
-      const child = spawn('sfdx', [
-        'force:auth:sfdxurl:store',
-        '-f',
-        AUTH_URL_FILE,
-        '-a',
-        this.devHubAlias(org),
-        '-d',
-      ]);
-
-      child.stdout.pipe(process.stdout);
-      child.stderr.pipe(process.stderr);
-
-      child.on('close', (code) => {
-        unlinkSync(AUTH_URL_FILE);
-
-        if (code === 0) {
-          resolve(org);
-        } else {
-          reject('The devhub login failed.');
-        }
-      });
-    });
-  }
-
-  private devHubAlias(org: IScratchOrg): string {
-    return 'cli@hutte.io';
-  }
-
-  private flagAsScratchOrg(org: IScratchOrg): Promise<IScratchOrg> {
-    const orgInfo = JSON.parse(
-      execSync('sfdx force:org:display --json').toString(),
-    );
-    const configFile = joinPath(
-      homedir(),
-      '.sfdx',
-      `${orgInfo.result.username}.json`,
-    );
-
-    const config = JSON.parse(readFileSync(configFile).toString());
-
-    writeFileSync(
-      configFile,
-      JSON.stringify(
-        { ...config, devHubUsername: this.devHubAlias(org) },
-        null,
-        4,
-      ),
-    );
-
-    return Promise.resolve(org);
-  }
-
-  private extractGithubRepoName(remoteUrl: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      let url = parseUrl(remoteUrl).path;
-
-      if (url[0] === '/') {
-        url = url.substr(1);
-      }
-
-      if (url.indexOf(':') >= 0) {
-        url = url.slice(url.indexOf(':') + 1);
-      }
-
-      if (url.slice(-4) === '.git') {
-        url = url.slice(0, -4);
-      }
-
-      resolve(url);
-    });
+    return devHubSfdxLogin(scratchOrg)
+      .then(() => sfdxLogin(scratchOrg))
+      .then(() => flagAsScratchOrg(scratchOrg));
   }
 }
