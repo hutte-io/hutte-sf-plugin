@@ -22,7 +22,7 @@ $ npm install -g hutte
 $ sfdx COMMAND
 running command...
 $ sfdx (-v|--version|version)
-hutte/0.0.17 darwin-x64 node-v13.0.1
+hutte/0.0.19 darwin-x64 node-v13.7.0
 $ sfdx --help [COMMAND]
 USAGE
   $ sfdx COMMAND
@@ -32,6 +32,7 @@ USAGE
 <!-- commands -->
 * [`sfdx hutte:auth:login [-e <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+* [`sfdx hutte:pool:take [-n <string>] [-p <string>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-huttepooltake--n-string--p-string--w---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
 ## `sfdx hutte:auth:login [-e <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -57,7 +58,7 @@ EXAMPLE
      My hub org id is: 00Dxx000000001234
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.17/lib/commands/hutte/auth/login.js)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.19/lib/commands/hutte/auth/login.js)_
 
 ## `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -81,7 +82,33 @@ OPTIONS
                                                                                     the scratch org
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.17/lib/commands/hutte/org/authorize.js)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.19/lib/commands/hutte/org/authorize.js)_
+
+## `sfdx hutte:pool:take [-n <string>] [-p <string>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+
+take a scratch org from the pool
+
+```
+USAGE
+  $ sfdx hutte:pool:take [-n <string>] [-p <string>] [-w] [--json] [--loglevel 
+  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+
+OPTIONS
+  -n, --name=name                                                                   the name of the org
+
+  -p, --project-id=project-id                                                       the id of the project. Useful when
+                                                                                    multiple projects use the same git
+                                                                                    repository.
+
+  -w, --wait                                                                        waits until an org becomes available
+
+  --json                                                                            format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
+                                                                                    this command invocation
+```
+
+_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/v0.0.19/lib/commands/hutte/pool/take.js)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin
