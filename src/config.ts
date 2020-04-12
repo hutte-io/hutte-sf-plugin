@@ -6,12 +6,12 @@ import { join as joinPath } from 'path';
 const CONFIG_FILE_DIR = joinPath(homedir(), '.hutte');
 const CONFIG_FILE_PATH = joinPath(CONFIG_FILE_DIR, 'config.yml');
 
-interface UserInfo {
+interface IUserInfo {
   email: string;
   userId: string;
 }
 
-function storeUserInfo(params: UserInfo) {
+function storeUserInfo(params: IUserInfo) {
   promises
     .mkdir(CONFIG_FILE_DIR, { recursive: true })
     .then(() => {
@@ -20,20 +20,20 @@ function storeUserInfo(params: UserInfo) {
         safeDump({ current_user: { id: params.userId, email: params.email } }),
       );
     })
-    .catch(e => {
+    .catch((e) => {
       console.log(e);
       process.exit(1);
     });
 }
 
-function getCurrentUserInfo(): Promise<UserInfo> {
-  return new Promise<UserInfo>((resolve, reject) => {
+function getCurrentUserInfo(): Promise<IUserInfo> {
+  return new Promise<IUserInfo>((resolve, reject) => {
     try {
       const configFile = readFileSync(CONFIG_FILE_PATH);
       const config = safeLoad(configFile.toString());
       resolve({
-        userId: config.current_user.id,
         email: config.current_user.email,
+        userId: config.current_user.id,
       });
     } catch {
       reject(

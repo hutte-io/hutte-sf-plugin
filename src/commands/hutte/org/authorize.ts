@@ -9,7 +9,7 @@ import { join as joinPath } from 'path';
 import { keyInSelect } from 'readline-sync';
 import { parse as parseUrl } from 'url';
 
-import { getScratchOrgs, ScratchOrg } from '../../../api';
+import { getScratchOrgs, IScratchOrg } from '../../../api';
 
 export default class Login extends SfdxCommand {
   public static description = 'authorize a scratch org from hutte.io';
@@ -29,20 +29,20 @@ export default class Login extends SfdxCommand {
 
   public async run(): Promise<void> {
     return Repository.open(process.cwd())
-      .then(repo => repo.getRemote('origin'))
-      .then(remote => this.extractGithubRepoName(remote.url()))
-      .then(repoName => getScratchOrgs(repoName))
-      .then(scratchOrgs => this.chooseScratchOrg(scratchOrgs))
-      .then(scratchOrg => this.devHubSfdxLogin(scratchOrg))
-      .then(scratchOrg => this.sfdxLogin(scratchOrg))
-      .then(scratchOrg => this.flagAsScratchOrg(scratchOrg))
-      .then(scratchOrg => this.checkoutGitBranch(scratchOrg))
-      .then(scratchOrg => this.sfdxPull(scratchOrg))
-      .then(scratchOrg => this.markFilesAsUnchanged(scratchOrg))
+      .then((repo) => repo.getRemote('origin'))
+      .then((remote) => this.extractGithubRepoName(remote.url()))
+      .then((repoName) => getScratchOrgs(repoName))
+      .then((scratchOrgs) => this.chooseScratchOrg(scratchOrgs))
+      .then((scratchOrg) => this.devHubSfdxLogin(scratchOrg))
+      .then((scratchOrg) => this.sfdxLogin(scratchOrg))
+      .then((scratchOrg) => this.flagAsScratchOrg(scratchOrg))
+      .then((scratchOrg) => this.checkoutGitBranch(scratchOrg))
+      .then((scratchOrg) => this.sfdxPull(scratchOrg))
+      .then((scratchOrg) => this.markFilesAsUnchanged(scratchOrg))
       .then(() => Promise.resolve());
   }
 
-  private sfdxLogin(org: ScratchOrg): Promise<ScratchOrg> {
+  private sfdxLogin(org: IScratchOrg): Promise<IScratchOrg> {
     const AUTH_URL_FILE = 'tmp_hutte_login';
 
     return new Promise((resolve, reject) => {
@@ -59,7 +59,7 @@ export default class Login extends SfdxCommand {
       child.stdout.pipe(process.stdout);
       child.stderr.pipe(process.stderr);
 
-      child.on('close', code => {
+      child.on('close', (code) => {
         unlinkSync(AUTH_URL_FILE);
 
         if (code === 0) {
@@ -71,7 +71,7 @@ export default class Login extends SfdxCommand {
     });
   }
 
-  private devHubSfdxLogin(org: ScratchOrg): Promise<ScratchOrg> {
+  private devHubSfdxLogin(org: IScratchOrg): Promise<IScratchOrg> {
     const AUTH_URL_FILE = 'tmp_hutte_login';
 
     return new Promise((resolve, reject) => {
@@ -88,7 +88,7 @@ export default class Login extends SfdxCommand {
       child.stdout.pipe(process.stdout);
       child.stderr.pipe(process.stderr);
 
-      child.on('close', code => {
+      child.on('close', (code) => {
         unlinkSync(AUTH_URL_FILE);
 
         if (code === 0) {
@@ -100,11 +100,11 @@ export default class Login extends SfdxCommand {
     });
   }
 
-  private devHubAlias(org: ScratchOrg): string {
+  private devHubAlias(org: IScratchOrg): string {
     return 'cli@hutte.io';
   }
 
-  private flagAsScratchOrg(org: ScratchOrg): Promise<ScratchOrg> {
+  private flagAsScratchOrg(org: IScratchOrg): Promise<IScratchOrg> {
     const orgInfo = JSON.parse(
       execSync('sfdx force:org:display --json').toString(),
     );
@@ -128,7 +128,7 @@ export default class Login extends SfdxCommand {
     return Promise.resolve(org);
   }
 
-  private sfdxPull(org: ScratchOrg): Promise<ScratchOrg> {
+  private sfdxPull(org: IScratchOrg): Promise<IScratchOrg> {
     if (this.flags['no-pull']) {
       return Promise.resolve(org);
     }
@@ -136,13 +136,13 @@ export default class Login extends SfdxCommand {
     return new Promise((resolve, reject) => {
       const child = spawn('sfdx', ['force:source:pull']);
 
-      child.on('close', code => {
+      child.on('close', (code) => {
         resolve(org);
       });
     });
   }
 
-  private markFilesAsUnchanged(org: ScratchOrg): Promise<ScratchOrg> {
+  private markFilesAsUnchanged(org: IScratchOrg): Promise<IScratchOrg> {
     if (this.flags['no-pull']) {
       return Promise.resolve(org);
     }
@@ -162,17 +162,16 @@ export default class Login extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    const config = JSON.parse(readFileSync(configFile).toString()).map(row => [
-      row[0],
-      { ...row[1], state: 'u' },
-    ]);
+    const config = JSON.parse(
+      readFileSync(configFile).toString(),
+    ).map((row) => [row[0], { ...row[1], state: 'u' }]);
 
     writeFileSync(configFile, JSON.stringify(config, null, 4));
 
     return Promise.resolve(org);
   }
 
-  private chooseScratchOrg(orgs: ScratchOrg[]): Promise<ScratchOrg> {
+  private chooseScratchOrg(orgs: IScratchOrg[]): Promise<IScratchOrg> {
     if (orgs.length === 0) {
       return Promise.reject(
         "You don't have any scratch orgs to authorize. Access https://app.hutte.io to create one",
@@ -184,7 +183,7 @@ export default class Login extends SfdxCommand {
     }
 
     const index = keyInSelect(
-      orgs.map(org => `${org.name} ${chalk.gray(`- ${org.projectName}`)}`),
+      orgs.map((org) => `${org.name} ${chalk.gray(`- ${org.projectName}`)}`),
       'Which scratch org?',
       {
         cancel: 'Cancel',
@@ -198,7 +197,7 @@ export default class Login extends SfdxCommand {
     return Promise.resolve(orgs[index]);
   }
 
-  private checkoutGitBranch(org: ScratchOrg): Promise<ScratchOrg> {
+  private checkoutGitBranch(org: IScratchOrg): Promise<IScratchOrg> {
     if (this.flags['no-git']) {
       return Promise.resolve(org);
     }

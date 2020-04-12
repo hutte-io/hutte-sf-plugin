@@ -2,19 +2,22 @@ import * as request from 'request';
 import { getCurrentUserInfo } from './config';
 import { getUserApiToken } from './keychain';
 
-interface LoginResponse {
+interface ILoginResponse {
   userId: string;
   apiToken: string;
 }
 
-function login(email: string, password: string): Promise<LoginResponse> {
-  return new Promise<LoginResponse>((resolve, reject) => {
+const login = async (
+  email: string,
+  password: string,
+): Promise<ILoginResponse> =>
+  new Promise<ILoginResponse>((resolve, reject) => {
     request(
       {
-        uri: _apiUrl('/api_tokens'),
+        body: { email, password },
         json: true,
         method: 'POST',
-        body: { email, password },
+        uri: _apiUrl('/api_tokens'),
       },
       (error, response, body) => {
         if (error) {
@@ -26,15 +29,14 @@ function login(email: string, password: string): Promise<LoginResponse> {
         }
 
         resolve({
-          userId: body.data.user_id,
           apiToken: body.data.api_token,
+          userId: body.data.user_id,
         });
       },
     );
   });
-}
 
-interface ScratchOrg {
+interface IScratchOrg {
   branchName: string;
   devhubId: string;
   devhubSfdxAuthUrl: string;
@@ -44,22 +46,32 @@ interface ScratchOrg {
   slug: string;
 }
 
-function getScratchOrgs(repoName: string): Promise<ScratchOrg[]> {
-  return getCurrentUserInfo()
-    .then(userInfo => getUserApiToken(userInfo))
-    .then(apiToken =>
-      _promiseRequest({
-        uri: _apiUrl('/scratch_orgs'),
-        json: true,
-        method: 'GET',
-        qs: { repo_name: repoName },
+interface IScratchOrgResponse {
+  branch_name: string;
+  devhub_id: string;
+  devhub_sfdx_auth_url: string;
+  name: string;
+  project_name: string;
+  sfdx_auth_url: string;
+  slug: string;
+}
+
+const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
+  getCurrentUserInfo()
+    .then((userInfo) => getUserApiToken(userInfo))
+    .then((apiToken) =>
+      promiseRequest({
         headers: {
           Authorization: `Token token=${apiToken}`,
         },
+        json: true,
+        method: 'GET',
+        qs: { repo_name: repoName },
+        uri: _apiUrl('/scratch_orgs'),
       }),
     )
     .then(({ body }) =>
-      body.data.map(org => ({
+      body.data.map((org: IScratchOrgResponse) => ({
         branchName: org.branch_name,
         devhubId: org.devhub_id,
         devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
@@ -69,27 +81,59 @@ function getScratchOrgs(repoName: string): Promise<ScratchOrg[]> {
         slug: org.slug,
       })),
     );
-}
 
-function _promiseRequest(
-  options,
-): Promise<{ response: request.Response; body }> {
-  return new Promise<{ response: request.Response; body }>(
-    (resolve, reject) => {
-      request(options, (error, response, body) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+const takeOrgFromPool = async (
+  repoName: string,
+  projectId: string,
+  orgName: string,
+): Promise<IScratchOrg> =>
+  getCurrentUserInfo()
+    .then((userInfo) => getUserApiToken(userInfo))
+    .then((apiToken) =>
+      promiseRequest({
+        headers: {
+          Authorization: `Token token=${apiToken}`,
+        },
+        json: true,
+        method: 'POST',
+        qs: { repo_name: repoName, name: orgName, project_id: projectId },
+        uri: _apiUrl('/take_from_pool'),
+      }),
+    )
+    .then(({ response, body }) => {
+      if (Math.floor(response.statusCode / 100) !== 2) {
+        return Promise.reject({ response, body });
+      }
 
-        resolve({ response, body });
-      });
-    },
-  );
-}
+      const org: IScratchOrgResponse = body.data;
+
+      return {
+        branchName: org.branch_name,
+        devhubId: org.devhub_id,
+        devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+        name: org.name,
+        projectName: org.project_name,
+        sfdxAuthUrl: org.sfdx_auth_url,
+        slug: org.slug,
+      };
+    });
+
+const promiseRequest = async (
+  options: request.UriOptions & request.CoreOptions,
+): Promise<{ response: request.Response; body }> =>
+  new Promise<{ response: request.Response; body }>((resolve, reject) => {
+    request(options, (error, response, body) => {
+      if (error) {
+        reject({ response, body, error });
+        return;
+      }
+
+      resolve({ response, body });
+    });
+  });
 
 function _apiUrl(path: string): string {
   return `https://app.hutte.io/cli_api${path}`;
 }
 
-export { getScratchOrgs, login, ScratchOrg };
+export { getScratchOrgs, takeOrgFromPool, login, IScratchOrg };

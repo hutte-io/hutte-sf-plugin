@@ -1,10 +1,10 @@
 {
-  "extends": "@salesforce/dev-config/tslint",
-  "trailing-comma": [
-    true,
-    {
-      "multiline": "always",
-      "singleline": "never"
-    }
+  "no-console": [
+    false
+  ],
+  "extends": [
+    "@salesforce/dev-config/tslint",
+    "tslint:latest",
+    "tslint-config-prettier"
   ]
 }
