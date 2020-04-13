@@ -14,6 +14,11 @@ export default class Take extends SfdxCommand {
   protected static requiresProject = true;
 
   protected static flagsConfig = {
+    'api-token': flags.string({
+      char: 't',
+      description:
+        'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+    }),
     name: flags.string({
       char: 'n',
       description: 'the name of the org',
@@ -23,6 +28,9 @@ export default class Take extends SfdxCommand {
       description:
         'the id of the project. Useful when multiple projects use the same git repository.',
     }),
+    timeout: flags.integer({
+      description: 'the timeout period in seconds.',
+    }),
     wait: flags.boolean({
       char: 'w',
       description: 'waits until an org becomes available',
@@ -30,15 +38,24 @@ export default class Take extends SfdxCommand {
   };
 
   public async run(): Promise<void> {
-    return this.fetchOrg()
+    return this.take(0);
+  }
+
+  private async take(iteration: number): Promise<void> {
+    return this.fetchOrg(iteration)
       .then((scratchOrg) => this.processOrg(scratchOrg))
       .then(() => Promise.resolve());
   }
 
-  private async fetchOrg(): Promise<IScratchOrg> {
+  private async fetchOrg(iteration: number): Promise<IScratchOrg> {
     return projectRepoFromOrigin()
       .then((repoName) =>
-        takeOrgFromPool(repoName, this.flags['project-id'], this.flags.name),
+        takeOrgFromPool(
+          this.flags['api-token'],
+          repoName,
+          this.flags['project-id'],
+          this.flags.name,
+        ),
       )
       .catch((e) => {
         const { body } = e;
@@ -50,10 +67,17 @@ export default class Take extends SfdxCommand {
             );
           } else if (body.error === 'no_active_org') {
             if (this.flags.wait) {
+              if (this.flags.timeout && iteration * 10 > this.flags.timeout) {
+                console.log('Timeout reached, finishing...');
+                this.exit(1);
+              }
+
               console.log(
                 'There is no active pool at the moment. Trying again in 10 seconds.',
               );
-              return new Promise(() => setTimeout(() => this.run(), 10000));
+              return new Promise(() =>
+                setTimeout(() => this.take(iteration + 1), 10000),
+              );
             }
 
             console.log(
@@ -61,10 +85,11 @@ export default class Take extends SfdxCommand {
             );
           }
         } else {
-          console.log('Uknown error.', e);
+          console.log('Uknown request error.', e);
         }
 
-        return Promise.reject(body);
+        console.log('Unknown error: ', e);
+        this.exit(1);
       });
   }
 
