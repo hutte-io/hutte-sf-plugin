@@ -21,15 +21,21 @@ export default class Login extends SfdxCommand {
       char: 'e',
       description: 'the email address of your account on hutte.io',
     }),
+    password: flags.string({
+      char: 'p',
+      description: 'the password of your account on hutte.io',
+    }),
   };
 
   protected static requiresProject = false;
 
   public async run(): Promise<void> {
     const email = this.flags.email || question('Email: ');
-    const password = question('Password: ', {
-      hideEchoBack: true,
-    });
+    const password =
+      this.flags.password ||
+      question('Password: ', {
+        hideEchoBack: true,
+      });
     login(email, password)
       .then((data) => this.store({ ...data, email }))
       .catch((error) => console.log(error));

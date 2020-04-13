@@ -1,4 +1,4 @@
-import { SfdxCommand } from '@salesforce/command';
+import { flags, SfdxCommand } from '@salesforce/command';
 
 import { terminateOrg } from '../../../api';
 import {
@@ -13,12 +13,22 @@ export default class Terminate extends SfdxCommand {
 
   protected static requiresProject = true;
 
-  protected static flagsConfig = {};
+  protected static flagsConfig = {
+    'api-token': flags.string({
+      char: 't',
+      description:
+        'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+    }),
+  };
 
   public async run(): Promise<void> {
     const repoName = await projectRepoFromOrigin();
     const orgInfo = await getDefaultOrgInfo();
-    const terminateResponse = await terminateOrg(repoName, orgInfo.id);
+    const terminateResponse = await terminateOrg(
+      this.flags['api-token'],
+      repoName,
+      orgInfo.id,
+    );
 
     if (terminateResponse.response.statusCode === 404) {
       console.log(

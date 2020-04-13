@@ -83,58 +83,61 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
     );
 
 const takeOrgFromPool = async (
+  apiToken: string,
   repoName: string,
   projectId: string,
   orgName: string,
-): Promise<IScratchOrg> =>
-  getCurrentUserInfo()
-    .then((userInfo) => getUserApiToken(userInfo))
-    .then((apiToken) =>
-      promiseRequest({
-        headers: {
-          Authorization: `Token token=${apiToken}`,
-        },
-        json: true,
-        method: 'POST',
-        qs: { repo_name: repoName, name: orgName, project_id: projectId },
-        uri: _apiUrl('/take_from_pool'),
-      }),
-    )
-    .then(({ response, body }) => {
-      if (Math.floor(response.statusCode / 100) !== 2) {
-        return Promise.reject({ response, body });
-      }
+): Promise<IScratchOrg> => {
+  apiToken =
+    apiToken ||
+    (await getCurrentUserInfo().then((userInfo) => getUserApiToken(userInfo)));
 
-      const org: IScratchOrgResponse = body.data;
+  return promiseRequest({
+    headers: {
+      Authorization: `Token token=${apiToken}`,
+    },
+    json: true,
+    method: 'POST',
+    qs: { repo_name: repoName, name: orgName, project_id: projectId },
+    uri: _apiUrl('/take_from_pool'),
+  }).then(({ response, body }) => {
+    if (Math.floor(response.statusCode / 100) !== 2) {
+      return Promise.reject({ response, body });
+    }
 
-      return {
-        branchName: org.branch_name,
-        devhubId: org.devhub_id,
-        devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
-        name: org.name,
-        projectName: org.project_name,
-        sfdxAuthUrl: org.sfdx_auth_url,
-        slug: org.slug,
-      };
-    });
+    const org: IScratchOrgResponse = body.data;
+
+    return {
+      branchName: org.branch_name,
+      devhubId: org.devhub_id,
+      devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+      name: org.name,
+      projectName: org.project_name,
+      sfdxAuthUrl: org.sfdx_auth_url,
+      slug: org.slug,
+    };
+  });
+};
 
 export const terminateOrg = async (
+  apiToken: string,
   repoName: string,
   orgId: string,
-): Promise<{ response: request.Response; body }> =>
-  getCurrentUserInfo()
-    .then((userInfo) => getUserApiToken(userInfo))
-    .then((apiToken) =>
-      promiseRequest({
-        headers: {
-          Authorization: `Token token=${apiToken}`,
-        },
-        json: true,
-        method: 'POST',
-        qs: { repo_name: repoName },
-        uri: _apiUrl(`/scratch_orgs/${orgId}/terminate`),
-      }),
-    );
+): Promise<{ response: request.Response; body }> => {
+  apiToken =
+    apiToken ||
+    (await getCurrentUserInfo().then((userInfo) => getUserApiToken(userInfo)));
+
+  return promiseRequest({
+    headers: {
+      Authorization: `Token token=${apiToken}`,
+    },
+    json: true,
+    method: 'POST',
+    qs: { repo_name: repoName },
+    uri: _apiUrl(`/scratch_orgs/${orgId}/terminate`),
+  });
+};
 
 const promiseRequest = async (
   options: request.UriOptions & request.CoreOptions,

@@ -1,7 +1,7 @@
 {
   "name": "hutte",
   "description": "CLI for hutte.io",
-  "version": "0.0.20",
+  "version": "0.0.27",
   "author": "@hutte-io",
   "bugs": "https://github.com/hutte-io/cli/issues",
   "dependencies": {
