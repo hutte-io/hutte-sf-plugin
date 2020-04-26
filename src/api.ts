@@ -38,6 +38,7 @@ const login = async (
 
 interface IScratchOrg {
   branchName: string;
+  commitSha: string;
   devhubId: string;
   devhubSfdxAuthUrl: string;
   name: string;
@@ -48,6 +49,7 @@ interface IScratchOrg {
 
 interface IScratchOrgResponse {
   branch_name: string;
+  commit_sha: string;
   devhub_id: string;
   devhub_sfdx_auth_url: string;
   name: string;
@@ -109,6 +111,7 @@ const takeOrgFromPool = async (
 
     return {
       branchName: org.branch_name,
+      commitSha: org.commit_sha,
       devhubId: org.devhub_id,
       devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
       name: org.name,

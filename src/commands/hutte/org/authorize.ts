@@ -7,6 +7,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join as joinPath } from 'path';
 import { keyInSelect } from 'readline-sync';
 
+import { SfdxError } from '@salesforce/core';
 import { getScratchOrgs, IScratchOrg } from '../../../api';
 import {
   devHubSfdxLogin,
@@ -32,7 +33,8 @@ export default class Authorize extends SfdxCommand {
   };
 
   public async run(): Promise<void> {
-    return projectRepoFromOrigin()
+    return this.checkUnstagedChanges()
+      .then(() => projectRepoFromOrigin())
       .then((repoName) => getScratchOrgs(repoName))
       .then((scratchOrgs) => this.chooseScratchOrg(scratchOrgs))
       .then((scratchOrg) => devHubSfdxLogin(scratchOrg))
@@ -42,6 +44,29 @@ export default class Authorize extends SfdxCommand {
       .then((scratchOrg) => this.sfdxPull(scratchOrg))
       .then((scratchOrg) => this.markFilesAsUnchanged(scratchOrg))
       .then(() => Promise.resolve());
+  }
+
+  private checkUnstagedChanges(): Promise<void> {
+    if (this.flags['no-git']) {
+      return Promise.resolve();
+    }
+
+    const result = cross_spawn.sync('git', [
+      'diff-index',
+      '--quiet',
+      'HEAD',
+      '--',
+    ]);
+
+    if (result.status !== 0) {
+      return Promise.reject(
+        SfdxError.wrap(
+          `You have unstaged changes. Please commit or stash them before proceeding.`,
+        ),
+      );
+    }
+
+    return Promise.resolve();
   }
 
   private sfdxPull(org: IScratchOrg): Promise<IScratchOrg> {
@@ -118,9 +143,24 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    execSync(
-      `git fetch origin && git checkout ${org.branchName} || git checkout -b ${org.branchName}`,
-    );
+    cross_spawn.sync('git', ['fetch', 'origin']);
+
+    this.logger.info(`Checking out remote branch ${org.branchName}`);
+
+    const checkoutResult = cross_spawn.sync('git', [
+      'checkout',
+      org.branchName,
+    ]);
+
+    if (checkoutResult.status !== 0) {
+      this.logger.info(
+        `Remote org does not exist. Creating based on ${org.commitSha}...`,
+      );
+
+      cross_spawn.sync('git', ['checkout', org.commitSha]);
+      cross_spawn.sync('git', ['checkout', '-b', org.branchName]);
+    }
+
     return Promise.resolve(org);
   }
 }
