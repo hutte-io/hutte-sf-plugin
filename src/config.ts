@@ -30,7 +30,12 @@ function getCurrentUserInfo(): Promise<IUserInfo> {
   return new Promise<IUserInfo>((resolve, reject) => {
     try {
       const configFile = readFileSync(CONFIG_FILE_PATH);
-      const config = safeLoad(configFile.toString());
+      const config = safeLoad(configFile.toString()) as {
+        current_user: {
+          email: string;
+          id: string;
+        };
+      };
       resolve({
         email: config.current_user.email,
         userId: config.current_user.id,
@@ -41,7 +46,6 @@ function getCurrentUserInfo(): Promise<IUserInfo> {
       );
     }
   });
-  return;
 }
 
 export { getCurrentUserInfo, storeUserInfo };
