@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import * as cross_spawn from 'cross-spawn';
+import cross_spawn from 'cross-spawn';
 import { readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
@@ -119,7 +119,7 @@ export const projectRepoFromOrigin = (): Promise<string> =>
     .then((remote) => extractGithubRepoName(remote.url()));
 
 const extractGithubRepoName = (remoteUrl: string): Promise<string> =>
-  new Promise((resolve, reject) => {
+  new Promise((resolve) => {
     let url = parseUrl(remoteUrl).path;
 
     if (url[0] === '/') {

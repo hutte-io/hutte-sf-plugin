@@ -1,6 +1,6 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 
-import { question } from 'readline-sync';
+import inquirer from 'inquirer';
 
 import { login } from '../../../api';
 import { storeUserInfo } from '../../../config';
@@ -30,12 +30,20 @@ export default class Login extends SfdxCommand {
   protected static requiresProject = false;
 
   public async run(): Promise<void> {
-    const email = this.flags.email || question('Email: ');
+    const email =
+      this.flags.email ||
+      (
+        await inquirer.prompt([
+          { name: 'email', type: 'input', message: 'Email:' },
+        ])
+      ).email;
     const password =
       this.flags.password ||
-      question('Password: ', {
-        hideEchoBack: true,
-      });
+      (
+        await inquirer.prompt([
+          { name: 'password', type: 'password', message: 'Password:' },
+        ])
+      ).password;
     login(email, password)
       .then((data) => this.store({ ...data, email }))
       .catch((error) => console.log(error));

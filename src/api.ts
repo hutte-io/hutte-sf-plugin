@@ -1,4 +1,4 @@
-import * as request from 'request';
+import request from 'request';
 import { getCurrentUserInfo } from './config';
 import { getUserApiToken } from './keychain';
 
@@ -37,6 +37,7 @@ const login = async (
   });
 
 interface IScratchOrg {
+  id: string;
   branchName: string;
   commitSha: string;
   devhubId: string;
@@ -48,6 +49,7 @@ interface IScratchOrg {
 }
 
 interface IScratchOrgResponse {
+  id: string;
   branch_name: string;
   commit_sha: string;
   devhub_id: string;
@@ -74,6 +76,7 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
     )
     .then(({ body }) =>
       body.data.map((org: IScratchOrgResponse) => ({
+        id: org.id,
         branchName: org.branch_name,
         devhubId: org.devhub_id,
         devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
@@ -110,6 +113,7 @@ const takeOrgFromPool = async (
     const org: IScratchOrgResponse = body.data;
 
     return {
+      id: org.id,
       branchName: org.branch_name,
       commitSha: org.commit_sha,
       devhubId: org.devhub_id,

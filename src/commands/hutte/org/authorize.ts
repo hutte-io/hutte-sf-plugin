@@ -2,10 +2,11 @@ import { flags, SfdxCommand } from '@salesforce/command';
 
 import chalk from 'chalk';
 import { execSync } from 'child_process';
-import * as cross_spawn from 'cross-spawn';
+import cross_spawn from 'cross-spawn';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join as joinPath } from 'path';
-import { keyInSelect } from 'readline-sync';
+import inquirer from 'inquirer';
+import fuzzy from 'fuzzy';
 
 import { SfdxError } from '@salesforce/core';
 import { getScratchOrgs, IScratchOrg } from '../../../api';
@@ -74,10 +75,10 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const child = cross_spawn('sfdx', ['force:source:pull']);
 
-      child.on('close', (code) => {
+      child.on('close', () => {
         resolve(org);
       });
     });
@@ -105,14 +106,14 @@ export default class Authorize extends SfdxCommand {
 
     const config = JSON.parse(
       readFileSync(configFile).toString(),
-    ).map((row) => [row[0], { ...row[1], state: 'u' }]);
+    ).map((row: any) => [row[0], { ...row[1], state: 'u' }]);
 
     writeFileSync(configFile, JSON.stringify(config, null, 4));
 
     return Promise.resolve(org);
   }
 
-  private chooseScratchOrg(orgs: IScratchOrg[]): Promise<IScratchOrg> {
+  private async chooseScratchOrg(orgs: IScratchOrg[]): Promise<IScratchOrg> {
     if (orgs.length === 0) {
       return Promise.reject(
         "You don't have any scratch orgs to authorize. Access https://app.hutte.io to create one",
@@ -123,19 +124,43 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(orgs[0]);
     }
 
-    const index = keyInSelect(
-      orgs.map((org) => `${org.name} ${chalk.gray(`- ${org.projectName}`)}`),
-      'Which scratch org?',
-      {
-        cancel: 'Cancel',
-      },
+    inquirer.registerPrompt(
+      'autocomplete',
+      require('inquirer-autocomplete-prompt'),
     );
+    const answer = await inquirer.prompt([
+      {
+        type: 'autocomplete',
+        name: 'scratch_org',
+        message: 'Which scratch org would you like to authorize?',
+        source: (_answers: any, input: string) => {
+          let filtered = orgs;
 
-    if (index === -1) {
+          if (input) {
+            filtered = fuzzy
+              .filter(input, orgs, {
+                extract: (org) => org.name,
+              })
+              .map((value) => value.original);
+          }
+
+          return Promise.resolve(
+            filtered.map((org) => ({
+              value: org.id,
+              name: `${org.name} ${chalk.gray(`- ${org.projectName}`)}`,
+            })),
+          );
+        },
+      },
+    ]);
+
+    const selectedOrg = orgs.find((org) => org.id === answer.scratch_org);
+
+    if (!selectedOrg) {
       process.exit(0);
     }
 
-    return Promise.resolve(orgs[index]);
+    return Promise.resolve(selectedOrg);
   }
 
   private checkoutGitBranch(org: IScratchOrg): Promise<IScratchOrg> {

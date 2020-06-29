@@ -1,10 +1,9 @@
 {
   "extends": "./node_modules/@salesforce/dev-config/tsconfig",
   "compilerOptions": {
+    "esModuleInterop": true,
     "outDir": "./lib",
     "rootDir": "./src"
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"]
 }
