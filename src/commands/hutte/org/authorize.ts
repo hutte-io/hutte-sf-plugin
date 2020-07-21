@@ -1,10 +1,7 @@
 import { flags, SfdxCommand } from '@salesforce/command';
 
 import chalk from 'chalk';
-import { execSync } from 'child_process';
 import cross_spawn from 'cross-spawn';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join as joinPath } from 'path';
 import inquirer from 'inquirer';
 import fuzzy from 'fuzzy';
 
@@ -89,26 +86,7 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    const orgInfo = JSON.parse(
-      execSync('sfdx force:org:display --json').toString(),
-    );
-    const configFile = joinPath(
-      process.cwd(),
-      '.sfdx',
-      'orgs',
-      orgInfo.result.username,
-      'sourcePathInfos.json',
-    );
-
-    if (!existsSync(configFile)) {
-      return Promise.resolve(org);
-    }
-
-    const config = JSON.parse(
-      readFileSync(configFile).toString(),
-    ).map((row: any) => [row[0], { ...row[1], state: 'u' }]);
-
-    writeFileSync(configFile, JSON.stringify(config, null, 4));
+    cross_spawn.sync('sfdx', ['force:source:tracking:reset']);
 
     return Promise.resolve(org);
   }
