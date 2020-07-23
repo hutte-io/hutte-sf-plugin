@@ -72,13 +72,13 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(org);
     }
 
-    return new Promise((resolve) => {
-      const child = cross_spawn('sfdx', ['force:source:pull']);
+    const ret = cross_spawn.sync('sfdx', ['force:source:pull']);
 
-      child.on('close', () => {
-        resolve(org);
-      });
-    });
+    if (ret.status !== 0) {
+      return Promise.reject(SfdxError.wrap(ret.output.join('\n')));
+    }
+
+    return Promise.resolve(org);
   }
 
   private markFilesAsUnchanged(org: IScratchOrg): Promise<IScratchOrg> {
