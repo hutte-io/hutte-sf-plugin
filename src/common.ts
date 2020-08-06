@@ -22,6 +22,15 @@ export const sfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
       '--setdefaultusername',
     ]);
 
+    if (org.revisionNumber) {
+      cross_spawn.sync('sfdx', [
+        'force:source:tracking:reset',
+        '-r',
+        org.revisionNumber,
+        '-p',
+      ]);
+    }
+
     child.stdout.pipe(process.stdout);
     child.stderr.pipe(process.stderr);
 

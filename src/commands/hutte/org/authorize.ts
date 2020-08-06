@@ -70,8 +70,6 @@ export default class Authorize extends SfdxCommand {
     if (this.flags['no-pull']) {
       return Promise.resolve(org);
     }
-
-    cross_spawn.sync('sfdx', ['force:source:tracking:clear', '-p']);
     const ret = cross_spawn.sync('sfdx', ['force:source:pull', '-f']);
 
     if (ret.status !== 0) {

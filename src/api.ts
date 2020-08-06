@@ -45,6 +45,7 @@ interface IScratchOrg {
   name: string;
   projectName: string;
   sfdxAuthUrl: string;
+  revisionNumber: string | null;
   slug: string;
 }
 
@@ -57,6 +58,7 @@ interface IScratchOrgResponse {
   name: string;
   project_name: string;
   sfdx_auth_url: string;
+  revision_number: string | null;
   slug: string;
 }
 
@@ -83,6 +85,7 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
         name: org.name,
         projectName: org.project_name,
         sfdxAuthUrl: org.sfdx_auth_url,
+        revisionNumber: org.revision_number,
         slug: org.slug,
       })),
     );
@@ -121,6 +124,7 @@ const takeOrgFromPool = async (
       name: org.name,
       projectName: org.project_name,
       sfdxAuthUrl: org.sfdx_auth_url,
+      revisionNumber: org.revision_number,
       slug: org.slug,
     };
   });
@@ -130,7 +134,7 @@ export const terminateOrg = async (
   apiToken: string,
   repoName: string,
   orgId: string,
-): Promise<{ response: request.Response; body }> => {
+): Promise<{ response: request.Response; body: any }> => {
   apiToken =
     apiToken ||
     (await getCurrentUserInfo().then((userInfo) => getUserApiToken(userInfo)));
@@ -148,8 +152,8 @@ export const terminateOrg = async (
 
 const promiseRequest = async (
   options: request.UriOptions & request.CoreOptions,
-): Promise<{ response: request.Response; body }> =>
-  new Promise<{ response: request.Response; body }>((resolve, reject) => {
+): Promise<{ response: request.Response; body: any }> =>
+  new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
     request(options, (error, response, body) => {
       if (error) {
         reject({ response, body, error });
