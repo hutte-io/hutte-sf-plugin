@@ -45,7 +45,6 @@ export const devHubSfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
       AUTH_URL_FILE,
       '-a',
       devHubAlias(org),
-      '-d',
     ]);
 
     child.stdout.pipe(process.stdout);
