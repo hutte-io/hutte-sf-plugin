@@ -13,6 +13,9 @@ import {
   projectRepoFromOrigin,
   sfdxLogin,
 } from '../../../common';
+import { join } from 'path';
+import { execSync } from 'child_process';
+import { readFileSync, writeFileSync } from 'fs';
 
 export default class Authorize extends SfdxCommand {
   public static description = 'authorize a scratch org from hutte.io';
@@ -40,7 +43,6 @@ export default class Authorize extends SfdxCommand {
       .then((scratchOrg) => flagAsScratchOrg(scratchOrg))
       .then((scratchOrg) => this.checkoutGitBranch(scratchOrg))
       .then((scratchOrg) => this.sfdxPull(scratchOrg))
-      .then((scratchOrg) => this.markFilesAsUnchanged(scratchOrg))
       .then(() => Promise.resolve());
   }
 
@@ -72,21 +74,44 @@ export default class Authorize extends SfdxCommand {
       return Promise.resolve(org);
     }
 
+    cross_spawn.sync('sfdx', ['force:source:tracking:reset', '-p']);
+
+    const orgInfo = JSON.parse(
+      execSync('sfdx force:org:display --json').toString(),
+    );
+    const configFile = join(
+      process.cwd(),
+      '.sfdx',
+      'orgs',
+      orgInfo.result.username,
+      'maxRevision.json',
+    );
+
+    const config = JSON.parse(readFileSync(configFile).toString());
+
+    writeFileSync(
+      configFile,
+      JSON.stringify({
+        ...config,
+        sourceMembers: Object.keys(config.sourceMembers).reduce(
+          (acc, sourceMember) => ({
+            ...acc,
+            [sourceMember]: {
+              ...config.sourceMembers[sourceMember],
+              lastRetrievedFromServer:
+                config.sourceMembers[sourceMember].lastRetrievedFromServer - 1,
+            },
+          }),
+          {},
+        ),
+      }),
+    );
+
     const ret = cross_spawn.sync('sfdx', ['force:source:pull']);
 
     if (ret.status !== 0) {
       return Promise.reject(SfdxError.wrap(ret.output.join('\n')));
     }
-
-    return Promise.resolve(org);
-  }
-
-  private markFilesAsUnchanged(org: IScratchOrg): Promise<IScratchOrg> {
-    if (this.flags['no-pull']) {
-      return Promise.resolve(org);
-    }
-
-    cross_spawn.sync('sfdx', ['force:source:tracking:reset']);
 
     return Promise.resolve(org);
   }
