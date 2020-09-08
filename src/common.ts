@@ -13,7 +13,7 @@ const AUTH_URL_FILE = 'tmp_hutte_login';
 export const sfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
   new Promise((resolve, reject) => {
     writeFileSync(AUTH_URL_FILE, org.sfdxAuthUrl);
-    const child = cross_spawn('sfdx', [
+    const response = cross_spawn.sync('sfdx', [
       'force:auth:sfdxurl:store',
       '-f',
       AUTH_URL_FILE,
@@ -21,6 +21,12 @@ export const sfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
       `hutte-${org.slug}`,
       '--setdefaultusername',
     ]);
+
+    if (response.status !== 0) {
+      return reject('The sfdx login failed.');
+    }
+
+    unlinkSync(AUTH_URL_FILE);
 
     if (org.revisionNumber) {
       cross_spawn.sync('sfdx', [
@@ -31,18 +37,7 @@ export const sfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
       ]);
     }
 
-    child.stdout.pipe(process.stdout);
-    child.stderr.pipe(process.stderr);
-
-    child.on('close', (code) => {
-      unlinkSync(AUTH_URL_FILE);
-
-      if (code === 0) {
-        resolve(org);
-      } else {
-        reject('The sfdx login failed.');
-      }
-    });
+    resolve(org);
   });
 
 export const devHubSfdxLogin = (org: IScratchOrg): Promise<IScratchOrg> =>
