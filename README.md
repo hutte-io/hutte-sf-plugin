@@ -1,7 +1,7 @@
 hutte
 =====
 
-CLI for hutte.io
+CLI for [hutte.io](https://hutte.io)
 
 [![Version](https://img.shields.io/npm/v/hutte.svg)](https://npmjs.org/package/hutte)
 [![CircleCI](https://circleci.com/gh/hutte-io/cli/tree/master.svg?style=shield)](https://circleci.com/gh/hutte-io/cli/tree/master)
@@ -35,7 +35,7 @@ USAGE
 * [`sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgterminate--t-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-huttepooltake--t-string--n-string--p-string---timeout-integer--w---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 
-## `sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+### `sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 authorize your hutte-io account
 
@@ -64,7 +64,7 @@ EXAMPLE
 
 _See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.43/lib/commands/hutte/auth/login.js)_
 
-## `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+### `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 authorize a scratch org from hutte.io
 
@@ -88,7 +88,7 @@ OPTIONS
 
 _See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.43/lib/commands/hutte/org/authorize.js)_
 
-## `sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+### `sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 terminates the default org on Hutte.io and logs out locally
 
@@ -110,7 +110,7 @@ OPTIONS
 
 _See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/v0.0.43/lib/commands/hutte/org/terminate.js)_
 
-## `sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+### `sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 take a scratch org from the pool
 
