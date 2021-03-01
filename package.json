@@ -52,7 +52,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/hutte-io/cli",
+  "homepage": "https://hutte.io",
   "keywords": [
     "sfdx-plugin"
   ],
