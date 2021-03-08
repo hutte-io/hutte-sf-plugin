@@ -76,8 +76,8 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
         uri: _apiUrl('/scratch_orgs'),
       }),
     )
-    .then(({ body }) =>
-      body.data.map((org: IScratchOrgResponse) => ({
+    .then(({ body }) => {
+      return body.data.map((org: IScratchOrgResponse) => ({
         id: org.id,
         branchName: org.branch_name,
         devhubId: org.devhub_id,
@@ -87,8 +87,8 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
         sfdxAuthUrl: org.sfdx_auth_url,
         revisionNumber: org.revision_number,
         slug: org.slug,
-      })),
-    );
+      }));
+    });
 
 const takeOrgFromPool = async (
   apiToken: string,
@@ -155,6 +155,13 @@ const promiseRequest = async (
 ): Promise<{ response: request.Response; body: any }> =>
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
     request(options, (error, response, body) => {
+      if (response.statusCode !== 200) {
+        reject(
+          'There is an error with authorization. Run `$ sfdx hutte:auth:login -h` for more information.',
+        );
+        return;
+      }
+
       if (error) {
         reject({ response, body, error });
         return;
