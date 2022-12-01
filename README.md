@@ -4,11 +4,6 @@ hutte
 CLI for [hutte.io](https://hutte.io)
 
 [![Version](https://img.shields.io/npm/v/hutte.svg)](https://npmjs.org/package/hutte)
-[![CircleCI](https://circleci.com/gh/hutte-io/cli/tree/master.svg?style=shield)](https://circleci.com/gh/hutte-io/cli/tree/master)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/hutte-io/cli?branch=master&svg=true)](https://ci.appveyor.com/project/heroku/cli/branch/master)
-[![Codecov](https://codecov.io/gh/hutte-io/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/hutte-io/cli)
-[![Greenkeeper](https://badges.greenkeeper.io/hutte-io/cli.svg)](https://greenkeeper.io/)
-[![Known Vulnerabilities](https://snyk.io/test/github/hutte-io/cli/badge.svg)](https://snyk.io/test/github/hutte-io/cli)
 [![Downloads/week](https://img.shields.io/npm/dw/hutte.svg)](https://npmjs.org/package/hutte)
 [![License](https://img.shields.io/npm/l/hutte.svg)](https://github.com/hutte-io/cli/blob/master/package.json)
 
