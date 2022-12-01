@@ -48,7 +48,7 @@ EXAMPLE
      My hub org id is: 00Dxx000000001234
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/auth/login.js)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_
 
 ## `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -72,7 +72,7 @@ OPTIONS
                                                                                     the scratch org
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/org/authorize.js)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
 
 ## `sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -94,7 +94,7 @@ OPTIONS
                                                                                     this command invocation
 ```
 
-_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/org/terminate.js)_
+_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/terminate.ts)_
 
 ## `sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -126,7 +126,7 @@ OPTIONS
   --timeout=timeout                                                                 the timeout period in seconds.
 ```
 
-_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/pool/take.js)_
+_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin
