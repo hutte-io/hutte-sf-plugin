@@ -5,7 +5,6 @@ import { homedir } from 'os';
 import { join } from 'path';
 import { parse as parseUrl } from 'url';
 
-import { Repository } from 'nodegit';
 import { IScratchOrg } from './api';
 
 const AUTH_URL_FILE = 'tmp_hutte_login';
@@ -116,10 +115,14 @@ export const getDefaultOrgInfo = async (): Promise<IDefaultOrgInfo> =>
     return resolve(data.result);
   });
 
-export const projectRepoFromOrigin = (): Promise<string> =>
-  Repository.open(process.cwd())
-    .then((repo) => repo.getRemote('origin'))
-    .then((remote) => extractGithubRepoName(remote.url()));
+export const projectRepoFromOrigin = (): Promise<string> => {
+  const gitConfigGetResult = cross_spawn.sync('git', [
+    'config',
+    '--get',
+    'remote.origin.url',
+  ]);
+  return extractGithubRepoName(gitConfigGetResult.stdout.toString());
+}
 
 const extractGithubRepoName = (remoteUrl: string): Promise<string> =>
   new Promise((resolve) => {
