@@ -4,31 +4,17 @@ hutte
 CLI for [hutte.io](https://hutte.io)
 
 [![Version](https://img.shields.io/npm/v/hutte.svg)](https://npmjs.org/package/hutte)
-[![CircleCI](https://circleci.com/gh/hutte-io/cli/tree/master.svg?style=shield)](https://circleci.com/gh/hutte-io/cli/tree/master)
-[![Appveyor CI](https://ci.appveyor.com/api/projects/status/github/hutte-io/cli?branch=master&svg=true)](https://ci.appveyor.com/project/heroku/cli/branch/master)
-[![Codecov](https://codecov.io/gh/hutte-io/cli/branch/master/graph/badge.svg)](https://codecov.io/gh/hutte-io/cli)
-[![Greenkeeper](https://badges.greenkeeper.io/hutte-io/cli.svg)](https://greenkeeper.io/)
-[![Known Vulnerabilities](https://snyk.io/test/github/hutte-io/cli/badge.svg)](https://snyk.io/test/github/hutte-io/cli)
 [![Downloads/week](https://img.shields.io/npm/dw/hutte.svg)](https://npmjs.org/package/hutte)
 [![License](https://img.shields.io/npm/l/hutte.svg)](https://github.com/hutte-io/cli/blob/master/package.json)
 
-<!-- toc -->
-* [Debugging your plugin](#debugging-your-plugin)
-<!-- tocstop -->
-<!-- install -->
-<!-- usage -->
+## Installation
+
 ```sh-session
-$ npm install -g hutte
-$ sfdx COMMAND
-running command...
-$ sfdx (-v|--version|version)
-hutte/0.0.47 darwin-x64 node-v12.21.0
-$ sfdx --help [COMMAND]
-USAGE
-  $ sfdx COMMAND
-...
+$ sfdx plugins:install hutte
 ```
-<!-- usagestop -->
+
+## Commands
+
 <!-- commands -->
 * [`sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string--p-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
@@ -62,7 +48,7 @@ EXAMPLE
      My hub org id is: 00Dxx000000001234
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/auth/login.js)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_
 
 ## `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -86,7 +72,7 @@ OPTIONS
                                                                                     the scratch org
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/org/authorize.js)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
 
 ## `sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -108,7 +94,7 @@ OPTIONS
                                                                                     this command invocation
 ```
 
-_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/org/terminate.js)_
+_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/terminate.ts)_
 
 ## `sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -140,7 +126,7 @@ OPTIONS
   --timeout=timeout                                                                 the timeout period in seconds.
 ```
 
-_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/v0.0.47/lib/commands/hutte/pool/take.js)_
+_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
 # Debugging your plugin

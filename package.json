@@ -58,9 +58,10 @@
   "oclif": {
     "commands": "./lib/commands",
     "bin": "sfdx",
+    "repositoryPrefix": "<%- repo %>/blob/master/<%- commandPath.replace('lib', 'src').replace('.js', '.ts') %>",
     "topics": {
-      "hello": {
-        "description": "Commands to say hello."
+      "hutte": {
+        "description": "manage scratch orgs using Hutte"
       }
     },
     "devPlugins": [
