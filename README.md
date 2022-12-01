@@ -7,23 +7,14 @@ CLI for [hutte.io](https://hutte.io)
 [![Downloads/week](https://img.shields.io/npm/dw/hutte.svg)](https://npmjs.org/package/hutte)
 [![License](https://img.shields.io/npm/l/hutte.svg)](https://github.com/hutte-io/cli/blob/master/package.json)
 
-<!-- toc -->
-* [Debugging your plugin](#debugging-your-plugin)
-<!-- tocstop -->
-<!-- install -->
-<!-- usage -->
+## Installation
+
 ```sh-session
-$ npm install -g hutte
-$ sfdx COMMAND
-running command...
-$ sfdx (-v|--version|version)
-hutte/0.0.47 darwin-x64 node-v12.21.0
-$ sfdx --help [COMMAND]
-USAGE
-  $ sfdx COMMAND
-...
+$ sfdx plugins:install hutte
 ```
-<!-- usagestop -->
+
+## Commands
+
 <!-- commands -->
 * [`sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string--p-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
 * [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
