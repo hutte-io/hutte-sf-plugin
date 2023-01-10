@@ -7,13 +7,18 @@ import { storeUserInfo } from '../../../config';
 import { storeUserApiToken } from '../../../keychain';
 
 export default class Login extends SfdxCommand {
-  public static description = 'authorize your hutte-io account';
+  public static description = `authorize your hutte-io account
+
+Known issue:
+
+> security: SecKeychainItemCreateFromContent (<default>): The specified item already exists in the keychain.
+
+Reauthorizing doesn't work at the moment. Please remove the 'hutte-io' item manually from the keychain of your OS and try again.`;
 
   public static examples = [
-    `$ sfdx hutte:auth:login --email myEmail@example.com
-  Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-  My hub org id is: 00Dxx000000001234
-  `,
+    `$ sfdx hutte:auth:login
+? Email: john.doe@example.com
+? Password: [hidden]`,
   ];
 
   protected static flagsConfig = {
