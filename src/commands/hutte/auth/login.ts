@@ -10,10 +10,9 @@ export default class Login extends SfdxCommand {
   public static description = 'authorize your hutte-io account';
 
   public static examples = [
-    `$ sfdx hutte:auth:login --email myEmail@example.com
-  Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-  My hub org id is: 00Dxx000000001234
-  `,
+    `$ sfdx hutte:auth:login
+? Email: john.doe@example.com
+? Password: [hidden]`,
   ];
 
   protected static flagsConfig = {
@@ -44,17 +43,16 @@ export default class Login extends SfdxCommand {
           { name: 'password', type: 'password', message: 'Password:' },
         ])
       ).password;
-    login(email, password)
-      .then((data) => this.store({ ...data, email }))
-      .catch((error) => console.log(error));
+    const data = await login(email, password);
+    await this.store({...data, email});
   }
 
-  private store(params: {
+  private async store(params: {
     email: string;
     userId: string;
     apiToken: string;
-  }): void {
-    storeUserApiToken(params);
-    storeUserInfo(params);
+  }): Promise<void> {
+    await storeUserApiToken(params);
+    await storeUserInfo(params);
   }
 }

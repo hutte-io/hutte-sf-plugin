@@ -43,9 +43,9 @@ OPTIONS
                                                                                     this command invocation
 
 EXAMPLE
-  $ sfdx hutte:auth:login --email myEmail@example.com
-     Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-     My hub org id is: 00Dxx000000001234
+  $ sfdx hutte:auth:login
+  ? Email: john.doe@example.com
+  ? Password: [hidden]
 ```
 
 _See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_

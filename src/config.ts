@@ -11,19 +11,12 @@ interface IUserInfo {
   userId: string;
 }
 
-function storeUserInfo(params: IUserInfo) {
-  promises
-    .mkdir(CONFIG_FILE_DIR, { recursive: true })
-    .then(() => {
-      return promises.writeFile(
-        CONFIG_FILE_PATH,
-        safeDump({ current_user: { id: params.userId, email: params.email } }),
-      );
-    })
-    .catch((e) => {
-      console.log(e);
-      process.exit(1);
-    });
+async function storeUserInfo(params: IUserInfo) {
+  await promises.mkdir(CONFIG_FILE_DIR, { recursive: true });
+  await promises.writeFile(
+    CONFIG_FILE_PATH,
+    safeDump({ current_user: { id: params.userId, email: params.email } }),
+  );
 }
 
 function getCurrentUserInfo(): Promise<IUserInfo> {
