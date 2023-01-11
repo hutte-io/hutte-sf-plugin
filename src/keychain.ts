@@ -1,3 +1,4 @@
+import { SfdxError } from '@salesforce/core';
 import { retrieveKeychain } from '@salesforce/core/lib/keyChain';
 import { platform } from 'os';
 
@@ -22,7 +23,7 @@ async function getUserApiToken(params: { userId: string }): Promise<string> {
 
 async function storeUserApiToken(params: { userId: string; apiToken: string }) {
   const keychain = await retrieveKeychain(platform());
-  await new Promise<string>((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     keychain.setPassword(
       {
         service: SERVICE,
@@ -31,9 +32,22 @@ async function storeUserApiToken(params: { userId: string; apiToken: string }) {
       },
       (err, password?) => {
         if (err) {
+          if (/SecKeychainItemCreateFromContent/.test(err.message)) {
+            return reject(
+              new SfdxError(
+                'Could not overwrite existing credential.',
+                undefined,
+                [
+                  "Please remove the 'hutte-io' item manually from the keychain of your OS and try again.",
+                ],
+                1,
+                err,
+              ),
+            );
+          }
           reject(err);
         } else {
-          resolve(password);
+          resolve();
         }
       },
     );
