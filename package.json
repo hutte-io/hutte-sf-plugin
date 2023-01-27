@@ -19,7 +19,7 @@
     "inquirer": "^7.2.0",
     "inquirer-autocomplete-prompt": "^1.0.2",
     "js-yaml": "^3",
-    "keytar": "^5.0.0-beta.4",
+    "keytar": "^7.9.0",
     "request": "^2",
     "tslib": "^1"
   },
