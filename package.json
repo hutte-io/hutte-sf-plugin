@@ -27,19 +27,30 @@
     "@oclif/dev-cli": "^1",
     "@oclif/plugin-help": "^2",
     "@oclif/test": "^1",
+    "@salesforce/ts-sinon": "^1",
     "@salesforce/dev-config": "1.4.1",
     "@types/chai": "^4.2.4",
     "@types/cross-spawn": "^6.0.1",
     "@types/inquirer": "^6.5.0",
-    "@types/mocha": "^5",
+    "@types/mocha": "^8",
     "@types/node": "^10.17.3",
     "chai": "^4",
     "globby": "^8",
-    "mocha": "^5",
+    "mocha": "^9",
+    "sinon": "10.0.0",
     "nyc": "^14",
     "ts-node": "^8",
     "tslint": "^5.20.1",
-    "tslint-config-prettier": "^1.18.0"
+    "tslint-config-prettier": "^1.18.0",
+    "@typescript-eslint/eslint-plugin": "^4",
+    "@typescript-eslint/parser": "^4",
+    "eslint": "^7",
+    "eslint-config-prettier": "^8",
+    "eslint-plugin-header": "^3",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-jsdoc": "^35",
+    "eslint-plugin-prettier": "^3",
+    "eslint-plugin-typescript": "^0"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -71,9 +82,9 @@
   "repository": "hutte-io/cli",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
-    "posttest": "tslint -p test -t stylish",
+    "posttest": "eslint src/**/*.ts test/**/*.ts",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
-    "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "nyc --extension .ts --require ts-node/register mocha --timeout 5000 --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif-dev readme && git add README.md"
   }
 }
