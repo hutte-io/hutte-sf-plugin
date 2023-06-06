@@ -1,0 +1,62 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Remote",
+      "address": "127.0.0.1",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "smartStep": true,
+      "preLaunchTask": "Compile",
+      "outFiles": ["{workspaceFolder}/**.js", "!**/node_modules/**"]
+    },
+    {
+      "name": "Run All Unit Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "args": [
+          "--require",
+          "ts-node/register",
+          "--require",
+          "mocha",
+          "--timeout",
+          "0",
+          "--colors",
+          "--recursive",
+          "--reporter",
+          "spec",
+          "test/**/*.test.ts"
+      ],
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "Compile"
+    },
+    {
+      "name": "Run Current Unit Test",
+      "type": "node",
+      "request": "launch",
+      "protocol": "inspector",
+      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "args": [
+          "--require",
+          "ts-node/register",
+          "--require",
+          "mocha",
+          "--timeout",
+          "0",
+          "--colors",
+          "--recursive",
+          "--reporter",
+          "spec",
+          "--inspect",
+          "${file}"
+      ],
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "Compile"
+    }
+  ]
+}
