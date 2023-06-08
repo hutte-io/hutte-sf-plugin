@@ -14,7 +14,7 @@ export default class List extends SfdxCommand {
       description: "includes all information of scratch org, such as auth url",
     })
   };
-
+  
   public async run(): Promise<IScratchOrg[]> {
     const repoName: string = await projectRepoFromOrigin();
     let result: IScratchOrg[] = await getScratchOrgs(repoName);
@@ -22,6 +22,15 @@ export default class List extends SfdxCommand {
     if (!this.flags['includeauth']) {
         this.removeSensitiveInformation(result);
     }
+
+    this.ux.table(result, {columns: [
+        {key: 'projectName', label: 'Project Name'},
+        {key: 'name', label: 'Org Name'},
+        {key: 'state', label: 'State'},
+        {key: 'branchName', label: 'Branch Name'},
+        {key: 'remainingDays', label: 'Remaining Days'},
+        {key: 'createdBy', label: 'Created By'}
+      ]});
 
     return result;
   }
