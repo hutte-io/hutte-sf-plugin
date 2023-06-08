@@ -15,6 +15,7 @@ describe('hutte:org:list', async () => {
             expect(output.result.length).to.be.eql(3);
             expect(output.result[0].name).to.be.eql('Test Playground 1');
             expect(output.result[0].projectName).to.be.eql('Test Playground 1');
+            expect(output.result[0].state).to.be.eql('active');
         });
     
     initTest()
@@ -26,6 +27,7 @@ describe('hutte:org:list', async () => {
             expect(output.result[0].name).to.be.eql('Test Playground 1');
             expect(output.result[0].devhubSfdxAuthUrl).to.be.eql('force://mockDevHubUrl');
             expect(output.result[0].sfdxAuthUrl).to.be.eql('force://mockUrl1');
+            expect(output.result[0].state).to.be.eql('active');
         });
 });
 
@@ -45,7 +47,16 @@ function initTest() {
               "projectName": "Test Playground 1",
               "sfdxAuthUrl": "force://mockUrl1",
               "revisionNumber": "0",
-              "slug": "mock"
+              "slug": "mock",
+              "state": "active",
+              "salesforceId": "mockId",
+              "remainingDays": 1,
+              "projectId": "mockProjectId",
+              "initialBranchName": "master",
+              "globalId": "mockGlobalId",
+              "domain": "CS162",
+              "createdAt": "2023-05-31T10:11:57.135Z",
+              "createdBy": "Test User",
             },
             {
               "id": "mockId",
@@ -56,7 +67,16 @@ function initTest() {
               "projectName": "Test Playground 2",
               "sfdxAuthUrl": "force://mockUrl2",
               "revisionNumber": "0",
-              "slug": "mock"
+              "slug": "mock",
+              "state": "active",
+              "salesforceId": "mockId2",
+              "remainingDays": 1,
+              "projectId": "mockProjectId",
+              "initialBranchName": "master",
+              "globalId": "mockGlobalId2",
+              "domain": "CS162",
+              "createdAt": "2023-05-31T10:12:57.135Z",
+              "createdBy": "Test User",
             },
             {
               "id": "mockId",
@@ -67,7 +87,16 @@ function initTest() {
               "projectName": "Test Playground 3",
               "sfdxAuthUrl": "force://mockUrl3",
               "revisionNumber": "0",
-              "slug": "mock"
+              "slug": "mock",
+              "state": "active",
+              "salesforceId": "mockId3",
+              "remainingDays": 1,
+              "projectId": "mockProjectId",
+              "initialBranchName": "master",
+              "globalId": "mockGlobalId3",
+              "domain": "CS162",
+              "createdAt": "2023-05-31T10:16:57.135Z",
+              "createdBy": "Test User",
             }
           ]))
   }
