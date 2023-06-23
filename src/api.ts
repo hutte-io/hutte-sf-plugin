@@ -40,26 +40,44 @@ interface IScratchOrg {
   id: string;
   branchName: string;
   commitSha: string;
+  createdAt: string;
+  createdBy: string;
   devhubId: string;
   devhubSfdxAuthUrl: string;
+  domain: string;
+  globalId: string;
+  initialBranchName: string;
   name: string;
+  projectId: string;
   projectName: string;
-  sfdxAuthUrl: string;
+  remainingDays: number;
   revisionNumber: string | null;
+  salesforceId: string;
+  sfdxAuthUrl: string;
   slug: string;
+  state: string;
 }
 
 interface IScratchOrgResponse {
   id: string;
   branch_name: string;
   commit_sha: string;
+  created_at: string;
+  created_by: string;
   devhub_id: string;
   devhub_sfdx_auth_url: string;
+  domain: string;
+  gid: string;
+  initial_branch_name: string;
   name: string;
+  project_id: string;
   project_name: string;
-  sfdx_auth_url: string;
+  remaining_days: string;
   revision_number: string | null;
+  salesforce_id: string;
+  sfdx_auth_url: string;
   slug: string;
+  state: string;
 }
 
 const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
@@ -80,13 +98,23 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
       return body.data.map((org: IScratchOrgResponse) => ({
         id: org.id,
         branchName: org.branch_name,
+        commitSha: org.commit_sha,
+        createdAt: org.created_at,
+        createdBy: org.created_by,
         devhubId: org.devhub_id,
         devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+        domain: org.domain,
+        globalId: org.gid,
+        initialBranchName: org.initial_branch_name,
         name: org.name,
+        projectId: org.project_id,
         projectName: org.project_name,
-        sfdxAuthUrl: org.sfdx_auth_url,
+        remainingDays: +org.remaining_days,
         revisionNumber: org.revision_number,
+        salesforceId: org.salesforce_id,
+        sfdxAuthUrl: org.sfdx_auth_url,
         slug: org.slug,
+        state: org.state
       }));
     });
 
@@ -118,14 +146,23 @@ const takeOrgFromPool = async (
     return {
       id: org.id,
       branchName: org.branch_name,
+      createdAt: org.created_at,
+      createdBy: org.created_by,
       commitSha: org.commit_sha,
       devhubId: org.devhub_id,
       devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+      domain: org.domain,
+      globalId: org.gid,
+      initialBranchName: org.initial_branch_name,
       name: org.name,
+      projectId: org.project_id,
       projectName: org.project_name,
-      sfdxAuthUrl: org.sfdx_auth_url,
+      remainingDays: +org.remaining_days,
       revisionNumber: org.revision_number,
+      salesforceId: org.salesforce_id,
+      sfdxAuthUrl: org.sfdx_auth_url,
       slug: org.slug,
+      state: org.state
     };
   });
 };
