@@ -8,7 +8,7 @@ describe('hutte:org:list', async () => {
     List.requiresProject = false;
 
     initTest()
-        .command(['hutte:org:list', '--includeauth', '--json'])
+        .command(['hutte:org:list', '--json'])
         .it('happy path, returns basic details', async ctx => {
             const output = JSON.parse(ctx.stdout);
 
@@ -16,6 +16,7 @@ describe('hutte:org:list', async () => {
             expect(output.result[0].name).to.be.eql('Test Playground 1');
             expect(output.result[0].projectName).to.be.eql('Test Playground 1');
             expect(output.result[0].state).to.be.eql('active');
+            expect(output.result[0].sfdxAuthUrl).to.be.undefined;
         });
     
     initTest()
