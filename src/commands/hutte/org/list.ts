@@ -40,5 +40,4 @@ export default class List extends SfdxCommand {
         delete orgDetails.sfdxAuthUrl;
     });
   }
-  
 }
