@@ -9,9 +9,8 @@ export default class List extends SfdxCommand {
   static requiresProject = true;
 
   protected static flagsConfig = {
-    includeauth: flags.boolean({
-      default: false,
-      description: "includes all information of scratch org, such as auth url",
+    verbose: flags.builtin({
+      description: 'includes all information of scratch org, such as auth url'
     })
   };
   
@@ -19,7 +18,7 @@ export default class List extends SfdxCommand {
     const repoName: string = await projectRepoFromOrigin();
     let result: IScratchOrg[] = await getScratchOrgs(repoName);
     
-    if (!this.flags['includeauth']) {
+    if (!this.flags['verbose']) {
         this.removeSensitiveInformation(result);
     }
 

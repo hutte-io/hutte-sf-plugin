@@ -20,7 +20,7 @@ describe('hutte:org:list', async () => {
         });
     
     initTest()
-        .command(['hutte:org:list', '--includeauth', '--json'])
+        .command(['hutte:org:list', '--json', '--verbose'])
         .it('when includeauth is set, returns all complete details', async ctx => {
             const output = JSON.parse(ctx.stdout);
 
