@@ -11,12 +11,16 @@ export default class List extends SfdxCommand {
   protected static flagsConfig = {
     verbose: flags.builtin({
       description: 'includes all information of scratch org, such as auth url'
+    }),
+    all: flags.boolean({
+      description: 'when provided, the output includes all orgs from hutte project, otherwise (by default) only active orgs will be returned',
+      default: false
     })
   };
   
   public async run(): Promise<IScratchOrg[]> {
     const repoName: string = await projectRepoFromOrigin();
-    let result: IScratchOrg[] = await getScratchOrgs(repoName);
+    let result: IScratchOrg[] = await getScratchOrgs(repoName, this.flags['all']);
     
     if (!this.flags['verbose']) {
         this.removeSensitiveInformation(result);
