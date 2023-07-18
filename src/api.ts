@@ -56,6 +56,7 @@ interface IScratchOrg {
   sfdxAuthUrl: string;
   slug: string;
   state: string;
+  pool: boolean;
 }
 
 interface IScratchOrgResponse {
@@ -78,9 +79,10 @@ interface IScratchOrgResponse {
   sfdx_auth_url: string;
   slug: string;
   state: string;
+  pool: boolean;
 }
 
-const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
+const getScratchOrgs = async (repoName: string, includeAll: boolean = false): Promise<IScratchOrg[]> =>
   getCurrentUserInfo()
     .then((userInfo) => getUserApiToken(userInfo))
     .then((apiToken) =>
@@ -90,7 +92,10 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
         },
         json: true,
         method: 'GET',
-        qs: { repo_name: repoName },
+        qs: { 
+          repo_name: repoName,
+          all: includeAll
+        },
         uri: _apiUrl('/scratch_orgs'),
       }),
     )
@@ -114,7 +119,8 @@ const getScratchOrgs = async (repoName: string): Promise<IScratchOrg[]> =>
         salesforceId: org.salesforce_id,
         sfdxAuthUrl: org.sfdx_auth_url,
         slug: org.slug,
-        state: org.state
+        state: org.state,
+        pool: org.pool
       }));
     });
 
@@ -162,7 +168,8 @@ const takeOrgFromPool = async (
       salesforceId: org.salesforce_id,
       sfdxAuthUrl: org.sfdx_auth_url,
       slug: org.slug,
-      state: org.state
+      state: org.state,
+      pool: org.pool
     };
   });
 };

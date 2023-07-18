@@ -16,11 +16,15 @@ $ sfdx plugins:install hutte
 ## Commands
 
 <!-- commands -->
-* [`sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string--p-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx hutte:org:list [--includeauth] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorglist---includeauth---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgterminate--t-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-* [`sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-huttepooltake--t-string--n-string--p-string---timeout-integer--w---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [hutte](#hutte)
+  - [Installation](#installation)
+  - [Commands](#commands)
+  - [`sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string--p-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+  - [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+  - [`sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorglist---verbose---json---all---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+  - [`sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgterminate--t-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+  - [`sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-huttepooltake--t-string--n-string--p-string---timeout-integer--w---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
+- [Debugging your plugin](#debugging-your-plugin)
 
 ## `sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
@@ -75,20 +79,23 @@ OPTIONS
 
 _See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
 
-## `sfdx hutte:org:list [--includeauth] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
 
 list hutte scratch orgs from current repository
 
 ```
 USAGE
-  $ sfdx hutte:org:list [--includeauth] [--json] [--loglevel 
+  $ sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel 
   trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
 
 OPTIONS
-  --includeauth                                                                     includes all information of scratch
+  --verbose                                                                         includes all information of scratch
                                                                                     org, such as auth url
 
   --json                                                                            format output as json
+
+  --all                                                                             when provided, the output includes all orgs from hutte
+                                                                                    project, otherwise (by default) only active orgs will be returned
 
   --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
                                                                                     this command invocation
