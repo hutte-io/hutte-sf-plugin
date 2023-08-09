@@ -216,7 +216,7 @@ const promiseRequest = async (
   });
 
 function _apiUrl(path: string): string {
-  return `https://app.hutte.io/cli_api${path}`;
+  return `https://api.hutte.io/cli_api${path}`;
 }
 
 export { getScratchOrgs, takeOrgFromPool, login, IScratchOrg };
