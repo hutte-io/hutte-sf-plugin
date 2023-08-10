@@ -27,7 +27,7 @@ export default class Login extends SfdxCommand {
     }),
   };
 
-  protected static requiresProject = false;
+  static requiresProject = false;
 
   public async run(): Promise<void> {
     const email =
