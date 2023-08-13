@@ -17,7 +17,7 @@ import {
 export default class Authorize extends SfdxCommand {
   public static description = 'authorize a scratch org from hutte.io';
 
-  protected static requiresProject = true;
+  static requiresProject = true;
 
   protected static flagsConfig = {
     'no-git': flags.boolean({
