@@ -11,7 +11,7 @@ describe('hutte:org:authorize', async () => {
 
     initTest()
         .command(['hutte:org:authorize'])
-        .it('happy path, login successfully', async ctx => {
+        .it('authorize happy path', async ctx => {
             expect(ctx.stdout).to.be.eql('');
             expect(ctx.stderr).to.be.eql('');
         });
@@ -30,7 +30,7 @@ describe('hutte:org:authorize', async () => {
             }
         })
         .command(['hutte:org:authorize'])
-        .it('fails on sfdx error', async ctx => {
+        .it('authorize fails on sfdx error', async ctx => {
             expect(ctx.stdout).to.be.eql('');
             expect(ctx.stderr).to.contains('ERROR running hutte:org:authorize:  The sfdx login failed.');
         });
@@ -48,7 +48,7 @@ describe('hutte:org:authorize', async () => {
             }
         })
         .command(['hutte:org:authorize'])
-        .it('fails on unstaged changes', async ctx => {
+        .it('authorize fails on unstaged changes', async ctx => {
             expect(ctx.stdout).to.be.eql('');
             expect(ctx.stderr).to.contains('ERROR running hutte:org:authorize:  You have unstaged changes. Please commit or stash them before proceeding.');
         });
@@ -121,6 +121,7 @@ function initTest() {
             email: 'mockUser@hutte.io',
             userId: '123467890-1234567890'
         }))
+        // @Note: This stubs the API Call to Hutte API to get the Hutte authenticated orgs information
         .stub(api, 'promiseRequest', () => Promise.resolve({
             body: {
                 data: [mockReceivedOrg]

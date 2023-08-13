@@ -10,14 +10,14 @@ describe('hutte:auth:login', async () => {
     initTest()
         .stub(api, 'login', () => Promise.resolve())
         .command(['hutte:auth:login', '--email', 'test@email.com', '--password', 'mockPassword'])
-        .it('happy path, login successfully', async ctx => {
+        .it('login happy path', async ctx => {
             expect(ctx.stdout).to.be.eql('');
         });
 
     initTest()
         .stub(api, 'login', () => Promise.reject('Invalid credentials'))
         .command(['hutte:auth:login', '--email', 'test@email.com', '--password', 'mockPassword'])
-        .it('fails with incorrect credentials', async ctx => {
+        .it('login fails when credentials are incorrect', async ctx => {
             expect(ctx.stdout).to.contain('Invalid credentials');
         });
     
