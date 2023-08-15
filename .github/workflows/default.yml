@@ -22,8 +22,8 @@ jobs:
         run: |
           yarn install
           yarn global add sfdx-cli
-      # - name: Run tests
-      #   run: yarn run test
+      - name: Run Unit Tests
+        run: yarn test
       - name: Release package
         run: npx semantic-release
         env:
