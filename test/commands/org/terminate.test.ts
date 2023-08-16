@@ -51,6 +51,7 @@ function initTest() {
         .stderr()
         .stub(keychain, 'storeUserApiToken', () => Promise.resolve())
         .stub(config, 'storeUserInfo', () => Promise.resolve())
+        .stub(keychain, 'getUserApiToken', () => Promise.resolve('mockPassword'))
         .stub(cross_spawn, 'sync', (command: string, args: string[]) => {
             if (command == 'git') {
                 return { 
