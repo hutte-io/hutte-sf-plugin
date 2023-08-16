@@ -3,6 +3,7 @@ import Take from '../../../src/commands/hutte/pool/take';
 import * as api from '../../../src/api';
 import * as common from '../../../src/common';
 import * as keychain from '../../../src/keychain';
+import * as config from '../../../src/config';
 import cross_spawn from 'cross-spawn';
 
 describe('hutte:pool:take', async () => {
@@ -100,6 +101,10 @@ function initTest() {
         .withConnectionRequest(() => Promise.resolve({}))
         .stdout()
         .stderr()
+        .stub(config, 'getCurrentUserInfo', () => Promise.resolve({
+            email: 'mockUser@hutte.io',
+            userId: '123467890-1234567890'
+        }))
         .stub(keychain, 'getUserApiToken', () => Promise.resolve('mockPassword'))
         .stub(cross_spawn, 'sync', (command: string, args: string[]) => {
             if (command == 'git') {

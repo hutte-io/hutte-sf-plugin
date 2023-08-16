@@ -3,6 +3,7 @@ import Terminate from '../../../src/commands/hutte/org/terminate';
 import * as api from '../../../src/api';
 import * as common from '../../../src/common';
 import * as config from '../../../src/config';
+import * as keychain from '../../../src/keychain';
 import cross_spawn from 'cross-spawn';
 
 describe('hutte:org:terminate', async () => {
@@ -48,6 +49,8 @@ function initTest() {
         .withConnectionRequest(() => Promise.resolve({}))
         .stdout()
         .stderr()
+        .stub(keychain, 'storeUserApiToken', () => Promise.resolve())
+        .stub(config, 'storeUserInfo', () => Promise.resolve())
         .stub(cross_spawn, 'sync', (command: string, args: string[]) => {
             if (command == 'git') {
                 return { 
