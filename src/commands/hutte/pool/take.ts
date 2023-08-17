@@ -11,7 +11,7 @@ import {
 export default class Take extends SfdxCommand {
   public static description = 'take a scratch org from the pool';
 
-  protected static requiresProject = true;
+  static requiresProject = true;
 
   protected static flagsConfig = {
     'api-token': flags.string({
@@ -62,17 +62,16 @@ export default class Take extends SfdxCommand {
 
         if (body && body.error) {
           if (body.error === 'no_pool') {
-            console.log(
+            console.error(
               "This project doesn't have a pool defined. Setup a pool with at least one organization and try again.",
             );
           } else if (body.error === 'no_active_org') {
             if (this.flags.wait) {
               if (this.flags.timeout && iteration * 10 > this.flags.timeout) {
-                console.log('Timeout reached, finishing...');
-                this.exit(1);
+                return Promise.reject('Timeout reached, finishing...');
               }
 
-              console.log(
+              console.error(
                 'There is no active pool at the moment. Trying again in 10 seconds.',
               );
               return new Promise(() =>
@@ -80,16 +79,15 @@ export default class Take extends SfdxCommand {
               );
             }
 
-            console.log(
+            console.error(
               'There is no active pool at the moment, try again later.',
             );
           }
         } else {
-          console.log('Uknown request error.', e);
+          console.error('Uknown request error.', e);
         }
 
-        console.log('Unknown error: ', e);
-        this.exit(1);
+        return Promise.reject('Unknown error: ' + JSON.stringify(e));
       });
   }
 

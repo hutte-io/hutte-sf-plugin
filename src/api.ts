@@ -59,7 +59,7 @@ interface IScratchOrg {
   pool: boolean;
 }
 
-interface IScratchOrgResponse {
+export interface IScratchOrgResponse {
   id: string;
   branch_name: string;
   commit_sha: string;
@@ -194,7 +194,7 @@ export const terminateOrg = async (
   });
 };
 
-const promiseRequest = async (
+export const promiseRequest = async (
   options: request.UriOptions & request.CoreOptions,
 ): Promise<{ response: request.Response; body: any }> =>
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {

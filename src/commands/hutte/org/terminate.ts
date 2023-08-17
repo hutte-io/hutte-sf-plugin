@@ -11,7 +11,7 @@ export default class Terminate extends SfdxCommand {
   public static description =
     'terminates the default org on Hutte.io and logs out locally';
 
-  protected static requiresProject = true;
+  static requiresProject = true;
 
   protected static flagsConfig = {
     'api-token': flags.string({
@@ -31,19 +31,11 @@ export default class Terminate extends SfdxCommand {
     );
 
     if (terminateResponse.response.statusCode === 404) {
-      console.log(
-        'Could not find the scratch org on hutte. Are you sure you are in the correct project?',
-      );
-      this.exit(1);
+      return Promise.reject('Could not find the scratch org on hutte. Are you sure you are in the correct project?');
     }
 
     if (Math.floor(terminateResponse.response.statusCode / 100) !== 2) {
-      console.log(
-        'Request to hutte failed',
-        terminateResponse.response.statusCode,
-        terminateResponse.body,
-      );
-      this.exit(1);
+      return Promise.reject('Request to hutte failed ' + terminateResponse.response.statusCode + ' ' + terminateResponse.body);
     }
 
     return logoutFromDefault();
