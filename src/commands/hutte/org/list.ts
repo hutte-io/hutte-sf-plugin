@@ -1,47 +1,52 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-
-import { getScratchOrgs, IScratchOrg } from '../../../api';
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { IScratchOrg, getScratchOrgs } from '../../../api';
 import { projectRepoFromOrigin } from '../../../common';
+import { getApiToken } from '../../../config';
 
-export default class List extends SfdxCommand {
-  public static description = 'list hutte scratch orgs from current repository';
+export class List extends SfCommand<IScratchOrg[]> {
+  public static readonly summary = 'list hutte scratch orgs from current repository';
 
-  static requiresProject = true;
+  static readonly requiresProject = true;
 
-  protected static flagsConfig = {
-    verbose: flags.builtin({
-      description: 'includes all information of scratch org, such as auth url'
+  public static readonly flags = {
+    'api-token': Flags.string({
+      char: 't',
+      summary: 'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
     }),
-    all: flags.boolean({
-      description: 'when provided, the output includes all orgs from hutte project, otherwise (by default) only active orgs will be returned',
-      default: false
-    })
+    verbose: Flags.boolean({
+      summary: 'includes all information of scratch org, such as auth url',
+    }),
+    all: Flags.boolean({
+      summary:
+        'when provided, the output includes all orgs from hutte project, otherwise (by default) only active orgs will be returned',
+      default: false,
+    }),
   };
-  
+
   public async run(): Promise<IScratchOrg[]> {
-    const repoName: string = await projectRepoFromOrigin();
-    let result: IScratchOrg[] = await getScratchOrgs(repoName, this.flags['all']);
-    
-    if (!this.flags['verbose']) {
-        this.removeSensitiveInformation(result);
+    const { flags } = await this.parse(List);
+    const repoName: string = projectRepoFromOrigin();
+    const apiToken = flags['api-token'] ?? (await getApiToken());
+    let result: IScratchOrg[] = await getScratchOrgs(apiToken, repoName, flags.all);
+    if (!flags.verbose) {
+      result = this.removeSensitiveInformation(result);
     }
-
-    this.ux.table(result, {columns: [
-        {key: 'projectName', label: 'Project Name'},
-        {key: 'name', label: 'Org Name'},
-        {key: 'state', label: 'State'},
-        {key: 'branchName', label: 'Branch Name'},
-        {key: 'remainingDays', label: 'Remaining Days'},
-        {key: 'createdBy', label: 'Created By'}
-      ]});
-
+    this.table(result, {
+      projectName: { header: 'Project Name' },
+      name: { header: 'Org Name' },
+      state: { header: 'State' },
+      branchName: { header: 'Branch Name' },
+      remainingDays: { header: 'Remaining Days' },
+      createdBy: { header: 'Created By' },
+    });
     return result;
   }
 
-  private removeSensitiveInformation(orgs: IScratchOrg[]) {
-    orgs.forEach((orgDetails) => {
-        delete orgDetails.devhubSfdxAuthUrl;
-        delete orgDetails.sfdxAuthUrl;
+  private removeSensitiveInformation(orgs: IScratchOrg[]): IScratchOrg[] {
+    return orgs.map((org: IScratchOrg) => {
+      return Object.fromEntries(
+        Object.entries(org).filter(([key, value]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key)),
+      ) as IScratchOrg; // not yet possible with TypeScript
     });
   }
 }

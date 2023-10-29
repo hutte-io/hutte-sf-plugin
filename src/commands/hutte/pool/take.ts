@@ -1,99 +1,54 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { IScratchOrg, takeOrgFromPool } from '../../../api';
-import {
-  devHubSfdxLogin,
-  flagAsScratchOrg,
-  projectRepoFromOrigin,
-  sfdxLogin,
-} from '../../../common';
+import { devHubSfdxLogin, flagAsScratchOrg, projectRepoFromOrigin, retryWithTimeout, sfdxLogin } from '../../../common';
+import { getApiToken } from '../../../config';
 
-export default class Take extends SfdxCommand {
-  public static description = 'take a scratch org from the pool';
+export class Take extends SfCommand<IScratchOrg> {
+  public static readonly summary = 'take a scratch org from the pool';
 
-  static requiresProject = true;
+  static readonly requiresProject = true;
 
-  protected static flagsConfig = {
-    'api-token': flags.string({
+  public static readonly flags = {
+    'api-token': Flags.string({
       char: 't',
-      description:
-        'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+      summary: 'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
     }),
-    name: flags.string({
+    name: Flags.string({
       char: 'n',
-      description: 'the name of the org',
+      summary: 'the name of the org',
     }),
-    'project-id': flags.string({
+    'project-id': Flags.string({
       char: 'p',
-      description:
-        'the id of the project. Useful when multiple projects use the same git repository.',
+      summary: 'the id of the project. Useful when multiple projects use the same git repository.',
     }),
-    timeout: flags.integer({
-      description: 'the timeout period in seconds.',
+    timeout: Flags.integer({
+      summary: 'the timeout period in seconds.',
     }),
-    wait: flags.boolean({
+    wait: Flags.boolean({
       char: 'w',
-      description: 'waits until an org becomes available',
+      summary: 'waits until an org becomes available',
     }),
   };
 
-  public async run(): Promise<void> {
-    return this.take(0);
+  public async run(): Promise<IScratchOrg> {
+    const { flags } = await this.parse(Take);
+    const repoName = projectRepoFromOrigin();
+    const apiToken = flags['api-token'] ?? (await getApiToken());
+
+    const scratchOrg = await retryWithTimeout(
+      async () => {
+        return await takeOrgFromPool(apiToken, repoName, flags['project-id'] ?? '', flags.name ?? '');
+      },
+      (e) => /try again later/.test(e),
+      flags.wait ? flags.timeout : 0,
+    );
+    this.processOrg(scratchOrg);
+    return scratchOrg;
   }
 
-  private async take(iteration: number): Promise<void> {
-    return this.fetchOrg(iteration)
-      .then((scratchOrg) => this.processOrg(scratchOrg))
-      .then(() => Promise.resolve());
-  }
-
-  private async fetchOrg(iteration: number): Promise<IScratchOrg> {
-    return projectRepoFromOrigin()
-      .then((repoName) =>
-        takeOrgFromPool(
-          this.flags['api-token'],
-          repoName,
-          this.flags['project-id'],
-          this.flags.name,
-        ),
-      )
-      .catch((e) => {
-        const { body } = e;
-
-        if (body && body.error) {
-          if (body.error === 'no_pool') {
-            console.error(
-              "This project doesn't have a pool defined. Setup a pool with at least one organization and try again.",
-            );
-          } else if (body.error === 'no_active_org') {
-            if (this.flags.wait) {
-              if (this.flags.timeout && iteration * 10 > this.flags.timeout) {
-                return Promise.reject('Timeout reached, finishing...');
-              }
-
-              console.error(
-                'There is no active pool at the moment. Trying again in 10 seconds.',
-              );
-              return new Promise(() =>
-                setTimeout(() => this.take(iteration + 1), 10000),
-              );
-            }
-
-            console.error(
-              'There is no active pool at the moment, try again later.',
-            );
-          }
-        } else {
-          console.error('Uknown request error.', e);
-        }
-
-        return Promise.reject('Unknown error: ' + JSON.stringify(e));
-      });
-  }
-
-  private processOrg(scratchOrg: IScratchOrg): Promise<IScratchOrg> {
-    return devHubSfdxLogin(scratchOrg)
-      .then(() => sfdxLogin(scratchOrg))
-      .then(() => flagAsScratchOrg(scratchOrg));
+  private processOrg(scratchOrg: IScratchOrg): IScratchOrg {
+    devHubSfdxLogin(scratchOrg);
+    sfdxLogin(scratchOrg);
+    return flagAsScratchOrg(scratchOrg);
   }
 }

@@ -1,60 +1,44 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import inquirer from 'inquirer';
-
 import { login } from '../../../api';
 import { storeUserInfo } from '../../../config';
 import { storeUserApiToken } from '../../../keychain';
 
-export default class Login extends SfdxCommand {
-  public static description = 'authorize your hutte-io account';
+type LoginResult = {
+  userId: string;
+};
 
-  public static examples = [
-    `$ sfdx hutte:auth:login --email myEmail@example.com
-  Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-  My hub org id is: 00Dxx000000001234
-  `,
-  ];
+export class Login extends SfCommand<LoginResult> {
+  public static readonly summary = 'authorize your hutte-io account';
 
-  protected static flagsConfig = {
-    email: flags.string({
+  public static readonly examples = [`$ <%= config.bin %> <%= command.id %> --email john.doe@example.org`];
+
+  public static readonly flags = {
+    email: Flags.string({
       char: 'e',
-      description: 'the email address of your account on hutte.io',
+      summary: 'the email address of your account on hutte.io',
     }),
-    password: flags.string({
+    password: Flags.string({
       char: 'p',
-      description: 'the password of your account on hutte.io',
+      summary: 'the password of your account on hutte.io',
     }),
   };
 
-  static requiresProject = false;
-
-  public async run(): Promise<void> {
-    const email =
-      this.flags.email ||
-      (
-        await inquirer.prompt([
-          { name: 'email', type: 'input', message: 'Email:' },
-        ])
-      ).email;
+  public async run(): Promise<LoginResult> {
+    const { flags } = await this.parse(Login);
+    const email = flags.email ?? (await inquirer.prompt([{ name: 'email', type: 'input', message: 'Email:' }])).email;
     const password =
-      this.flags.password ||
-      (
-        await inquirer.prompt([
-          { name: 'password', type: 'password', message: 'Password:' },
-        ])
-      ).password;
-    login(email, password)
-      .then((data) => this.store({ ...data, email }))
-      .catch((error) => console.log(error));
+      flags.password ??
+      (await inquirer.prompt([{ name: 'password', type: 'password', message: 'Password:' }])).password;
+    const data = await login(email, password);
+    await this.store({ ...data, email });
+    return {
+      userId: data.userId,
+    };
   }
 
-  private store(params: {
-    email: string;
-    userId: string;
-    apiToken: string;
-  }): void {
-    storeUserApiToken(params);
-    storeUserInfo(params);
+  private async store(params: { email: string; userId: string; apiToken: string }): Promise<void> {
+    await storeUserApiToken(params);
+    await storeUserInfo(params);
   }
 }

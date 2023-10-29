@@ -1,33 +1,45 @@
-import { expect, test } from '@salesforce/command/lib/test';
-import Login from '../../../src/commands/hutte/auth/login';
+import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
+import { stubMethod } from '@salesforce/ts-sinon';
+import { expect } from 'chai';
 import * as api from '../../../src/api';
-import * as keychain from '../../../src/keychain';
+import { Login } from '../../../src/commands/hutte/auth/login';
 import * as config from '../../../src/config';
+import * as keychain from '../../../src/keychain';
 
 describe('hutte:auth:login', async () => {
-    Login.requiresProject = false;
+  const $$ = new TestContext();
+  const testOrg = new MockTestOrgData();
 
-    initTest()
-        .stub(api, 'login', () => Promise.resolve())
-        .command(['hutte:auth:login', '--email', 'test@email.com', '--password', 'mockPassword'])
-        .it('login happy path', async ctx => {
-            expect(ctx.stdout).to.be.eql('');
-        });
+  beforeEach(async () => {
+    await $$.stubAuths(testOrg);
+    stubSfCommandUx($$.SANDBOX);
+    stubMethod($$.SANDBOX, keychain, 'storeUserApiToken').resolves();
+    stubMethod($$.SANDBOX, config, 'storeUserInfo').resolves();
+  });
 
-    initTest()
-        .stub(api, 'login', () => Promise.reject('Invalid credentials'))
-        .command(['hutte:auth:login', '--email', 'test@email.com', '--password', 'mockPassword'])
-        .it('login fails when credentials are incorrect', async ctx => {
-            expect(ctx.stdout).to.contain('Invalid credentials');
-        });
-    
+  afterEach(() => {
+    $$.restore();
+  });
+
+  it('works as expected in happy path', async () => {
+    stubMethod($$.SANDBOX, api, 'login').resolves({
+      email: 'john.doe@example.org',
+      userId: '123',
+      apiToken: 't123',
+    });
+    const result = await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
+    expect(result.userId).to.equal('123');
+  });
+
+  it('login fails when credentials are incorrect', async () => {
+    stubMethod($$.SANDBOX, api, 'login').rejects('Invalid credentials');
+    let err;
+    try {
+      await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
+    } catch (e) {
+      err = e;
+    }
+    expect(err).to.match(/Invalid credentials/);
+  });
 });
-
-function initTest() {
-    return test
-        .withConnectionRequest(() => Promise.resolve({}))
-        .stdout()
-        .stderr()
-        .stub(keychain, 'storeUserApiToken', () => Promise.resolve())
-        .stub(config, 'storeUserInfo', () => Promise.resolve())
-  }

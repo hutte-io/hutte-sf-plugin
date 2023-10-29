@@ -1,5 +1,4 @@
-hutte
-=====
+# hutte
 
 CLI for [hutte.io](https://hutte.io)
 
@@ -16,160 +15,129 @@ $ sfdx plugins:install hutte
 ## Commands
 
 <!-- commands -->
-- [hutte](#hutte)
-  - [Installation](#installation)
-  - [Commands](#commands)
-  - [`sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteauthlogin--e-string--p-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgauthorize---no-git---no-pull---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorglist---verbose---json---all---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-hutteorgterminate--t-string---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-  - [`sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`](#sfdx-huttepooltake--t-string--n-string--p-string---timeout-integer--w---json---loglevel-tracedebuginfowarnerrorfataltracedebuginfowarnerrorfatal)
-- [Debugging your plugin](#debugging-your-plugin)
+* [`sf hutte auth login`](#sf-hutte-auth-login)
+* [`sf hutte org authorize`](#sf-hutte-org-authorize)
+* [`sf hutte org list`](#sf-hutte-org-list)
+* [`sf hutte org terminate`](#sf-hutte-org-terminate)
+* [`sf hutte pool take`](#sf-hutte-pool-take)
 
-## `sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf hutte auth login`
 
 authorize your hutte-io account
 
 ```
 USAGE
-  $ sfdx hutte:auth:login [-e <string>] [-p <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hutte auth login [--json] [-e <value>] [-p <value>]
 
-OPTIONS
-  -e, --email=email                                                                 the email address of your account on
-                                                                                    hutte.io
+FLAGS
+  -e, --email=<value>     the email address of your account on hutte.io
+  -p, --password=<value>  the password of your account on hutte.io
 
-  -p, --password=password                                                           the password of your account on
-                                                                                    hutte.io
+GLOBAL FLAGS
+  --json  Format output as json.
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-EXAMPLE
-  $ sfdx hutte:auth:login --email myEmail@example.com
-     Hello world! This is org: MyOrg and I will be around until Tue Mar 20 2018!
-     My hub org id is: 00Dxx000000001234
+EXAMPLES
+  $ sf hutte auth login --email john.doe@example.org
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_
+_See code: [src/commands/hutte/auth/login.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_
 
-## `sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf hutte org authorize`
 
 authorize a scratch org from hutte.io
 
 ```
 USAGE
-  $ sfdx hutte:org:authorize [--no-git] [--no-pull] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hutte org authorize [--json] [-t <value>] [--no-git] [--no-pull]
 
-OPTIONS
-  --json                                                                            format output as json
+FLAGS
+  -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`
+  --no-git                 doesn't checkout the scratch org's git branch
+  --no-pull                doesn't pull the source code from the scratch org
 
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --no-git                                                                          doesn't checkout the scratch org's
-                                                                                    git branch
-
-  --no-pull                                                                         doesn't pull the source code from
-                                                                                    the scratch org
+GLOBAL FLAGS
+  --json  Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
+_See code: [src/commands/hutte/org/authorize.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
 
-## `sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf hutte org list`
 
 list hutte scratch orgs from current repository
 
 ```
 USAGE
-  $ sfdx hutte:org:list [--verbose] [--json] [--all] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hutte org list [--json] [-t <value>] [--verbose] [--all]
 
-OPTIONS
-  --verbose                                                                         includes all information of scratch
-                                                                                    org, such as auth url
+FLAGS
+  -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`
+  --all                    when provided, the output includes all orgs from hutte project, otherwise (by default) only
+                           active orgs will be returned
+  --verbose                includes all information of scratch org, such as auth url
 
-  --json                                                                            format output as json
-
-  --all                                                                             when provided, the output includes all orgs from hutte
-                                                                                    project, otherwise (by default) only active orgs will be returned
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+GLOBAL FLAGS
+  --json  Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/list.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/list.ts)_
+_See code: [src/commands/hutte/org/list.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/list.ts)_
 
-## `sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf hutte org terminate`
 
 terminates the default org on Hutte.io and logs out locally
 
 ```
 USAGE
-  $ sfdx hutte:org:terminate [-t <string>] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hutte org terminate [--json] [-t <value>]
 
-OPTIONS
-  -t, --api-token=api-token                                                         the api token. Only needed if you
-                                                                                    have not previously logged in using
-                                                                                    `sfdx hutte:auth:login`
+FLAGS
+  -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`
 
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
+GLOBAL FLAGS
+  --json  Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/terminate.ts)_
+_See code: [src/commands/hutte/org/terminate.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/terminate.ts)_
 
-## `sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]`
+## `sf hutte pool take`
 
 take a scratch org from the pool
 
 ```
 USAGE
-  $ sfdx hutte:pool:take [-t <string>] [-n <string>] [-p <string>] [--timeout <integer>] [-w] [--json] [--loglevel 
-  trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL]
+  $ sf hutte pool take [--json] [-t <value>] [-n <value>] [-p <value>] [--timeout <value>] [-w]
 
-OPTIONS
-  -n, --name=name                                                                   the name of the org
+FLAGS
+  -n, --name=<value>        the name of the org
+  -p, --project-id=<value>  the id of the project. Useful when multiple projects use the same git repository.
+  -t, --api-token=<value>   the api token. Only needed if you have not previously logged in using `sfdx
+                            hutte:auth:login`
+  -w, --wait                waits until an org becomes available
+  --timeout=<value>         the timeout period in seconds.
 
-  -p, --project-id=project-id                                                       the id of the project. Useful when
-                                                                                    multiple projects use the same git
-                                                                                    repository.
-
-  -t, --api-token=api-token                                                         the api token. Only needed if you
-                                                                                    have not previously logged in using
-                                                                                    `sfdx hutte:auth:login`
-
-  -w, --wait                                                                        waits until an org becomes available
-
-  --json                                                                            format output as json
-
-  --loglevel=(trace|debug|info|warn|error|fatal|TRACE|DEBUG|INFO|WARN|ERROR|FATAL)  [default: warn] logging level for
-                                                                                    this command invocation
-
-  --timeout=timeout                                                                 the timeout period in seconds.
+GLOBAL FLAGS
+  --json  Format output as json.
 ```
 
-_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/pool/take.ts)_
+_See code: [src/commands/hutte/pool/take.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
 <!-- debugging-your-plugin -->
+
 # Debugging your plugin
+
 We recommend using the Visual Studio Code (VS Code) IDE for your plugin development. Included in the `.vscode` directory of this plugin is a `launch.json` config file, which allows you to attach a debugger to the node process when running your commands.
 
-To debug the `hello:org` command: 
+To debug the `hello:org` command:
+
 1. Start the inspector
-  
-If you linked your plugin to the sfdx cli, call your command with the `dev-suspend` switch: 
+
+If you linked your plugin to the sfdx cli, call your command with the `dev-suspend` switch:
+
 ```sh-session
 $ sfdx hello:org -u myOrg@example.com --dev-suspend
 ```
-  
+
 Alternatively, to call your command using the `bin/run` script, set the `NODE_OPTIONS` environment variable to `--inspect-brk` when starting the debugger:
+
 ```sh-session
 $ NODE_OPTIONS=--inspect-brk bin/run hello:org -u myOrg@example.com
 ```
@@ -177,7 +145,7 @@ $ NODE_OPTIONS=--inspect-brk bin/run hello:org -u myOrg@example.com
 2. Set some breakpoints in your command code
 3. Click on the Debug icon in the Activity Bar on the side of VS Code to open up the Debug view.
 4. In the upper left hand corner of VS Code, verify that the "Attach to Remote" launch configuration has been chosen.
-5. Hit the green play button to the left of the "Attach to Remote" launch configuration window. The debugger should now be suspended on the first line of the program. 
+5. Hit the green play button to the left of the "Attach to Remote" launch configuration window. The debugger should now be suspended on the first line of the program.
 6. Hit the green play button at the top middle of VS Code (this play button will be to the right of the play button that you clicked in step #5).
-<br><img src=".images/vscodeScreenshot.png" width="480" height="278"><br>
-Congrats, you are debugging!
+   <br><img src=".images/vscodeScreenshot.png" width="480" height="278"><br>
+   Congrats, you are debugging!
