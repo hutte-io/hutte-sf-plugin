@@ -60,11 +60,12 @@ interface IDefaultOrgInfo {
 }
 
 export function getDefaultOrgInfo(): IDefaultOrgInfo {
-  const data = JSON.parse(execSync('sfdx force:org:display --json').toString());
-  if (data.status === 1) {
+  try {
+    const data = JSON.parse(execSync('sfdx force:org:display --json').toString());
+    return data.result;
+  } catch {
     throw new Error('Error reading the default scratch org');
   }
-  return data.result;
 }
 
 export function projectRepoFromOrigin(): string {
