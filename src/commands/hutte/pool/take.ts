@@ -37,7 +37,7 @@ export class Take extends SfCommand<IScratchOrg> {
 
     const scratchOrg = await retryWithTimeout(
       async () => {
-        return await takeOrgFromPool(apiToken, repoName, flags['project-id'] ?? '', flags.name ?? '');
+        return await takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name);
       },
       (e) => /try again later/.test(e),
       flags.wait ? flags.timeout : 0,

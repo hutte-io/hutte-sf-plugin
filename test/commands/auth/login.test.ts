@@ -23,6 +23,14 @@ describe('hutte:auth:login', async () => {
   });
 
   it('works as expected in happy path', async () => {
+    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+      response: {
+        statusCode: 500,
+      },
+      body: {
+        error: 'no_active_org',
+      },
+    });
     stubMethod($$.SANDBOX, api, 'login').resolves({
       email: 'john.doe@example.org',
       userId: '123',

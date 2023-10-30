@@ -5,31 +5,25 @@ interface ILoginResponse {
   apiToken: string;
 }
 
-const login = async (email: string, password: string): Promise<ILoginResponse> =>
-  new Promise<ILoginResponse>((resolve, reject) => {
-    request(
-      {
-        body: { email, password },
-        json: true,
-        method: 'POST',
-        uri: _apiUrl('/api_tokens'),
-      },
-      (error, response, body) => {
-        if (error) {
-          return reject(error);
-        }
-
-        if (response.statusCode !== 201) {
-          return reject('Invalid credentials');
-        }
-
-        resolve({
-          apiToken: body.data.api_token,
-          userId: body.data.user_id,
-        });
-      },
-    );
-  });
+export async function login(email: string, password: string): Promise<ILoginResponse> {
+  try {
+    const { body } = await promiseRequest({
+      body: { email, password },
+      json: true,
+      method: 'POST',
+      uri: _apiUrl('/api_tokens'),
+    });
+    return {
+      apiToken: body.data.api_token,
+      userId: body.data.user_id,
+    };
+  } catch (e) {
+    if (/error with authorization/.test(e)) {
+      throw new Error('Invalid credentials');
+    }
+    throw e;
+  }
+}
 
 type IScratchOrg = {
   id: string;
@@ -121,30 +115,30 @@ const getScratchOrgs = async (
 const takeOrgFromPool = async (
   apiToken: string,
   repoName: string,
-  projectId: string,
-  orgName: string,
+  projectId?: string,
+  orgName?: string,
 ): Promise<IScratchOrg> => {
-  const { response, body } = await promiseRequest({
-    headers: {
-      Authorization: `Token token=${apiToken}`,
-    },
-    json: true,
-    method: 'POST',
-    qs: { repo_name: repoName, name: orgName, project_id: projectId },
-    uri: _apiUrl('/take_from_pool'),
-  });
-  if (Math.floor(response.statusCode / 100) !== 2) {
-    if (body?.error === 'no_pool') {
+  let org: IScratchOrgResponse;
+  try {
+    const { body } = await promiseRequest({
+      headers: {
+        Authorization: `Token token=${apiToken}`,
+      },
+      json: true,
+      method: 'POST',
+      qs: { repo_name: repoName, name: orgName, project_id: projectId },
+      uri: _apiUrl('/take_from_pool'),
+    });
+    org = body.data;
+  } catch (e) {
+    if (/no_pool/.test(e)) {
       throw new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
     }
-    if (body?.error === 'no_active_org') {
+    if (/no_active_org/.test(e)) {
       throw new Error('There is no active pool at the moment, try again later.');
     }
-    throw new Error(body.error);
+    throw e;
   }
-
-  const org: IScratchOrgResponse = body.data;
-
   return {
     id: org.id,
     branchName: org.branch_name,
@@ -190,16 +184,18 @@ export const promiseRequest = async (
 ): Promise<{ response: request.Response; body: any }> =>
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
     request(options, (error, response, body) => {
-      if (response.statusCode !== 200) {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (body?.error) {
+        reject(body.error);
+        return;
+      }
+      if (Math.floor(response.statusCode / 100) !== 2) {
         reject('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
         return;
       }
-
-      if (error) {
-        reject({ response, body, error });
-        return;
-      }
-
       resolve({ response, body });
     });
   });
@@ -208,4 +204,4 @@ function _apiUrl(path: string): string {
   return `https://api.hutte.io/cli_api${path}`;
 }
 
-export { IScratchOrg, getScratchOrgs, login, takeOrgFromPool };
+export { IScratchOrg, getScratchOrgs, takeOrgFromPool };

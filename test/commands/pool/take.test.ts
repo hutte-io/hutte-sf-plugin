@@ -39,14 +39,7 @@ describe('hutte:pool:take', async () => {
   });
 
   it('fails when there is not a pool in the project', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
-      response: {
-        statusCode: 500,
-      },
-      body: {
-        error: 'no_pool',
-      },
-    });
+    stubMethod($$.SANDBOX, api, 'promiseRequest').rejects('no_pool');
     let err;
     try {
       await Take.run(['--name', 'mockOrg']);
@@ -57,14 +50,7 @@ describe('hutte:pool:take', async () => {
   });
 
   it('fails when there is not an active org at the pool', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
-      response: {
-        statusCode: 500,
-      },
-      body: {
-        error: 'no_active_org',
-      },
-    });
+    stubMethod($$.SANDBOX, api, 'promiseRequest').rejects('no_active_org');
     let err;
     try {
       await Take.run(['--name', 'mockOrg']);
