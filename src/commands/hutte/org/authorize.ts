@@ -101,7 +101,7 @@ export class Authorize extends SfCommand<void> {
     this.info(`Checking out remote branch ${org.branchName}`);
     const checkoutResult = cross_spawn.sync('git', ['checkout', org.branchName]);
     if (checkoutResult.status !== 0) {
-      this.info(`Remote org does not exist. Creating based on ${org.commitSha}...`);
+      this.info(`Remote branch does not exist. Creating based on ${org.commitSha}...`);
       cross_spawn.sync('git', ['checkout', org.commitSha]);
       cross_spawn.sync('git', ['checkout', '-b', org.branchName]);
     }
