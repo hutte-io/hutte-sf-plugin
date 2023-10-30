@@ -11,7 +11,7 @@ export class Terminate extends SfCommand<void> {
   public static readonly flags = {
     'api-token': Flags.string({
       char: 't',
-      summary: 'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
     }),
   };
 

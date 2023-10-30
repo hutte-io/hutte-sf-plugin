@@ -11,7 +11,7 @@ export class List extends SfCommand<IScratchOrg[]> {
   public static readonly flags = {
     'api-token': Flags.string({
       char: 't',
-      summary: 'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
     }),
     verbose: Flags.boolean({
       summary: 'includes all information of scratch org, such as auth url',

@@ -31,7 +31,7 @@ export function getCurrentUserInfo(): IUserInfo {
       userId: config.current_user.id,
     };
   } catch {
-    throw new Error('You need to authorize the client before. Run `$ sfdx hutte:auth:login -h` for more information.');
+    throw new Error('You need to authorize the client before. Run `$ sf hutte auth login -h` for more information.');
   }
 }
 

@@ -191,7 +191,7 @@ export const promiseRequest = async (
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
     request(options, (error, response, body) => {
       if (response.statusCode !== 200) {
-        reject('There is an error with authorization. Run `$ sfdx hutte:auth:login -h` for more information.');
+        reject('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
         return;
       }
 
