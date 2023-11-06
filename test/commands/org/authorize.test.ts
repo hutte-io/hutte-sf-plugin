@@ -10,33 +10,35 @@ import * as common from '../../../src/common';
 import * as config from '../../../src/config';
 
 describe('hutte:org:authorize', async () => {
-  const $$ = new TestContext();
+  const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
 
   beforeEach(async () => {
-    await $$.stubAuths(testOrg);
-    stubSfCommandUx($$.SANDBOX);
-    stubMethod($$.SANDBOX, common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
-    stubMethod($$.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+    await testContext.stubAuths(testOrg);
+    stubSfCommandUx(testContext.SANDBOX);
+    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns(
+      'https://github.com/mock-org/mock-repo.git',
+    );
+    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
+    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
       body: {
         data: [mockReceivedOrg],
       },
     });
-    stubMethod($$.SANDBOX, Authorize.prototype, 'checkoutGitBranch').returns();
-    stubMethod($$.SANDBOX, common, 'devHubSfdxLogin').returns();
-    stubMethod($$.SANDBOX, fs, 'writeFileSync').returns();
-    stubMethod($$.SANDBOX, fs, 'unlinkSync').returns();
-    stubMethod($$.SANDBOX, common, 'flagAsScratchOrg').returns(mockParsedOrg);
-    stubMethod($$.SANDBOX, Authorize.prototype, 'sfdxPull').returns();
+    stubMethod(testContext.SANDBOX, Authorize.prototype, 'checkoutGitBranch').returns();
+    stubMethod(testContext.SANDBOX, common, 'devHubSfdxLogin').returns();
+    stubMethod(testContext.SANDBOX, fs, 'writeFileSync').returns();
+    stubMethod(testContext.SANDBOX, fs, 'unlinkSync').returns();
+    stubMethod(testContext.SANDBOX, common, 'flagAsScratchOrg').returns(mockParsedOrg);
+    stubMethod(testContext.SANDBOX, Authorize.prototype, 'sfdxPull').returns();
   });
 
   afterEach(() => {
-    $$.restore();
+    testContext.restore();
   });
 
   it('authorize happy path', async () => {
-    stubMethod($$.SANDBOX, cross_spawn, 'sync')
+    stubMethod(testContext.SANDBOX, cross_spawn, 'sync')
       .withArgs('sfdx')
       .returns({ status: 0 })
       .withArgs('git')
@@ -46,7 +48,7 @@ describe('hutte:org:authorize', async () => {
   });
 
   it('authorize fails on unstaged changes', async () => {
-    stubMethod($$.SANDBOX, cross_spawn, 'sync')
+    stubMethod(testContext.SANDBOX, cross_spawn, 'sync')
       .withArgs('sfdx')
       .returns({ status: 0 })
       .withArgs('git')
@@ -61,7 +63,7 @@ describe('hutte:org:authorize', async () => {
   });
 
   it('authorize fails on sfdx error', async () => {
-    stubMethod($$.SANDBOX, cross_spawn, 'sync')
+    stubMethod(testContext.SANDBOX, cross_spawn, 'sync')
       .withArgs('sfdx')
       .returns({ status: 1 })
       .withArgs('git')
