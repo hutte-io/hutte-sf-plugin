@@ -8,19 +8,19 @@ import * as common from '../../../src/common';
 import * as config from '../../../src/config';
 
 describe('hutte:org:list', async () => {
-  const $$ = new TestContext();
+  const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
 
   beforeEach(async () => {
-    await $$.stubAuths(testOrg);
-    stubSfCommandUx($$.SANDBOX);
-    stubMethod($$.SANDBOX, common, 'projectRepoFromOrigin').returns();
-    stubMethod($$.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod($$.SANDBOX, api, 'getScratchOrgs').resolves(scratchOrgResult);
+    await testContext.stubAuths(testOrg);
+    stubSfCommandUx(testContext.SANDBOX);
+    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns();
+    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
+    stubMethod(testContext.SANDBOX, api, 'getScratchOrgs').resolves(scratchOrgResult);
   });
 
   afterEach(() => {
-    $$.restore();
+    testContext.restore();
   });
 
   it('happy path, returns all details', async () => {

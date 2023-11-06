@@ -8,22 +8,22 @@ import * as config from '../../../src/config';
 import * as keychain from '../../../src/keychain';
 
 describe('hutte:auth:login', async () => {
-  const $$ = new TestContext();
+  const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
 
   beforeEach(async () => {
-    await $$.stubAuths(testOrg);
-    stubSfCommandUx($$.SANDBOX);
-    stubMethod($$.SANDBOX, keychain, 'storeUserApiToken').resolves();
-    stubMethod($$.SANDBOX, config, 'storeUserInfo').resolves();
+    await testContext.stubAuths(testOrg);
+    stubSfCommandUx(testContext.SANDBOX);
+    stubMethod(testContext.SANDBOX, keychain, 'storeUserApiToken').resolves();
+    stubMethod(testContext.SANDBOX, config, 'storeUserInfo').resolves();
   });
 
   afterEach(() => {
-    $$.restore();
+    testContext.restore();
   });
 
   it('works as expected in happy path', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
       response: {
         statusCode: 500,
       },
@@ -31,7 +31,7 @@ describe('hutte:auth:login', async () => {
         error: 'no_active_org',
       },
     });
-    stubMethod($$.SANDBOX, api, 'login').resolves({
+    stubMethod(testContext.SANDBOX, api, 'login').resolves({
       email: 'john.doe@example.org',
       userId: '123',
       apiToken: 't123',
@@ -41,7 +41,7 @@ describe('hutte:auth:login', async () => {
   });
 
   it('login fails when credentials are incorrect', async () => {
-    stubMethod($$.SANDBOX, api, 'login').rejects('Invalid credentials');
+    stubMethod(testContext.SANDBOX, api, 'login').rejects('Invalid credentials');
     let err;
     try {
       await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);

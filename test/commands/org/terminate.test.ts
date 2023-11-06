@@ -8,24 +8,26 @@ import * as common from '../../../src/common';
 import * as config from '../../../src/config';
 
 describe('hutte:org:terminate', async () => {
-  const $$ = new TestContext();
+  const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
 
   beforeEach(async () => {
-    await $$.stubAuths(testOrg);
-    stubSfCommandUx($$.SANDBOX);
-    stubMethod($$.SANDBOX, common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
-    stubMethod($$.SANDBOX, common, 'getDefaultOrgInfo').returns({ id: 'mockOrgId' });
-    stubMethod($$.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod($$.SANDBOX, common, 'logoutFromDefault').returns();
+    await testContext.stubAuths(testOrg);
+    stubSfCommandUx(testContext.SANDBOX);
+    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns(
+      'https://github.com/mock-org/mock-repo.git',
+    );
+    stubMethod(testContext.SANDBOX, common, 'getDefaultOrgInfo').returns({ id: 'mockOrgId' });
+    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
+    stubMethod(testContext.SANDBOX, common, 'logoutFromDefault').returns();
   });
 
   afterEach(() => {
-    $$.restore();
+    testContext.restore();
   });
 
   it('terminate scratch org happy path', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
       response: {
         statusCode: 200,
       },
@@ -35,7 +37,7 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
       response: {
         statusCode: 404,
       },
@@ -50,7 +52,7 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    stubMethod($$.SANDBOX, api, 'promiseRequest').resolves({
+    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
       response: {
         statusCode: 500,
       },
