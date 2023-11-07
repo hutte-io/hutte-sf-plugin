@@ -1,49 +1,38 @@
 import request from 'request';
-import { getCurrentUserInfo } from './config';
-import { getUserApiToken } from './keychain';
 
 interface ILoginResponse {
   userId: string;
   apiToken: string;
 }
 
-const login = async (
-  email: string,
-  password: string,
-): Promise<ILoginResponse> =>
-  new Promise<ILoginResponse>((resolve, reject) => {
-    request(
-      {
-        body: { email, password },
-        json: true,
-        method: 'POST',
-        uri: _apiUrl('/api_tokens'),
-      },
-      (error, response, body) => {
-        if (error) {
-          return reject(error);
-        }
+export async function login(email: string, password: string): Promise<ILoginResponse> {
+  try {
+    const { body } = await promiseRequest({
+      body: { email, password },
+      json: true,
+      method: 'POST',
+      uri: _apiUrl('/api_tokens'),
+    });
+    return {
+      apiToken: body.data.api_token,
+      userId: body.data.user_id,
+    };
+  } catch (e) {
+    if (/error with authorization/.test(e)) {
+      throw new Error('Invalid credentials');
+    }
+    throw e;
+  }
+}
 
-        if (response.statusCode !== 201) {
-          return reject('Invalid credentials');
-        }
-
-        resolve({
-          apiToken: body.data.api_token,
-          userId: body.data.user_id,
-        });
-      },
-    );
-  });
-
-interface IScratchOrg {
+type IScratchOrg = {
   id: string;
   branchName: string;
   commitSha: string;
   createdAt: string;
   createdBy: string;
   devhubId: string;
-  devhubSfdxAuthUrl: string;
+  devhubSfdxAuthUrl?: string;
   domain: string;
   globalId: string;
   initialBranchName: string;
@@ -53,11 +42,11 @@ interface IScratchOrg {
   remainingDays: number;
   revisionNumber: string | null;
   salesforceId: string;
-  sfdxAuthUrl: string;
+  sfdxAuthUrl?: string;
   slug: string;
   state: string;
   pool: boolean;
-}
+};
 
 export interface IScratchOrgResponse {
   id: string;
@@ -82,96 +71,96 @@ export interface IScratchOrgResponse {
   pool: boolean;
 }
 
-const getScratchOrgs = async (repoName: string, includeAll: boolean = false): Promise<IScratchOrg[]> =>
-  getCurrentUserInfo()
-    .then((userInfo) => getUserApiToken(userInfo))
-    .then((apiToken) =>
-      promiseRequest({
-        headers: {
-          Authorization: `Token token=${apiToken}`,
-        },
-        json: true,
-        method: 'GET',
-        qs: { 
-          repo_name: repoName,
-          all: includeAll
-        },
-        uri: _apiUrl('/scratch_orgs'),
-      }),
-    )
-    .then(({ body }) => {
-      return body.data.map((org: IScratchOrgResponse) => ({
-        id: org.id,
-        branchName: org.branch_name,
-        commitSha: org.commit_sha,
-        createdAt: org.created_at,
-        createdBy: org.created_by,
-        devhubId: org.devhub_id,
-        devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
-        domain: org.domain,
-        globalId: org.gid,
-        initialBranchName: org.initial_branch_name,
-        name: org.name,
-        projectId: org.project_id,
-        projectName: org.project_name,
-        remainingDays: +org.remaining_days,
-        revisionNumber: org.revision_number,
-        salesforceId: org.salesforce_id,
-        sfdxAuthUrl: org.sfdx_auth_url,
-        slug: org.slug,
-        state: org.state,
-        pool: org.pool
-      }));
-    });
-
-const takeOrgFromPool = async (
+const getScratchOrgs = async (
   apiToken: string,
   repoName: string,
-  projectId: string,
-  orgName: string,
-): Promise<IScratchOrg> => {
-  apiToken =
-    apiToken ||
-    (await getCurrentUserInfo().then((userInfo) => getUserApiToken(userInfo)));
-
-  return promiseRequest({
+  includeAll: boolean = false,
+): Promise<IScratchOrg[]> => {
+  const { body } = await promiseRequest({
     headers: {
       Authorization: `Token token=${apiToken}`,
     },
     json: true,
-    method: 'POST',
-    qs: { repo_name: repoName, name: orgName, project_id: projectId },
-    uri: _apiUrl('/take_from_pool'),
-  }).then(({ response, body }) => {
-    if (Math.floor(response.statusCode / 100) !== 2) {
-      return Promise.reject({ response, body });
-    }
-
-    const org: IScratchOrgResponse = body.data;
-
-    return {
-      id: org.id,
-      branchName: org.branch_name,
-      createdAt: org.created_at,
-      createdBy: org.created_by,
-      commitSha: org.commit_sha,
-      devhubId: org.devhub_id,
-      devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
-      domain: org.domain,
-      globalId: org.gid,
-      initialBranchName: org.initial_branch_name,
-      name: org.name,
-      projectId: org.project_id,
-      projectName: org.project_name,
-      remainingDays: +org.remaining_days,
-      revisionNumber: org.revision_number,
-      salesforceId: org.salesforce_id,
-      sfdxAuthUrl: org.sfdx_auth_url,
-      slug: org.slug,
-      state: org.state,
-      pool: org.pool
-    };
+    method: 'GET',
+    qs: {
+      repo_name: repoName,
+      all: includeAll,
+    },
+    uri: _apiUrl('/scratch_orgs'),
   });
+  return body.data.map((org: IScratchOrgResponse) => ({
+    id: org.id,
+    branchName: org.branch_name,
+    commitSha: org.commit_sha,
+    createdAt: org.created_at,
+    createdBy: org.created_by,
+    devhubId: org.devhub_id,
+    devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+    domain: org.domain,
+    globalId: org.gid,
+    initialBranchName: org.initial_branch_name,
+    name: org.name,
+    projectId: org.project_id,
+    projectName: org.project_name,
+    remainingDays: +org.remaining_days,
+    revisionNumber: org.revision_number,
+    salesforceId: org.salesforce_id,
+    sfdxAuthUrl: org.sfdx_auth_url,
+    slug: org.slug,
+    state: org.state,
+    pool: org.pool,
+  }));
+};
+
+const takeOrgFromPool = async (
+  apiToken: string,
+  repoName: string,
+  projectId?: string,
+  orgName?: string,
+): Promise<IScratchOrg> => {
+  let org: IScratchOrgResponse;
+  try {
+    const { body } = await promiseRequest({
+      headers: {
+        Authorization: `Token token=${apiToken}`,
+      },
+      json: true,
+      method: 'POST',
+      qs: { repo_name: repoName, name: orgName, project_id: projectId },
+      uri: _apiUrl('/take_from_pool'),
+    });
+    org = body.data;
+  } catch (e) {
+    if (/no_pool/.test(e)) {
+      throw new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
+    }
+    if (/no_active_org/.test(e)) {
+      throw new Error('There is no active pool at the moment, try again later.');
+    }
+    throw e;
+  }
+  return {
+    id: org.id,
+    branchName: org.branch_name,
+    createdAt: org.created_at,
+    createdBy: org.created_by,
+    commitSha: org.commit_sha,
+    devhubId: org.devhub_id,
+    devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
+    domain: org.domain,
+    globalId: org.gid,
+    initialBranchName: org.initial_branch_name,
+    name: org.name,
+    projectId: org.project_id,
+    projectName: org.project_name,
+    remainingDays: +org.remaining_days,
+    revisionNumber: org.revision_number,
+    salesforceId: org.salesforce_id,
+    sfdxAuthUrl: org.sfdx_auth_url,
+    slug: org.slug,
+    state: org.state,
+    pool: org.pool,
+  };
 };
 
 export const terminateOrg = async (
@@ -179,10 +168,6 @@ export const terminateOrg = async (
   repoName: string,
   orgId: string,
 ): Promise<{ response: request.Response; body: any }> => {
-  apiToken =
-    apiToken ||
-    (await getCurrentUserInfo().then((userInfo) => getUserApiToken(userInfo)));
-
   return promiseRequest({
     headers: {
       Authorization: `Token token=${apiToken}`,
@@ -199,18 +184,18 @@ export const promiseRequest = async (
 ): Promise<{ response: request.Response; body: any }> =>
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
     request(options, (error, response, body) => {
-      if (response.statusCode !== 200) {
-        reject(
-          'There is an error with authorization. Run `$ sfdx hutte:auth:login -h` for more information.',
-        );
-        return;
-      }
-
       if (error) {
-        reject({ response, body, error });
+        reject(error);
         return;
       }
-
+      if (body?.error) {
+        reject(body.error);
+        return;
+      }
+      if (Math.floor(response.statusCode / 100) !== 2) {
+        reject('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+        return;
+      }
       resolve({ response, body });
     });
   });
@@ -219,4 +204,4 @@ function _apiUrl(path: string): string {
   return `https://api.hutte.io/cli_api${path}`;
 }
 
-export { getScratchOrgs, takeOrgFromPool, login, IScratchOrg };
+export { IScratchOrg, getScratchOrgs, takeOrgFromPool };

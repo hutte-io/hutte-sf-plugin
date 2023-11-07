@@ -1,43 +1,34 @@
-import { flags, SfdxCommand } from '@salesforce/command';
-
+import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { terminateOrg } from '../../../api';
-import {
-  getDefaultOrgInfo,
-  logoutFromDefault,
-  projectRepoFromOrigin,
-} from '../../../common';
+import { getDefaultOrgInfo, logoutFromDefault, projectRepoFromOrigin } from '../../../common';
+import { getApiToken } from '../../../config';
 
-export default class Terminate extends SfdxCommand {
-  public static description =
-    'terminates the default org on Hutte.io and logs out locally';
+export class Terminate extends SfCommand<void> {
+  public static readonly summary = 'terminates the default org on Hutte.io and logs out locally';
 
-  static requiresProject = true;
+  static readonly requiresProject = true;
 
-  protected static flagsConfig = {
-    'api-token': flags.string({
+  public static readonly flags = {
+    'api-token': Flags.string({
       char: 't',
-      description:
-        'the api token. Only needed if you have not previously logged in using `sfdx hutte:auth:login`',
+      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
     }),
   };
 
   public async run(): Promise<void> {
-    const repoName = await projectRepoFromOrigin();
-    const orgInfo = await getDefaultOrgInfo();
-    const terminateResponse = await terminateOrg(
-      this.flags['api-token'],
-      repoName,
-      orgInfo.id,
-    );
-
+    const { flags } = await this.parse(Terminate);
+    const repoName = projectRepoFromOrigin();
+    const orgInfo = getDefaultOrgInfo();
+    const apiToken = flags['api-token'] ?? (await getApiToken());
+    const terminateResponse = await terminateOrg(apiToken, repoName, orgInfo.id);
     if (terminateResponse.response.statusCode === 404) {
-      return Promise.reject('Could not find the scratch org on hutte. Are you sure you are in the correct project?');
+      throw new Error('Could not find the scratch org on hutte. Are you sure you are in the correct project?');
     }
-
     if (Math.floor(terminateResponse.response.statusCode / 100) !== 2) {
-      return Promise.reject('Request to hutte failed ' + terminateResponse.response.statusCode + ' ' + terminateResponse.body);
+      throw new Error(
+        'Request to hutte failed ' + terminateResponse.response.statusCode + ' ' + terminateResponse.body,
+      );
     }
-
-    return logoutFromDefault();
+    logoutFromDefault();
   }
 }

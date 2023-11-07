@@ -1,15 +1,14 @@
-import { getPassword, setPassword } from 'keytar';
+import { getConfig } from './config-new';
 
-const SERVICE = 'hutte-io';
-
-function getUserApiToken(params: { userId: string }): Promise<string> {
-  return getPassword(SERVICE, params.userId);
+async function getUserApiToken(params: { userId: string }): Promise<string | null> {
+  const config = await getConfig();
+  return config.get('token', true);
 }
 
-function storeUserApiToken(params: { userId: string; apiToken: string }) {
-  setPassword(SERVICE, params.userId, params.apiToken).catch(e => {
-    process.exit();
-  });
+async function storeUserApiToken(params: { userId: string; apiToken: string }): Promise<void> {
+  const config = await getConfig();
+  config.set('token', params.apiToken);
+  await config.write();
 }
 
 export { getUserApiToken, storeUserApiToken };
