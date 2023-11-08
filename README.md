@@ -48,9 +48,10 @@ authorize a scratch org from hutte.io
 
 ```
 USAGE
-  $ sf hutte org authorize [--json] [-t <value>] [--no-git] [--no-pull]
+  $ sf hutte org authorize [--json] [-t <value>] [--no-git] [--no-pull] [-n <value>]
 
 FLAGS
+  -n, --org-name=<value>   the name of the org to authorize
   -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sf hutte auth login`
   --no-git                 doesn't checkout the scratch org's git branch
   --no-pull                doesn't pull the source code from the scratch org
