@@ -76,6 +76,35 @@ describe('hutte:org:authorize', async () => {
     }
     expect(err).to.match(/The sfdx login failed/);
   });
+
+  it('authorize org by name', async () => {
+    stubMethod(testContext.SANDBOX, cross_spawn, 'sync')
+      .withArgs('sfdx')
+      .returns({ status: 0 })
+      .withArgs('git')
+      .returns({ status: 0, stdout: 'https://github.com/mock-org/mock-repo.git\n' });
+
+    await Authorize.run(['--org-name', 'Test Playground 1']);
+
+    expect(true);
+  });
+
+  it('authorize fails when name does not exist', async () => {
+    stubMethod(testContext.SANDBOX, cross_spawn, 'sync')
+      .withArgs('sfdx')
+      .returns({ status: 0 })
+      .withArgs('git')
+      .returns({ status: 0, stdout: 'https://github.com/mock-org/mock-repo.git\n' });
+      
+      let err;
+      try {
+        await Authorize.run(['--org-name', 'Non Existing']);
+      } catch(e) {
+        err = e;
+      }
+
+      expect(err).to.match(/There is not any scratch org to authorize by the provided name. \nRemove this flag to choose it from a list or access https:\/\/app.hutte.io to see the available orgs./);
+  });
 });
 
 const mockReceivedOrg: api.IScratchOrgResponse = {
