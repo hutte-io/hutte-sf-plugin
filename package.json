@@ -3,7 +3,7 @@
   "description": "CLI for hutte.io",
   "version": "0.0.0-development",
   "author": "@hutte-io",
-  "bugs": "https://github.com/hutte-io/cli/issues",
+  "bugs": "https://github.com/hutte-io/hutte-sf-plugin/issues",
   "dependencies": {
     "@salesforce/sf-plugins-core": "4.0.0",
     "chalk": "4.1.2",
@@ -69,7 +69,7 @@
       "-h"
     ]
   },
-  "repository": "hutte-io/cli",
+  "repository": "hutte-io/hutte-sf-plugin",
   "scripts": {
     "build": "tsc -p .",
     "postpack": "rm -f oclif.manifest.json",

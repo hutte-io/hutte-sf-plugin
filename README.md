@@ -4,7 +4,7 @@ CLI for [Hutte](https://hutte.io)
 
 [![Version](https://img.shields.io/npm/v/hutte.svg)](https://npmjs.org/package/hutte)
 [![Downloads/week](https://img.shields.io/npm/dw/hutte.svg)](https://npmjs.org/package/hutte)
-[![License](https://img.shields.io/npm/l/hutte.svg)](https://github.com/hutte-io/cli/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/hutte.svg)](https://github.com/hutte-io/hutte-sf-plugin/blob/master/package.json)
 
 ## Installation
 
@@ -40,7 +40,7 @@ EXAMPLES
   $ sf hutte auth login --email john.doe@example.org
 ```
 
-_See code: [src/commands/hutte/auth/login.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/auth/login.ts)_
+_See code: [src/commands/hutte/auth/login.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/auth/login.ts)_
 
 ## `sf hutte org authorize`
 
@@ -60,7 +60,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/authorize.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/authorize.ts)_
+_See code: [src/commands/hutte/org/authorize.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/authorize.ts)_
 
 ## `sf hutte org list`
 
@@ -80,7 +80,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/list.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/list.ts)_
+_See code: [src/commands/hutte/org/list.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/list.ts)_
 
 ## `sf hutte org terminate`
 
@@ -97,7 +97,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/terminate.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/org/terminate.ts)_
+_See code: [src/commands/hutte/org/terminate.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/terminate.ts)_
 
 ## `sf hutte pool take`
 
@@ -118,5 +118,5 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/pool/take.ts](https://github.com/hutte-io/cli/blob/master/src/commands/hutte/pool/take.ts)_
+_See code: [src/commands/hutte/pool/take.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
