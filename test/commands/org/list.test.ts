@@ -1,6 +1,5 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { stubMethod } from '@salesforce/ts-sinon';
 import { expect } from 'chai';
 import * as api from '../../../src/api';
 import { List } from '../../../src/commands/hutte/org/list';
@@ -14,9 +13,9 @@ describe('hutte:org:list', async () => {
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns();
-    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod(testContext.SANDBOX, api, 'getScratchOrgs').resolves(scratchOrgResult);
+    testContext.SANDBOX.stub(common, 'projectRepoFromOrigin').returns('');
+    testContext.SANDBOX.stub(config, 'getApiToken').resolves('t123');
+    testContext.SANDBOX.stub(api, 'getScratchOrgs').resolves(scratchOrgResult);
   });
 
   afterEach(() => {
@@ -64,6 +63,8 @@ const scratchOrgResult = [
     domain: 'CS162',
     createdAt: '2023-05-31T10:11:57.135Z',
     createdBy: 'Test User',
+    commitSha: '123',
+    pool: false,
   },
   {
     id: 'mockId',
@@ -84,6 +85,8 @@ const scratchOrgResult = [
     domain: 'CS162',
     createdAt: '2023-05-31T10:12:57.135Z',
     createdBy: 'Test User',
+    commitSha: '123',
+    pool: false,
   },
   {
     id: 'mockId',
@@ -104,5 +107,7 @@ const scratchOrgResult = [
     domain: 'CS162',
     createdAt: '2023-05-31T10:16:57.135Z',
     createdBy: 'Test User',
+    commitSha: '123',
+    pool: false,
   },
 ];

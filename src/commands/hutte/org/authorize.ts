@@ -35,11 +35,10 @@ export class Authorize extends SfCommand<void> {
     const { flags } = await this.parse(Authorize);
     const repoName = projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await getApiToken());
-    const scratchOrgs: IScratchOrg[] = await getScratchOrgs(apiToken, repoName); 
-    const scratchOrg: IScratchOrg = flags['org-name'] ?
-      this.findScratchOrg(scratchOrgs, flags['org-name'])
-      :
-      await this.chooseScratchOrg(scratchOrgs);
+    const scratchOrgs: IScratchOrg[] = await getScratchOrgs(apiToken, repoName);
+    const scratchOrg: IScratchOrg = flags['org-name']
+      ? this.findScratchOrg(scratchOrgs, flags['org-name'])
+      : await this.chooseScratchOrg(scratchOrgs);
     if (!flags['no-git']) {
       this.checkUnstagedChanges();
       this.checkoutGitBranch(scratchOrg);
@@ -55,7 +54,9 @@ export class Authorize extends SfCommand<void> {
   private findScratchOrg(scratchOrgs: IScratchOrg[], nameToFind: string): IScratchOrg {
     const result = scratchOrgs.find((scratchOrg: IScratchOrg) => scratchOrg.name == nameToFind);
     if (!result) {
-      throw new Error('There is not any scratch org to authorize by the provided name. \nRemove this flag to choose it from a list or access https://app.hutte.io to see the available orgs.')
+      throw new Error(
+        'There is not any scratch org to authorize by the provided name. \nRemove this flag to choose it from a list or access https://app.hutte.io to see the available orgs.',
+      );
     }
     return result;
   }

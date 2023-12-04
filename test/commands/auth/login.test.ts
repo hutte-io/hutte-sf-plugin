@@ -1,6 +1,5 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { stubMethod } from '@salesforce/ts-sinon';
 import { expect } from 'chai';
 import * as api from '../../../src/api';
 import { Login } from '../../../src/commands/hutte/auth/login';
@@ -14,8 +13,8 @@ describe('hutte:auth:login', async () => {
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    stubMethod(testContext.SANDBOX, keychain, 'storeUserApiToken').resolves();
-    stubMethod(testContext.SANDBOX, config, 'storeUserInfo').resolves();
+    testContext.SANDBOX.stub(keychain, 'storeUserApiToken').resolves();
+    testContext.SANDBOX.stub(config, 'storeUserInfo').resolves();
   });
 
   afterEach(() => {
@@ -23,7 +22,8 @@ describe('hutte:auth:login', async () => {
   });
 
   it('works as expected in happy path', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+      // @ts-expect-error not the full Response
       response: {
         statusCode: 500,
       },
@@ -31,8 +31,7 @@ describe('hutte:auth:login', async () => {
         error: 'no_active_org',
       },
     });
-    stubMethod(testContext.SANDBOX, api, 'login').resolves({
-      email: 'john.doe@example.org',
+    testContext.SANDBOX.stub(api, 'login').resolves({
       userId: '123',
       apiToken: 't123',
     });
@@ -41,7 +40,7 @@ describe('hutte:auth:login', async () => {
   });
 
   it('login fails when credentials are incorrect', async () => {
-    stubMethod(testContext.SANDBOX, api, 'login').rejects('Invalid credentials');
+    testContext.SANDBOX.stub(api, 'login').rejects('Invalid credentials');
     let err;
     try {
       await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);

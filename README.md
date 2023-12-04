@@ -40,7 +40,7 @@ EXAMPLES
   $ sf hutte auth login --email john.doe@example.org
 ```
 
-_See code: [src/commands/hutte/auth/login.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/auth/login.ts)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/auth/login.ts)_
 
 ## `sf hutte org authorize`
 
@@ -53,14 +53,14 @@ USAGE
 FLAGS
   -n, --org-name=<value>   the name of the org to authorize
   -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sf hutte auth login`
-  --no-git                 doesn't checkout the scratch org's git branch
-  --no-pull                doesn't pull the source code from the scratch org
+      --no-git             doesn't checkout the scratch org's git branch
+      --no-pull            doesn't pull the source code from the scratch org
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/authorize.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/authorize.ts)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/authorize.ts)_
 
 ## `sf hutte org list`
 
@@ -72,15 +72,15 @@ USAGE
 
 FLAGS
   -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sf hutte auth login`
-  --all                    when provided, the output includes all orgs from hutte project, otherwise (by default) only
+      --all                when provided, the output includes all orgs from hutte project, otherwise (by default) only
                            active orgs will be returned
-  --verbose                includes all information of scratch org, such as auth url
+      --verbose            includes all information of scratch org, such as auth url
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/list.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/list.ts)_
+_See code: [lib/commands/hutte/org/list.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/list.ts)_
 
 ## `sf hutte org terminate`
 
@@ -97,7 +97,7 @@ GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/org/terminate.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/terminate.ts)_
+_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/terminate.ts)_
 
 ## `sf hutte pool take`
 
@@ -112,11 +112,11 @@ FLAGS
   -p, --project-id=<value>  the id of the project. Useful when multiple projects use the same git repository.
   -t, --api-token=<value>   the api token. Only needed if you have not previously logged in using `sf hutte auth login`
   -w, --wait                waits until an org becomes available
-  --timeout=<value>         the timeout period in seconds.
+      --timeout=<value>     the timeout period in seconds.
 
 GLOBAL FLAGS
   --json  Format output as json.
 ```
 
-_See code: [src/commands/hutte/pool/take.ts](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/pool/take.ts)_
+_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
