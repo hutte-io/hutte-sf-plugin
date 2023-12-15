@@ -1,6 +1,5 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { stubMethod } from '@salesforce/ts-sinon';
 import { expect } from 'chai';
 import * as api from '../../../src/api';
 import { Terminate } from '../../../src/commands/hutte/org/terminate';
@@ -14,12 +13,13 @@ describe('hutte:org:terminate', async () => {
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns(
-      'https://github.com/mock-org/mock-repo.git',
-    );
-    stubMethod(testContext.SANDBOX, common, 'getDefaultOrgInfo').returns({ id: 'mockOrgId' });
-    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod(testContext.SANDBOX, common, 'logoutFromDefault').returns();
+    testContext.SANDBOX.stub(common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
+    testContext.SANDBOX.stub(common, 'getDefaultOrgInfo').returns({
+      id: 'mockOrgId',
+      username: 'john.doe@example.com',
+    });
+    testContext.SANDBOX.stub(config, 'getApiToken').resolves('t123');
+    testContext.SANDBOX.stub(common, 'logoutFromDefault').returns();
   });
 
   afterEach(() => {
@@ -27,7 +27,8 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('terminate scratch org happy path', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+      // @ts-expect-error not the full Response
       response: {
         statusCode: 200,
       },
@@ -37,7 +38,8 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+      // @ts-expect-error not the full Response
       response: {
         statusCode: 404,
       },
@@ -52,7 +54,8 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+      // @ts-expect-error not the full Response
       response: {
         statusCode: 500,
       },

@@ -1,6 +1,5 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { stubMethod } from '@salesforce/ts-sinon';
 import { expect } from 'chai';
 import * as api from '../../../src/api';
 import { Take } from '../../../src/commands/hutte/pool/take';
@@ -14,13 +13,11 @@ describe('hutte:pool:take', async () => {
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    stubMethod(testContext.SANDBOX, common, 'projectRepoFromOrigin').returns(
-      'https://github.com/mock-org/mock-repo.git',
-    );
-    stubMethod(testContext.SANDBOX, config, 'getApiToken').resolves('t123');
-    stubMethod(testContext.SANDBOX, common, 'devHubSfdxLogin').returns();
-    stubMethod(testContext.SANDBOX, common, 'sfdxLogin').returns(mockParsedOrg);
-    stubMethod(testContext.SANDBOX, common, 'flagAsScratchOrg').returns(mockParsedOrg);
+    testContext.SANDBOX.stub(common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
+    testContext.SANDBOX.stub(config, 'getApiToken').resolves('t123');
+    testContext.SANDBOX.stub(common, 'devHubSfdxLogin').returns();
+    testContext.SANDBOX.stub(common, 'sfdxLogin').returns(mockParsedOrg);
+    testContext.SANDBOX.stub(common, 'flagAsScratchOrg').returns(mockParsedOrg);
   });
 
   afterEach(() => {
@@ -28,7 +25,8 @@ describe('hutte:pool:take', async () => {
   });
 
   it('works as expected in happy path', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+      // @ts-expect-error not the full Response
       response: {
         statusCode: 200,
       },
@@ -41,7 +39,7 @@ describe('hutte:pool:take', async () => {
   });
 
   it('fails when there is not a pool in the project', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').rejects('no_pool');
+    testContext.SANDBOX.stub(api, 'promiseRequest').rejects('no_pool');
     let err;
     try {
       await Take.run(['--name', 'mockOrg']);
@@ -52,7 +50,7 @@ describe('hutte:pool:take', async () => {
   });
 
   it('fails when there is not an active org at the pool', async () => {
-    stubMethod(testContext.SANDBOX, api, 'promiseRequest').rejects('no_active_org');
+    testContext.SANDBOX.stub(api, 'promiseRequest').rejects('no_active_org');
     let err;
     try {
       await Take.run(['--name', 'mockOrg']);
