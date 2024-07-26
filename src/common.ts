@@ -84,7 +84,9 @@ export function extractGithubRepoName(remoteUrl: string): string {
   if (url.slice(-4) === '.git') {
     url = url.slice(0, -4);
   }
-  return url;
+  // the last two parts of the url path
+  const repoName = url.split('/').slice(-2).join('/');
+  return repoName;
 }
 
 export async function retryWithTimeout<T>(
