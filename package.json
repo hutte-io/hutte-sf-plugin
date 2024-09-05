@@ -20,7 +20,8 @@
     "@types/inquirer": "9.0.6",
     "@types/js-yaml": "3.12.5",
     "@types/request": "2.48.11",
-    "oclif": "4.0.3"
+    "oclif": "^4.14.29",
+    "ts-node": "^10.9.2"
   },
   "engines": {
     "node": ">=18.0.0"
