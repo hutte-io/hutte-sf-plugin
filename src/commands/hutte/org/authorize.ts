@@ -69,7 +69,7 @@ export class Authorize extends SfCommand<void> {
   }
 
   private sfdxPull(org: IScratchOrg): IScratchOrg {
-    const ret = cross_spawn.sync('sfdx', ['force:source:pull', '-f']);
+    const ret = cross_spawn.sync('sf', ['project', 'retrieve', 'start', '--ignore-conflicts']);
     if (ret.status !== 0) {
       throw new Error(ret.output.join('\n'));
     }

@@ -34,7 +34,8 @@
   ],
   "homepage": "https://hutte.io",
   "keywords": [
-    "sfdx-plugin"
+    "sfdx-plugin",
+    "sf-plugin"
   ],
   "license": "MIT",
   "oclif": {

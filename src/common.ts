@@ -10,27 +10,27 @@ const AUTH_URL_FILE = 'tmp_hutte_login';
 
 export function sfdxLogin(org: IScratchOrg): IScratchOrg {
   writeFileSync(AUTH_URL_FILE, org.sfdxAuthUrl!);
-  const response = cross_spawn.sync('sfdx', [
-    'force:auth:sfdxurl:store',
-    '-f',
-    AUTH_URL_FILE,
-    '-a',
+  const response = cross_spawn.sync('sf', [
+    'org', 'login', 'sfdx-url',
+    '--alias',
     `hutte-${org.slug}`,
-    '--setdefaultusername',
+    '--set-default',
+    '--sfdx-url-file',
+    AUTH_URL_FILE
   ]);
   unlinkSync(AUTH_URL_FILE);
   if (response.status !== 0) {
-    throw new Error('The sfdx login failed.');
+    throw new Error('The login failed.');
   }
   if (org.revisionNumber) {
-    cross_spawn.sync('sfdx', ['force:source:tracking:reset', '-r', org.revisionNumber, '-p']);
+    cross_spawn.sync('sf', ['project', 'reset', 'tracking', '--revision', org.revisionNumber, '--no-prompt']);
   }
   return org;
 }
 
 export function devHubSfdxLogin(org: IScratchOrg): void {
   writeFileSync(AUTH_URL_FILE, org.devhubSfdxAuthUrl!);
-  const result = cross_spawn.sync('sfdx', ['force:auth:sfdxurl:store', '-f', AUTH_URL_FILE, '-a', devHubAlias(org)]);
+  const result = cross_spawn.sync('sf', ['org', 'login', 'sfdx-url', '--alias', devHubAlias(org), '--sfdx-url-file', AUTH_URL_FILE]);
   unlinkSync(AUTH_URL_FILE);
   if (result.status === 0) {
     return;
@@ -39,7 +39,7 @@ export function devHubSfdxLogin(org: IScratchOrg): void {
 }
 
 export function logoutFromDefault(): void {
-  const result = cross_spawn.sync('sfdx', ['force:auth:logout', '-p']);
+  const result = cross_spawn.sync('sf', ['org', 'logout', '--no-prompt']);
   if (result.status === 0) {
     return;
   }
@@ -61,7 +61,7 @@ interface IDefaultOrgInfo {
 
 export function getDefaultOrgInfo(): IDefaultOrgInfo {
   try {
-    const data = JSON.parse(execSync('sfdx force:org:display --json').toString());
+    const data = JSON.parse(execSync('sf org display --json').toString());
     return data.result;
   } catch {
     throw new Error('Error reading the default scratch org');
