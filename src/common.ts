@@ -1,24 +1,19 @@
 import { execSync } from 'child_process';
 import cross_spawn from 'cross-spawn';
-import { readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import { parse as parseUrl } from 'url';
 import { IScratchOrg } from './api';
 
-const AUTH_URL_FILE = 'tmp_hutte_login';
-
 export function sfdxLogin(org: IScratchOrg): IScratchOrg {
-  writeFileSync(AUTH_URL_FILE, org.sfdxAuthUrl!);
-  const response = cross_spawn.sync('sf', [
-    'org', 'login', 'sfdx-url',
-    '--alias',
-    `hutte-${org.slug}`,
-    '--set-default',
-    '--sfdx-url-file',
-    AUTH_URL_FILE
-  ]);
-  unlinkSync(AUTH_URL_FILE);
+  const response = cross_spawn.sync(
+    'sf',
+    ['org', 'login', 'sfdx-url', '--alias', `hutte-${org.slug}`, '--set-default', '--sfdx-url-stdin'],
+    {
+      input: org.sfdxAuthUrl!,
+    },
+  );
   if (response.status !== 0) {
     throw new Error('The login failed.');
   }
@@ -29,9 +24,9 @@ export function sfdxLogin(org: IScratchOrg): IScratchOrg {
 }
 
 export function devHubSfdxLogin(org: IScratchOrg): void {
-  writeFileSync(AUTH_URL_FILE, org.devhubSfdxAuthUrl!);
-  const result = cross_spawn.sync('sf', ['org', 'login', 'sfdx-url', '--alias', devHubAlias(org), '--sfdx-url-file', AUTH_URL_FILE]);
-  unlinkSync(AUTH_URL_FILE);
+  const result = cross_spawn.sync('sf', ['org', 'login', 'sfdx-url', '--alias', devHubAlias(org), '--sfdx-url-stdin'], {
+    input: org.devhubSfdxAuthUrl!,
+  });
   if (result.status === 0) {
     return;
   }
