@@ -42,7 +42,7 @@ describe('hutte:org:authorize', async () => {
 
   it('authorize happy path', async () => {
     testContext.SANDBOX.stub(cross_spawn, 'sync')
-      .withArgs('sfdx')
+      .withArgs('sf')
       // @ts-expect-error not the full SpawnSyncReturns
       .returns({ status: 0 })
       .withArgs('git')
@@ -54,7 +54,7 @@ describe('hutte:org:authorize', async () => {
 
   it('authorize fails on unstaged changes', async () => {
     testContext.SANDBOX.stub(cross_spawn, 'sync')
-      .withArgs('sfdx')
+      .withArgs('sf')
       // @ts-expect-error not the full SpawnSyncReturns
       .returns({ status: 0 })
       .withArgs('git')
@@ -71,7 +71,7 @@ describe('hutte:org:authorize', async () => {
 
   it('authorize fails on sfdx error', async () => {
     testContext.SANDBOX.stub(cross_spawn, 'sync')
-      .withArgs('sfdx')
+      .withArgs('sf')
       // @ts-expect-error not the full SpawnSyncReturns
       .returns({ status: 1 })
       .withArgs('git')
@@ -83,12 +83,12 @@ describe('hutte:org:authorize', async () => {
     } catch (e) {
       err = e;
     }
-    expect(err).to.match(/The sfdx login failed/);
+    expect(err).to.match(/The login failed/);
   });
 
   it('authorize org by name', async () => {
     testContext.SANDBOX.stub(cross_spawn, 'sync')
-      .withArgs('sfdx')
+      .withArgs('sf')
       // @ts-expect-error not the full SpawnSyncReturns
       .returns({ status: 0 })
       .withArgs('git')
@@ -102,7 +102,7 @@ describe('hutte:org:authorize', async () => {
 
   it('authorize fails when name does not exist', async () => {
     testContext.SANDBOX.stub(cross_spawn, 'sync')
-      .withArgs('sfdx')
+      .withArgs('sf')
       // @ts-expect-error not the full SpawnSyncReturns
       .returns({ status: 0 })
       .withArgs('git')
