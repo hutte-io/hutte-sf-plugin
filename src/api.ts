@@ -5,7 +5,7 @@ interface ILoginResponse {
   apiToken: string;
 }
 
-export async function login(email: string, password: string): Promise<ILoginResponse> {
+async function login(email: string, password: string): Promise<ILoginResponse> {
   try {
     const { body } = await promiseRequest({
       body: { email, password },
@@ -18,14 +18,14 @@ export async function login(email: string, password: string): Promise<ILoginResp
       userId: body.data.user_id,
     };
   } catch (e) {
-    if (/error with authorization/.test(e)) {
+    if (typeof e === 'string' && /error with authorization/.test(e)) {
       throw new Error('Invalid credentials');
     }
     throw e;
   }
 }
 
-type IScratchOrg = {
+export type IScratchOrg = {
   id: string;
   branchName: string;
   commitSha: string;
@@ -36,7 +36,7 @@ type IScratchOrg = {
   domain: string;
   globalId: string;
   initialBranchName: string;
-  name: string;
+  orgName: string;
   projectId: string;
   projectName: string;
   remainingDays: number;
@@ -99,7 +99,7 @@ const getScratchOrgs = async (
     domain: org.domain,
     globalId: org.gid,
     initialBranchName: org.initial_branch_name,
-    name: org.name,
+    orgName: org.name,
     projectId: org.project_id,
     projectName: org.project_name,
     remainingDays: +org.remaining_days,
@@ -131,10 +131,10 @@ const takeOrgFromPool = async (
     });
     org = body.data;
   } catch (e) {
-    if (/no_pool/.test(e)) {
+    if (typeof e === 'string' && /no_pool/.test(e)) {
       throw new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
     }
-    if (/no_active_org/.test(e)) {
+    if (typeof e === 'string' && /no_active_org/.test(e)) {
       throw new Error('There is no active pool at the moment, try again later.');
     }
     throw e;
@@ -150,7 +150,7 @@ const takeOrgFromPool = async (
     domain: org.domain,
     globalId: org.gid,
     initialBranchName: org.initial_branch_name,
-    name: org.name,
+    orgName: org.name,
     projectId: org.project_id,
     projectName: org.project_name,
     remainingDays: +org.remaining_days,
@@ -163,7 +163,7 @@ const takeOrgFromPool = async (
   };
 };
 
-export const terminateOrg = async (
+const terminateOrg = async (
   apiToken: string,
   repoName: string,
   orgId: string,
@@ -179,7 +179,7 @@ export const terminateOrg = async (
   });
 };
 
-export const promiseRequest = async (
+const promiseRequest = async (
   options: request.UriOptions & request.CoreOptions,
 ): Promise<{ response: request.Response; body: any }> =>
   new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
@@ -204,4 +204,11 @@ function _apiUrl(path: string): string {
   return `https://api.hutte.io/cli_api${path}`;
 }
 
-export { IScratchOrg, getScratchOrgs, takeOrgFromPool };
+export default {
+  login,
+  getScratchOrgs,
+  takeOrgFromPool,
+  terminateOrg,
+  promiseRequest,
+};
+

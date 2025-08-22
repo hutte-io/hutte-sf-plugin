@@ -1,8 +1,8 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import inquirer from 'inquirer';
-import { login } from '../../../api';
-import { storeUserInfo } from '../../../config';
-import { storeUserApiToken } from '../../../keychain';
+import { password as passwordPrompt, input as inputPrompt } from '@inquirer/prompts';
+import api from '../../../api.js';
+import config from '../../../config.js';
+import keychain from '../../../keychain.js';
 
 type LoginResult = {
   userId: string;
@@ -26,11 +26,9 @@ export class Login extends SfCommand<LoginResult> {
 
   public async run(): Promise<LoginResult> {
     const { flags } = await this.parse(Login);
-    const email = flags.email ?? (await inquirer.prompt([{ name: 'email', type: 'input', message: 'Email:' }])).email;
-    const password =
-      flags.password ??
-      (await inquirer.prompt([{ name: 'password', type: 'password', message: 'Password:' }])).password;
-    const data = await login(email, password);
+    const email = flags.email ?? (await inputPrompt({  message: 'Email:' }));
+    const password = flags.password ?? (await passwordPrompt({ message: 'Password:' }));
+    const data = await api.login(email, password);
     await this.store({ ...data, email });
     return {
       userId: data.userId,
@@ -38,7 +36,7 @@ export class Login extends SfCommand<LoginResult> {
   }
 
   private async store(params: { email: string; userId: string; apiToken: string }): Promise<void> {
-    await storeUserApiToken(params);
-    await storeUserInfo(params);
+    await keychain.storeUserApiToken(params);
+    await config.storeUserInfo(params);
   }
 }

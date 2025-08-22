@@ -3,62 +3,60 @@
   "configurations": [
     {
       "type": "node",
-      "request": "attach",
-      "name": "Attach to Remote",
-      "address": "127.0.0.1",
-      "port": 9229,
-      "localRoot": "${workspaceFolder}",
-      "remoteRoot": "${workspaceFolder}",
-      "sourceMaps": true,
-      "smartStep": true,
-      "preLaunchTask": "Compile",
-      "outFiles": ["{workspaceFolder}/**.js", "!**/node_modules/**"]
-    },
-    {
-      "name": "Run All Unit Tests",
-      "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "name": "Debug Mocha Tests",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "--require",
         "ts-node/register",
-        "--require",
-        "mocha",
         "--timeout",
-        "0",
-        "--colors",
-        "--recursive",
-        "--reporter",
-        "spec",
+        "5000",
+        "--grep",
+        "${input:testName}",
         "test/**/*.test.ts"
       ],
-      "cwd": "${workspaceRoot}",
-      "preLaunchTask": "Compile",
-      "internalConsoleOptions": "openOnSessionStart"
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/test/tsconfig.json"
+      }
     },
     {
-      "name": "Run Current Unit Test",
       "type": "node",
       "request": "launch",
-      "protocol": "inspector",
-      "program": "${workspaceRoot}/node_modules/.bin/_mocha",
+      "name": "Debug Single Test File",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
         "--require",
         "ts-node/register",
-        "--require",
-        "mocha",
         "--timeout",
-        "0",
-        "--colors",
-        "--recursive",
-        "--reporter",
-        "spec",
-        "--inspect",
+        "5000",
         "${file}"
       ],
-      "cwd": "${workspaceRoot}",
-      "preLaunchTask": "Compile",
-      "internalConsoleOptions": "openOnSessionStart"
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/test/tsconfig.json"
+      }
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Mocha",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "${workspaceFolder}"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testName",
+      "description": "Test name to run (leave empty for all tests)",
+      "default": "",
+      "type": "promptString"
     }
   ]
 }

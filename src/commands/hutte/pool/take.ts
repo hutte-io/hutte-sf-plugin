@@ -1,7 +1,7 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { IScratchOrg, takeOrgFromPool } from '../../../api';
-import { devHubSfdxLogin, flagAsScratchOrg, projectRepoFromOrigin, retryWithTimeout, sfdxLogin } from '../../../common';
-import { getApiToken } from '../../../config';
+import api, { IScratchOrg } from '../../../api.js';
+import common from '../../../common.js';
+import config from '../../../config.js';
 
 export class Take extends SfCommand<IScratchOrg> {
   public static readonly summary = 'take a scratch org from the pool';
@@ -32,23 +32,17 @@ export class Take extends SfCommand<IScratchOrg> {
 
   public async run(): Promise<IScratchOrg> {
     const { flags } = await this.parse(Take);
-    const repoName = projectRepoFromOrigin();
-    const apiToken = flags['api-token'] ?? (await getApiToken());
+    const repoName = common.projectRepoFromOrigin();
+    const apiToken = flags['api-token'] ?? (await config.getApiToken());
 
-    const scratchOrg = await retryWithTimeout(
+    const scratchOrg = await common.retryWithTimeout(
       async () => {
-        return await takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name);
+        return await api.takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name);
       },
-      (e) => /try again later/.test(e),
+      (e) => typeof e === 'string' && /try again later/.test(e),
       flags.wait ? flags.timeout : 0,
     );
-    this.processOrg(scratchOrg);
+    common.sfdxLogin(scratchOrg);
     return scratchOrg;
-  }
-
-  private processOrg(scratchOrg: IScratchOrg): IScratchOrg {
-    devHubSfdxLogin(scratchOrg);
-    sfdxLogin(scratchOrg);
-    return flagAsScratchOrg(scratchOrg);
   }
 }

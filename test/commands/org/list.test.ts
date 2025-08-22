@@ -1,10 +1,11 @@
-import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
-import * as api from '../../../src/api';
-import { List } from '../../../src/commands/hutte/org/list';
-import * as common from '../../../src/common';
-import * as config from '../../../src/config';
+import api from '../../../src/api.js';
+import { List } from '../../../src/commands/hutte/org/list.js';
+import common from '../../../src/common.js';
+import config from '../../../src/config.js';
+import { IScratchOrg } from '../../../src/api.js';
 
 describe('hutte:org:list', async () => {
   const testContext = new TestContext();
@@ -25,7 +26,7 @@ describe('hutte:org:list', async () => {
   it('happy path, returns all details', async () => {
     const result = await List.run(['--verbose']);
     expect(result.length).to.be.eql(3);
-    expect(result[0].name).to.be.eql('Test Playground 1');
+    expect(result[0].orgName).to.be.eql('Test Playground 1');
     expect(result[0].projectName).to.be.eql('Test Playground 1');
     expect(result[0].state).to.be.eql('active');
     expect(result[0].devhubSfdxAuthUrl).to.be.eql('force://mockDevHubUrl');
@@ -35,7 +36,7 @@ describe('hutte:org:list', async () => {
   it('happy path, returns basic details', async () => {
     const result = await List.run([]);
     expect(result.length).to.be.eql(3);
-    expect(result[0].name).to.be.eql('Test Playground 1');
+    expect(result[0].orgName).to.be.eql('Test Playground 1');
     expect(result[0].projectName).to.be.eql('Test Playground 1');
     expect(result[0].state).to.be.eql('active');
     expect(result[0].devhubSfdxAuthUrl).to.be.undefined;
@@ -43,13 +44,13 @@ describe('hutte:org:list', async () => {
   });
 });
 
-const scratchOrgResult = [
+const scratchOrgResult: IScratchOrg[] = [
   {
     id: 'mockId',
     branchName: 'mockBranch1',
     devhubId: '00D7Q000005YnXXXXX',
     devhubSfdxAuthUrl: 'force://mockDevHubUrl',
-    name: 'Test Playground 1',
+    orgName: 'Test Playground 1',
     projectName: 'Test Playground 1',
     sfdxAuthUrl: 'force://mockUrl1',
     revisionNumber: '0',
@@ -71,7 +72,7 @@ const scratchOrgResult = [
     branchName: 'mockBranch2',
     devhubId: '00D7Q000005YnXXXXX',
     devhubSfdxAuthUrl: 'force://mockDevHubUrl',
-    name: 'Test Playground 2',
+    orgName: 'Test Playground 2',
     projectName: 'Test Playground 2',
     sfdxAuthUrl: 'force://mockUrl2',
     revisionNumber: '0',
@@ -93,7 +94,7 @@ const scratchOrgResult = [
     branchName: 'mockBranch2',
     devhubId: '00D7Q000005YnXXXXX',
     devhubSfdxAuthUrl: 'force://mockDevHubUrl',
-    name: 'Test Playground 3',
+    orgName: 'Test Playground 3',
     projectName: 'Test Playground 3',
     sfdxAuthUrl: 'force://mockUrl3',
     revisionNumber: '0',

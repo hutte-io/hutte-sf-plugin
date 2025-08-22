@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { extractGithubRepoName, retryWithTimeout } from '../src/common';
+import common from '../src/common.js';
 
 describe('common', () => {
   describe('retryWithTimeout', () => {
@@ -10,7 +10,7 @@ describe('common', () => {
         i++;
         return 'success';
       };
-      const res = await retryWithTimeout(func, (e) => /retry/.test(e));
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message));
       expect(res).to.equal('success');
       expect(i).to.equal(1);
     });
@@ -21,7 +21,7 @@ describe('common', () => {
         i++;
         return 'success';
       };
-      const res = await retryWithTimeout(func, (e) => /retry/.test(e), 5, 1);
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 5, 1);
       expect(res).to.equal('success');
       expect(i).to.equal(1);
     });
@@ -35,7 +35,7 @@ describe('common', () => {
         }
         return 'success';
       };
-      const res = await retryWithTimeout(func, (e) => /retry/.test(e), 2, 1);
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 2, 1);
       expect(res).to.equal('success');
       expect(i).to.equal(2);
     });
@@ -48,7 +48,7 @@ describe('common', () => {
       };
       let err;
       try {
-        await retryWithTimeout(func, (e) => /retry/.test(e), 5, 1);
+        await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 5, 1);
       } catch (e) {
         err = e;
       }
@@ -64,7 +64,7 @@ describe('common', () => {
       };
       let err;
       try {
-        await retryWithTimeout(func, (e) => /retry/.test(e), 2, 1);
+        await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 2, 1);
       } catch (e) {
         err = e;
       }
@@ -75,14 +75,16 @@ describe('common', () => {
 
   describe('extractGithubRepoName', () => {
     it('should parse a GitHub repo URL', () => {
-      expect(extractGithubRepoName('https://github.com/orgname/reponame.git')).to.deep.equal('orgname/reponame');
-      expect(extractGithubRepoName('git@github.com:orgname/reponame.git')).to.deep.equal('orgname/reponame');
+      expect(common.extractGithubRepoName('https://github.com/orgname/reponame.git')).to.deep.equal('orgname/reponame');
+      expect(common.extractGithubRepoName('git@github.com:orgname/reponame.git')).to.deep.equal('orgname/reponame');
     });
     it('should parse a Bitbucket Server repo URL', () => {
-      expect(extractGithubRepoName('https://git.example.org/scm/orgname/reponame.git')).to.deep.equal(
+      expect(common.extractGithubRepoName('https://git.example.org/scm/orgname/reponame.git')).to.deep.equal(
         'orgname/reponame',
       );
-      expect(extractGithubRepoName('ssh://git@git.example.org/orgname/reponame.git')).to.deep.equal('orgname/reponame');
+      expect(common.extractGithubRepoName('ssh://git@git.example.org/orgname/reponame.git')).to.deep.equal(
+        'orgname/reponame',
+      );
     });
   });
 });
