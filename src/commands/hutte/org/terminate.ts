@@ -1,7 +1,7 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { terminateOrg } from '../../../api';
-import { getDefaultOrgInfo, logoutFromDefault, projectRepoFromOrigin } from '../../../common';
-import { getApiToken } from '../../../config';
+import api from '../../../api.js';
+import common from '../../../common.js';
+import config from '../../../config.js';
 
 export class Terminate extends SfCommand<void> {
   public static readonly summary = 'terminates the default org on Hutte.io and logs out locally';
@@ -17,10 +17,10 @@ export class Terminate extends SfCommand<void> {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Terminate);
-    const repoName = projectRepoFromOrigin();
-    const orgInfo = getDefaultOrgInfo();
-    const apiToken = flags['api-token'] ?? (await getApiToken());
-    const terminateResponse = await terminateOrg(apiToken, repoName, orgInfo.id);
+    const repoName = common.projectRepoFromOrigin();
+    const orgInfo = common.getDefaultOrgInfo();
+    const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    const terminateResponse = await api.terminateOrg(apiToken, repoName, orgInfo.id);
     if (terminateResponse.response.statusCode === 404) {
       throw new Error('Could not find the scratch org on hutte. Are you sure you are in the correct project?');
     }
@@ -29,6 +29,6 @@ export class Terminate extends SfCommand<void> {
         'Request to hutte failed ' + terminateResponse.response.statusCode + ' ' + terminateResponse.body,
       );
     }
-    logoutFromDefault();
+    common.logoutFromDefault();
   }
 }

@@ -2,10 +2,10 @@ import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import chalk from 'chalk';
 import cross_spawn from 'cross-spawn';
 import fuzzy from 'fuzzy';
-import inquirer from 'inquirer';
-import { IScratchOrg, getScratchOrgs } from '../../../api';
-import { devHubSfdxLogin, flagAsScratchOrg, projectRepoFromOrigin, sfdxLogin } from '../../../common';
-import { getApiToken } from '../../../config';
+import { search as searchPrompt } from '@inquirer/prompts';
+import api, { IScratchOrg } from '../../../api.js';
+import common from '../../../common.js';
+import config from '../../../config.js';
 
 export class Authorize extends SfCommand<void> {
   public static readonly summary = 'authorize a scratch org from hutte.io';
@@ -33,9 +33,9 @@ export class Authorize extends SfCommand<void> {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Authorize);
-    const repoName = projectRepoFromOrigin();
-    const apiToken = flags['api-token'] ?? (await getApiToken());
-    const scratchOrgs: IScratchOrg[] = await getScratchOrgs(apiToken, repoName);
+    const repoName = common.projectRepoFromOrigin();
+    const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    const scratchOrgs: IScratchOrg[] = await api.getScratchOrgs(apiToken, repoName);
     const scratchOrg: IScratchOrg = flags['org-name']
       ? this.findScratchOrg(scratchOrgs, flags['org-name'])
       : await this.chooseScratchOrg(scratchOrgs);
@@ -43,16 +43,14 @@ export class Authorize extends SfCommand<void> {
       this.checkUnstagedChanges();
       this.checkoutGitBranch(scratchOrg);
     }
-    devHubSfdxLogin(scratchOrg);
-    sfdxLogin(scratchOrg);
-    flagAsScratchOrg(scratchOrg);
+    common.sfdxLogin(scratchOrg);
     if (!flags['no-pull']) {
       this.sfdxPull(scratchOrg);
     }
   }
 
   private findScratchOrg(scratchOrgs: IScratchOrg[], nameToFind: string): IScratchOrg {
-    const result = scratchOrgs.find((scratchOrg: IScratchOrg) => scratchOrg.name == nameToFind);
+    const result = scratchOrgs.find((scratchOrg: IScratchOrg) => scratchOrg.orgName == nameToFind);
     if (!result) {
       throw new Error(
         'There is not any scratch org to authorize by the provided name. \nRemove this flag to choose it from a list or access https://app.hutte.io to see the available orgs.',
@@ -83,29 +81,27 @@ export class Authorize extends SfCommand<void> {
     if (orgs.length === 1) {
       return orgs[0];
     }
-    inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-    const answer = await inquirer.prompt([
+
+    const answer = await searchPrompt(
       {
-        type: 'autocomplete',
-        name: 'scratch_org',
         message: 'Which scratch org would you like to authorize?',
-        source: (_answers: any, input: string) => {
+        source: (term) => {
           let filtered = orgs;
-          if (input) {
+          if (term) {
             filtered = fuzzy
-              .filter(input, orgs, {
-                extract: (org) => org.name,
+              .filter(term, orgs, {
+                extract: (org) => org.orgName,
               })
               .map((value) => value.original);
           }
           return filtered.map((org) => ({
             value: org.id,
-            name: `${org.name} ${chalk.gray(`- ${org.projectName}`)}`,
+            name: `${org.orgName} ${chalk.gray(`- ${org.projectName}`)}`,
           }));
         },
       },
-    ]);
-    const selectedOrg = orgs.find((org) => org.id === answer.scratch_org);
+    );
+    const selectedOrg = orgs.find((org) => org.id === answer);
     if (!selectedOrg) {
       throw new Error('No org selected!');
     }

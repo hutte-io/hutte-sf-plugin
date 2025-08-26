@@ -1,10 +1,11 @@
-import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { expect } from 'chai';
-import * as api from '../../../src/api';
-import { Terminate } from '../../../src/commands/hutte/org/terminate';
-import * as common from '../../../src/common';
-import * as config from '../../../src/config';
+import { assert, expect } from 'chai';
+import api from '../../../src/api.js';
+import { Terminate } from '../../../src/commands/hutte/org/terminate.js';
+import common from '../../../src/common.js';
+import config from '../../../src/config.js';
+import { SfError } from '@salesforce/core';
 
 describe('hutte:org:terminate', async () => {
   const testContext = new TestContext();
@@ -27,7 +28,7 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('terminate scratch org happy path', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
       // @ts-expect-error not the full Response
       response: {
         statusCode: 200,
@@ -38,34 +39,38 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
       // @ts-expect-error not the full Response
       response: {
         statusCode: 404,
       },
     });
-    let err;
     try {
       await Terminate.run([]);
+      assert(false, 'should throw an error');
     } catch (e) {
-      err = e;
+      assert(e instanceof SfError);
+      if (e instanceof SfError) {
+        expect(e.message).to.match(/Could not find the scratch org on hutte/);
+      }
     }
-    expect(err).to.match(/Could not find the scratch org on hutte/);
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
+    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
       // @ts-expect-error not the full Response
       response: {
         statusCode: 500,
       },
     });
-    let err;
     try {
       await Terminate.run([]);
+      assert(false, 'should throw an error');
     } catch (e) {
-      err = e;
+      assert(e instanceof SfError);
+      if (e instanceof SfError) {
+        expect(e.message).to.match(/Request to hutte failed/);
+      }
     }
-    expect(err).to.match(/Request to hutte failed/);
   });
 });

@@ -1,4 +1,4 @@
-import { getConfig } from './config-new';
+import { getConfig } from './config-new.js';
 
 async function getUserApiToken(params: { userId: string }): Promise<string | null> {
   const config = await getConfig();
@@ -11,4 +11,4 @@ async function storeUserApiToken(params: { userId: string; apiToken: string }): 
   await config.write();
 }
 
-export { getUserApiToken, storeUserApiToken };
+export default { getUserApiToken, storeUserApiToken };

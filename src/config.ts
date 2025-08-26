@@ -1,8 +1,8 @@
 import { promises, readFileSync } from 'fs';
-import { safeDump, safeLoad } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 import { homedir } from 'os';
 import { join as joinPath } from 'path';
-import { getUserApiToken } from './keychain';
+import keychain from './keychain.js';
 
 const CONFIG_FILE_DIR = joinPath(homedir(), '.hutte');
 const CONFIG_FILE_PATH = joinPath(CONFIG_FILE_DIR, 'config.yml');
@@ -12,15 +12,15 @@ interface IUserInfo {
   userId: string;
 }
 
-export async function storeUserInfo(params: IUserInfo): Promise<void> {
+async function storeUserInfo(params: IUserInfo): Promise<void> {
   await promises.mkdir(CONFIG_FILE_DIR, { recursive: true });
-  await promises.writeFile(CONFIG_FILE_PATH, safeDump({ current_user: { id: params.userId, email: params.email } }));
+  await promises.writeFile(CONFIG_FILE_PATH, dump({ current_user: { id: params.userId, email: params.email } }));
 }
 
-export function getCurrentUserInfo(): IUserInfo {
+function getCurrentUserInfo(): IUserInfo {
   try {
     const configFile = readFileSync(CONFIG_FILE_PATH);
-    const config = safeLoad(configFile.toString()) as {
+    const config = load(configFile.toString()) as {
       current_user: {
         email: string;
         id: string;
@@ -35,11 +35,17 @@ export function getCurrentUserInfo(): IUserInfo {
   }
 }
 
-export async function getApiToken(): Promise<string> {
+async function getApiToken(): Promise<string> {
   const userInfo = getCurrentUserInfo();
-  const apiToken = await getUserApiToken(userInfo);
+  const apiToken = await keychain.getUserApiToken(userInfo);
   if (!apiToken) {
     throw new Error('Could not get api token from password store');
   }
   return apiToken;
 }
+
+export default {
+  getApiToken,
+  getCurrentUserInfo,
+  storeUserInfo,
+};

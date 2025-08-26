@@ -1,10 +1,10 @@
-import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
-import * as api from '../../../src/api';
-import { Login } from '../../../src/commands/hutte/auth/login';
-import * as config from '../../../src/config';
-import * as keychain from '../../../src/keychain';
+import api from '../../../src/api.js';
+import { Login } from '../../../src/commands/hutte/auth/login.js';
+import config from '../../../src/config.js';
+import keychain from '../../../src/keychain.js';
 
 describe('hutte:auth:login', async () => {
   const testContext = new TestContext();

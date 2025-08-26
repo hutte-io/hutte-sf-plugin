@@ -1,10 +1,11 @@
-import { MockTestOrgData, TestContext } from '@salesforce/core/lib/testSetup';
+import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { expect } from 'chai';
-import * as api from '../../../src/api';
-import { Take } from '../../../src/commands/hutte/pool/take';
-import * as common from '../../../src/common';
-import * as config from '../../../src/config';
+import { assert, expect } from 'chai';
+import api, { IScratchOrg } from '../../../src/api.js';
+import { Take } from '../../../src/commands/hutte/pool/take.js';
+import common from '../../../src/common.js';
+import config from '../../../src/config.js';
+import { SfError } from '@salesforce/core';
 
 describe('hutte:pool:take', async () => {
   const testContext = new TestContext();
@@ -15,9 +16,7 @@ describe('hutte:pool:take', async () => {
     stubSfCommandUx(testContext.SANDBOX);
     testContext.SANDBOX.stub(common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
     testContext.SANDBOX.stub(config, 'getApiToken').resolves('t123');
-    testContext.SANDBOX.stub(common, 'devHubSfdxLogin').returns();
     testContext.SANDBOX.stub(common, 'sfdxLogin').returns(mockParsedOrg);
-    testContext.SANDBOX.stub(common, 'flagAsScratchOrg').returns(mockParsedOrg);
   });
 
   afterEach(() => {
@@ -25,72 +24,32 @@ describe('hutte:pool:take', async () => {
   });
 
   it('works as expected in happy path', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
-      // @ts-expect-error not the full Response
-      response: {
-        statusCode: 200,
-      },
-      body: {
-        data: mockReceivedOrg,
-      },
-    });
+    testContext.SANDBOX.stub(api, 'takeOrgFromPool').resolves(mockParsedOrg);
     const result = await Take.run(['--name', 'mockOrg', '--timeout', '60', '--wait']);
     expect(result.projectId).to.equal('mockProjectId');
   });
 
-  it('fails when there is not a pool in the project', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').rejects('no_pool');
-    let err;
+  it('fails when taking an org from a pool fails', async () => {
+    const error = new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
+    testContext.SANDBOX.stub(api, 'takeOrgFromPool').rejects(error);
     try {
       await Take.run(['--name', 'mockOrg']);
     } catch (e) {
-      err = e;
+      assert(e instanceof SfError);
+      if (e instanceof SfError) {
+        expect(e.cause).to.equal(error);
+      }
     }
-    expect(err).to.match(/This project doesn't have a pool defined/);
-  });
-
-  it('fails when there is not an active org at the pool', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').rejects('no_active_org');
-    let err;
-    try {
-      await Take.run(['--name', 'mockOrg']);
-    } catch (e) {
-      err = e;
-    }
-    expect(err).to.match(/There is no active pool at the moment/);
   });
 });
 
-const mockReceivedOrg: api.IScratchOrgResponse = {
-  id: 'mockId',
-  branch_name: 'mockBranch1',
-  commit_sha: '1234567890',
-  devhub_id: '00D7Q000005YnXXXXX',
-  devhub_sfdx_auth_url: 'force://mockDevHubUrl',
-  name: 'Test Playground 1',
-  project_name: 'Test Playground 1',
-  sfdx_auth_url: 'force://mockUrl1',
-  revision_number: '0',
-  slug: 'mock',
-  state: 'active',
-  salesforce_id: 'mockId',
-  remaining_days: '1',
-  project_id: 'mockProjectId',
-  initial_branch_name: 'master',
-  gid: 'mockGlobalId',
-  domain: 'CS162',
-  created_at: '2023-05-31T10:11:57.135Z',
-  created_by: 'Test User',
-  pool: false,
-};
-
-const mockParsedOrg: api.IScratchOrg = {
+const mockParsedOrg: IScratchOrg = {
   id: 'mockId',
   branchName: 'mockBranch1',
   commitSha: '1234567890',
   devhubId: '00D7Q000005YnXXXXX',
   devhubSfdxAuthUrl: 'force://mockDevHubUrl',
-  name: 'Test Playground 1',
+  orgName: 'Test Playground 1',
   projectName: 'Test Playground 1',
   sfdxAuthUrl: 'force://mockUrl1',
   revisionNumber: '0',

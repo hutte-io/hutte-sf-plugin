@@ -1,7 +1,7 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
-import { IScratchOrg, getScratchOrgs } from '../../../api';
-import { projectRepoFromOrigin } from '../../../common';
-import { getApiToken } from '../../../config';
+import api, { IScratchOrg } from '../../../api.js';
+import common from '../../../common.js';
+import config from '../../../config.js';
 
 export class List extends SfCommand<IScratchOrg[]> {
   public static readonly summary = 'list hutte scratch orgs from current repository';
@@ -25,19 +25,18 @@ export class List extends SfCommand<IScratchOrg[]> {
 
   public async run(): Promise<IScratchOrg[]> {
     const { flags } = await this.parse(List);
-    const repoName: string = projectRepoFromOrigin();
-    const apiToken = flags['api-token'] ?? (await getApiToken());
-    let result: IScratchOrg[] = await getScratchOrgs(apiToken, repoName, flags.all);
+    const repoName: string = common.projectRepoFromOrigin();
+    const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    let result: IScratchOrg[] = await api.getScratchOrgs(apiToken, repoName, flags.all);
     if (!flags.verbose) {
       result = this.removeSensitiveInformation(result);
     }
-    this.table(result, {
-      projectName: { header: 'Project Name' },
-      name: { header: 'Org Name' },
-      state: { header: 'State' },
-      branchName: { header: 'Branch Name' },
-      remainingDays: { header: 'Remaining Days' },
-      createdBy: { header: 'Created By' },
+    this.table({
+      data: result,
+      columns: ['projectName', 'orgName', 'state', 'branchName', 'remainingDays', 'createdBy'],
+      headerOptions: {
+        formatter: 'capitalCase'
+      },
     });
     return result;
   }
