@@ -22,15 +22,6 @@ describe('hutte:auth:login', async () => {
   });
 
   it('works as expected in happy path', async () => {
-    testContext.SANDBOX.stub(api, 'promiseRequest').resolves({
-      // @ts-expect-error not the full Response
-      response: {
-        statusCode: 500,
-      },
-      body: {
-        error: 'no_active_org',
-      },
-    });
     testContext.SANDBOX.stub(api, 'login').resolves({
       userId: '123',
       apiToken: 't123',

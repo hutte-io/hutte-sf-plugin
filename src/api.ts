@@ -1,4 +1,3 @@
-import request from 'request';
 
 interface ILoginResponse {
   userId: string;
@@ -7,12 +6,20 @@ interface ILoginResponse {
 
 async function login(email: string, password: string): Promise<ILoginResponse> {
   try {
-    const { body } = await promiseRequest({
-      body: { email, password },
-      json: true,
+    const response = await fetch(_apiUrl('/api_tokens'), {
       method: 'POST',
-      uri: _apiUrl('/api_tokens'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
     });
+
+    if (!response.ok) {
+      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+    }
+
+    const body = await response.json() as { data: { api_token: string; user_id: string } };
     return {
       apiToken: body.data.api_token,
       userId: body.data.user_id,
@@ -76,19 +83,24 @@ const getScratchOrgs = async (
   repoName: string,
   includeAll: boolean = false,
 ): Promise<IScratchOrg[]> => {
-  const { body } = await promiseRequest({
+  const url = new URL(_apiUrl('/scratch_orgs'));
+  url.searchParams.set('repo_name', repoName);
+  url.searchParams.set('all', includeAll.toString());
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
     headers: {
+      'Accept': 'application/json',
       Authorization: `Token token=${apiToken}`,
     },
-    json: true,
-    method: 'GET',
-    qs: {
-      repo_name: repoName,
-      all: includeAll,
-    },
-    uri: _apiUrl('/scratch_orgs'),
   });
-  return body.data.map((org: IScratchOrgResponse) => ({
+
+  if (!response.ok) {
+    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+  }
+
+  const body = await response.json() as { data: IScratchOrgResponse[] };
+  return body.data.map((org) => ({
     id: org.id,
     branchName: org.branch_name,
     commitSha: org.commit_sha,
@@ -120,15 +132,24 @@ const takeOrgFromPool = async (
 ): Promise<IScratchOrg> => {
   let org: IScratchOrgResponse;
   try {
-    const { body } = await promiseRequest({
+    const url = new URL(_apiUrl('/take_from_pool'));
+    url.searchParams.set('repo_name', repoName);
+    if (orgName) url.searchParams.set('name', orgName);
+    if (projectId) url.searchParams.set('project_id', projectId);
+
+    const response = await fetch(url.toString(), {
+      method: 'POST',
       headers: {
+        'Accept': 'application/json',
         Authorization: `Token token=${apiToken}`,
       },
-      json: true,
-      method: 'POST',
-      qs: { repo_name: repoName, name: orgName, project_id: projectId },
-      uri: _apiUrl('/take_from_pool'),
     });
+
+    if (!response.ok) {
+      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+    }
+
+    const body = await response.json() as { data: IScratchOrgResponse };
     org = body.data;
   } catch (e) {
     if (typeof e === 'string' && /no_pool/.test(e)) {
@@ -167,38 +188,33 @@ const terminateOrg = async (
   apiToken: string,
   repoName: string,
   orgId: string,
-): Promise<{ response: request.Response; body: any }> => {
-  return promiseRequest({
+): Promise<void> => {
+  const url = new URL(_apiUrl(`/scratch_orgs/${orgId}/terminate`));
+  url.searchParams.set('repo_name', repoName);
+
+  const response = await fetch(url.toString(), {
+    method: 'POST',
     headers: {
+      'Accept': 'application/json',
       Authorization: `Token token=${apiToken}`,
     },
-    json: true,
-    method: 'POST',
-    qs: { repo_name: repoName },
-    uri: _apiUrl(`/scratch_orgs/${orgId}/terminate`),
   });
+
+  if (response.status === 404) {
+    throw new Error('Could not find the scratch org on hutte. Are you sure you are in the correct project or the default org is set?');
+  }
+
+  if (response.status === 401) {
+    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+  }
+
+  if (!response.ok) {
+    const responseBody = await response.text();
+    throw new Error('Request to hutte failed ' + response.status + ' ' + responseBody);
+  }
 };
 
-const promiseRequest = async (
-  options: request.UriOptions & request.CoreOptions,
-): Promise<{ response: request.Response; body: any }> =>
-  new Promise<{ response: request.Response; body: any }>((resolve, reject) => {
-    request(options, (error, response, body) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      if (body?.error) {
-        reject(body.error);
-        return;
-      }
-      if (Math.floor(response.statusCode / 100) !== 2) {
-        reject('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
-        return;
-      }
-      resolve({ response, body });
-    });
-  });
+
 
 function _apiUrl(path: string): string {
   return `https://api.hutte.io/cli_api${path}`;
@@ -209,6 +225,5 @@ export default {
   getScratchOrgs,
   takeOrgFromPool,
   terminateOrg,
-  promiseRequest,
 };
 

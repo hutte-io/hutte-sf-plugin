@@ -28,23 +28,13 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('terminate scratch org happy path', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
-      // @ts-expect-error not the full Response
-      response: {
-        statusCode: 200,
-      },
-    });
+    testContext.SANDBOX.stub(api, 'terminateOrg').resolves();
     await Terminate.run([]);
     expect(true);
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
-      // @ts-expect-error not the full Response
-      response: {
-        statusCode: 404,
-      },
-    });
+    testContext.SANDBOX.stub(api, 'terminateOrg').rejects(new Error('Could not find the scratch org on hutte'));
     try {
       await Terminate.run([]);
       assert(false, 'should throw an error');
@@ -57,12 +47,7 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').resolves({
-      // @ts-expect-error not the full Response
-      response: {
-        statusCode: 500,
-      },
-    });
+    testContext.SANDBOX.stub(api, 'terminateOrg').rejects(new Error('Request to hutte failed 500'));
     try {
       await Terminate.run([]);
       assert(false, 'should throw an error');
