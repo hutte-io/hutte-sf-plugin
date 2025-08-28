@@ -13,6 +13,10 @@ export class Terminate extends SfCommand<void> {
       char: 't',
       summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
     }),
+    'project-id': Flags.string({
+      char: 'p',
+      summary: 'the id of the project. Useful when multiple projects use the same git repository.',
+    }),
   };
 
   public async run(): Promise<void> {
@@ -20,7 +24,7 @@ export class Terminate extends SfCommand<void> {
     const repoName = common.projectRepoFromOrigin();
     const orgInfo = common.getDefaultOrgInfo();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    await api.terminateOrg(apiToken, repoName, orgInfo.id);
+    await api.terminateOrg(apiToken, repoName, orgInfo.id, flags['project-id']);
     common.logoutFromDefault();
   }
 }

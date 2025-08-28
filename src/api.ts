@@ -188,9 +188,11 @@ const terminateOrg = async (
   apiToken: string,
   repoName: string,
   orgId: string,
+  projectId?: string,
 ): Promise<void> => {
   const url = new URL(_apiUrl(`/scratch_orgs/${orgId}/terminate`));
   url.searchParams.set('repo_name', repoName);
+  if (projectId) url.searchParams.set('project_id', projectId);
 
   const response = await fetch(url.toString(), {
     method: 'POST',
