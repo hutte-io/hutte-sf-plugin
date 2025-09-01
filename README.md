@@ -27,14 +27,15 @@ authorize your hutte-io account
 
 ```
 USAGE
-  $ sf hutte auth login [--json] [-e <value>] [-p <value>]
+  $ sf hutte auth login [--json] [--flags-dir <value>] [-e <value>] [-p <value>]
 
 FLAGS
   -e, --email=<value>     the email address of your account on hutte.io
   -p, --password=<value>  the password of your account on hutte.io
 
 GLOBAL FLAGS
-  --json  Format output as json.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 
 EXAMPLES
   $ sf hutte auth login --email john.doe@example.org
@@ -48,7 +49,7 @@ authorize a scratch org from hutte.io
 
 ```
 USAGE
-  $ sf hutte org authorize [--json] [-t <value>] [--no-git] [--no-pull] [-n <value>]
+  $ sf hutte org authorize [--json] [--flags-dir <value>] [-t <value>] [--no-git] [--no-pull] [-n <value>]
 
 FLAGS
   -n, --org-name=<value>   the name of the org to authorize
@@ -57,7 +58,8 @@ FLAGS
       --no-pull            doesn't pull the source code from the scratch org
 
 GLOBAL FLAGS
-  --json  Format output as json.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 ```
 
 _See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/authorize.ts)_
@@ -68,7 +70,7 @@ list hutte scratch orgs from current repository
 
 ```
 USAGE
-  $ sf hutte org list [--json] [-t <value>] [--verbose] [--all]
+  $ sf hutte org list [--json] [--flags-dir <value>] [-t <value>] [--verbose] [--all]
 
 FLAGS
   -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sf hutte auth login`
@@ -77,7 +79,8 @@ FLAGS
       --verbose            includes all information of scratch org, such as auth url
 
 GLOBAL FLAGS
-  --json  Format output as json.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 ```
 
 _See code: [lib/commands/hutte/org/list.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/list.ts)_
@@ -88,13 +91,15 @@ terminates the default org on Hutte.io and logs out locally
 
 ```
 USAGE
-  $ sf hutte org terminate [--json] [-t <value>]
+  $ sf hutte org terminate [--json] [--flags-dir <value>] [-t <value>] [-p <value>]
 
 FLAGS
-  -t, --api-token=<value>  the api token. Only needed if you have not previously logged in using `sf hutte auth login`
+  -p, --project-id=<value>  the id of the project. Useful when multiple projects use the same git repository.
+  -t, --api-token=<value>   the api token. Only needed if you have not previously logged in using `sf hutte auth login`
 
 GLOBAL FLAGS
-  --json  Format output as json.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 ```
 
 _See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/terminate.ts)_
@@ -105,7 +110,7 @@ take a scratch org from the pool
 
 ```
 USAGE
-  $ sf hutte pool take [--json] [-t <value>] [-n <value>] [-p <value>] [--timeout <value>] [-w]
+  $ sf hutte pool take [--json] [--flags-dir <value>] [-t <value>] [-n <value>] [-p <value>] [--timeout <value>] [-w]
 
 FLAGS
   -n, --name=<value>        the name of the org
@@ -115,7 +120,8 @@ FLAGS
       --timeout=<value>     the timeout period in seconds.
 
 GLOBAL FLAGS
-  --json  Format output as json.
+  --flags-dir=<value>  Import flag values from a directory.
+  --json               Format output as json.
 ```
 
 _See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/pool/take.ts)_
