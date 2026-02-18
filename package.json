@@ -7,12 +7,12 @@
   "type": "module",
   "dependencies": {
     "@inquirer/prompts": "^7.8.3",
-    "@oclif/core": "^4.5.2",
-    "@salesforce/core": "^8.21.0",
-    "@salesforce/sf-plugins-core": "^12.2.4",
+    "@oclif/core": "^4.8.0",
+    "@salesforce/core": "^8.26.2",
+    "@salesforce/sf-plugins-core": "^12.2.6",
     "chalk": "^5.6.0",
     "cross-spawn": "^7.0.6",
-    "fuzzy": "0.1.3",
+    "fuse.js": "^7.1.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
@@ -21,6 +21,9 @@
     "@types/cross-spawn": "^6.0.6",
     "@types/js-yaml": "^4.0.9",
     "oclif": "^4.14.29",
+    "eslint-config-salesforce-license": "^0.2.0",
+    "eslint-config-salesforce-typescript": "^3.0.0",
+    "eslint-plugin-sf-plugin": "^1.0.0",
     "ts-node": "^10.9.2"
   },
   "engines": {
@@ -42,7 +45,7 @@
     "commands": "./lib/commands",
     "bin": "sf",
     "topicSeparator": " ",
-    "repositoryPrefix": "<%- repo %>/blob/master/<%- commandPath.replace('lib', 'src').replace('.js', '.ts') %>",
+    "repositoryPrefix": "<%- repo %>/blob/main/<%- commandPath.replace('lib', 'src').replace('.js', '.ts') %>",
     "topics": {
       "hutte": {
         "description": "manage scratch orgs using Hutte"

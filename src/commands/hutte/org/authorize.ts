@@ -1,7 +1,7 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import chalk from 'chalk';
 import cross_spawn from 'cross-spawn';
-import fuzzy from 'fuzzy';
+import Fuse from 'fuse.js';
 import { search as searchPrompt } from '@inquirer/prompts';
 import api, { IScratchOrg } from '../../../api.js';
 import common from '../../../common.js';
@@ -88,11 +88,8 @@ export class Authorize extends SfCommand<void> {
         source: (term) => {
           let filtered = orgs;
           if (term) {
-            filtered = fuzzy
-              .filter(term, orgs, {
-                extract: (org) => org.orgName,
-              })
-              .map((value) => value.original);
+            const fuse = new Fuse(orgs, { keys: ['orgName'], threshold: 0.3 });
+            filtered = fuse.search(term).map((result) => result.item);
           }
           return filtered.map((org) => ({
             value: org.id,

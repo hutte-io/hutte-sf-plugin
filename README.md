@@ -41,7 +41,7 @@ EXAMPLES
   $ sf hutte auth login --email john.doe@example.org
 ```
 
-_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/auth/login.ts)_
+_See code: [lib/commands/hutte/auth/login.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/auth/login.ts)_
 
 ## `sf hutte org authorize`
 
@@ -62,7 +62,7 @@ GLOBAL FLAGS
   --json               Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/authorize.ts)_
+_See code: [lib/commands/hutte/org/authorize.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/org/authorize.ts)_
 
 ## `sf hutte org list`
 
@@ -83,7 +83,7 @@ GLOBAL FLAGS
   --json               Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/list.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/list.ts)_
+_See code: [lib/commands/hutte/org/list.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/org/list.ts)_
 
 ## `sf hutte org terminate`
 
@@ -102,7 +102,7 @@ GLOBAL FLAGS
   --json               Format output as json.
 ```
 
-_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/org/terminate.ts)_
+_See code: [lib/commands/hutte/org/terminate.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/org/terminate.ts)_
 
 ## `sf hutte pool take`
 
@@ -124,5 +124,5 @@ GLOBAL FLAGS
   --json               Format output as json.
 ```
 
-_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/hutte-sf-plugin/blob/master/src/commands/hutte/pool/take.ts)_
+_See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/pool/take.ts)_
 <!-- commandsstop -->
