@@ -20,10 +20,10 @@ jobs:
           node-version-file: .node-version
       - name: Install dependencies
         run: |
-          npm install
-          npm install -g @salesforce/cli
+          yarn install
+          yarn global add @salesforce/cli
       - name: Run Unit Tests
-        run: npm test
+        run: yarn test
       - name: Release package
         run: npx semantic-release
         env:
