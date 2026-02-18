@@ -1,20 +1,20 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
-import api from '../../../src/api.js';
 import { Login } from '../../../src/commands/hutte/auth/login.js';
-import config from '../../../src/config.js';
-import keychain from '../../../src/keychain.js';
+import { stubApiMethods, stubConfigMethods, type ApiStubs, type ConfigStubs } from '../../helpers.js';
 
-describe('hutte:auth:login', async () => {
+describe('hutte:auth:login', () => {
   const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
+  let apiStubs: ApiStubs;
+  let configStubs: ConfigStubs;
 
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    testContext.SANDBOX.stub(keychain, 'storeUserApiToken').resolves();
-    testContext.SANDBOX.stub(config, 'storeUserInfo').resolves();
+    apiStubs = stubApiMethods(testContext.SANDBOX);
+    configStubs = stubConfigMethods(testContext.SANDBOX);
   });
 
   afterEach(() => {
@@ -22,22 +22,24 @@ describe('hutte:auth:login', async () => {
   });
 
   it('works as expected in happy path', async () => {
-    testContext.SANDBOX.stub(api, 'login').resolves({
+    apiStubs.login.resolves({
       userId: '123',
       apiToken: 't123',
     });
     const result = await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
     expect(result.userId).to.equal('123');
+    expect(configStubs.storeUserInfo.calledOnce).to.be.true;
+    expect(configStubs.storeUserApiToken.calledOnce).to.be.true;
   });
 
   it('login fails when credentials are incorrect', async () => {
-    testContext.SANDBOX.stub(api, 'login').rejects('Invalid credentials');
-    let err;
+    apiStubs.login.rejects(new Error('Invalid credentials'));
+
     try {
       await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
+      expect.fail('should throw an error');
     } catch (e) {
-      err = e;
+      expect(e).to.match(/Invalid credentials/);
     }
-    expect(err).to.match(/Invalid credentials/);
   });
 });

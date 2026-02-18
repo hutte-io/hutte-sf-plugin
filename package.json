@@ -20,10 +20,10 @@
     "@salesforce/dev-scripts": "^11.0.3",
     "@types/cross-spawn": "^6.0.6",
     "@types/js-yaml": "^4.0.9",
-    "oclif": "^4.14.29",
     "eslint-config-salesforce-license": "^0.2.0",
     "eslint-config-salesforce-typescript": "^3.0.0",
     "eslint-plugin-sf-plugin": "^1.0.0",
+    "oclif": "^4.14.29",
     "ts-node": "^10.9.2"
   },
   "engines": {
@@ -62,7 +62,7 @@
     "posttest": "eslint src/**/*.ts test/**/*.ts",
     "prepack": "rm -rf lib && tsc -b && oclif manifest && oclif readme",
     "format": "prettier -w src test",
-    "test": "tsc -p test && nyc --extension .ts mocha --require ts-node/register --timeout 5000 --forbid-only \"test/**/*.test.ts\"",
+    "test": "nyc mocha \"test/**/*.test.ts\"",
     "test:debug": "tsc -p test && NODE_OPTIONS=\"--inspect-brk\" mocha --require ts-node/register",
     "version": "oclif readme && git add README.md"
   }
