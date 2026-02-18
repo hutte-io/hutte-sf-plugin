@@ -1,6 +1,7 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
+import { SfError } from '@salesforce/core';
 import { Login } from '../../../src/commands/hutte/auth/login.js';
 import { stubApiMethods, stubConfigMethods, type ApiStubs, type ConfigStubs } from '../../helpers.js';
 
@@ -33,13 +34,14 @@ describe('hutte:auth:login', () => {
   });
 
   it('login fails when credentials are incorrect', async () => {
-    apiStubs.login.rejects(new Error('Invalid credentials'));
+    apiStubs.login.rejects(new SfError('There is an error with authorization.'));
 
     try {
       await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
       expect.fail('should throw an error');
     } catch (e) {
-      expect(e).to.match(/Invalid credentials/);
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/There is an error with authorization/);
     }
   });
 });

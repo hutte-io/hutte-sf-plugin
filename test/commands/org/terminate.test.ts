@@ -42,26 +42,26 @@ describe('hutte:org:terminate', () => {
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    apiStubs.terminateOrg.rejects(new Error('Could not find the scratch org on hutte'));
+    apiStubs.terminateOrg.rejects(new SfError('Could not find the scratch org on Hutte.'));
 
     try {
       await Terminate.run([]);
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).message).to.match(/Could not find the scratch org on hutte/);
+      expect((e as SfError).message).to.match(/Could not find the scratch org on Hutte/);
     }
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    apiStubs.terminateOrg.rejects(new Error('Request to hutte failed 500'));
+    apiStubs.terminateOrg.rejects(new SfError('Request to Hutte failed.'));
 
     try {
       await Terminate.run([]);
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).message).to.match(/Request to hutte failed/);
+      expect((e as SfError).message).to.match(/Request to Hutte failed/);
     }
   });
 });

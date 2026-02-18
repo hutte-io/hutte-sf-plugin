@@ -40,18 +40,39 @@ describe('hutte:pool:take', () => {
     expect(commonStubs.sfdxLogin.calledOnce).to.equal(true);
   });
 
-  it('fails when taking an org from a pool fails', async () => {
-    const error = new Error(
-      "This project doesn't have a pool defined. Setup a pool with at least one organization first."
-    );
-    apiStubs.takeOrgFromPool.rejects(error);
+  it('fails when pool is not configured', async () => {
+    apiStubs.takeOrgFromPool.rejects(new SfError("This project doesn't have a pool defined."));
 
     try {
       await Take.run(['--name', 'mockOrg']);
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).cause).to.equal(error);
+      expect((e as SfError).message).to.match(/This project doesn't have a pool defined/);
+    }
+  });
+
+  it('fails when no active org in pool', async () => {
+    apiStubs.takeOrgFromPool.rejects(new SfError('There is no active pool at the moment'));
+
+    try {
+      await Take.run(['--name', 'mockOrg']);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/There is no active pool at the moment/);
+    }
+  });
+
+  it('fails when authorization fails', async () => {
+    apiStubs.takeOrgFromPool.rejects(new SfError('There is an error with authorization.'));
+
+    try {
+      await Take.run(['--name', 'mockOrg']);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/There is an error with authorization/);
     }
   });
 });

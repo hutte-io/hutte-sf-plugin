@@ -1,6 +1,7 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
+import { SfError } from '@salesforce/core';
 import { List } from '../../../src/commands/hutte/org/list.js';
 import {
   createMockScratchOrgList,
@@ -48,5 +49,29 @@ describe('hutte:org:list', () => {
     expect(result[0].state).to.equal('active');
     expect(result[0].devhubSfdxAuthUrl).to.equal(undefined);
     expect(result[0].sfdxAuthUrl).to.equal(undefined);
+  });
+
+  it('fails when authorization fails', async () => {
+    apiStubs.getScratchOrgs.rejects(new SfError('There is an error with authorization.'));
+
+    try {
+      await List.run([]);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/There is an error with authorization/);
+    }
+  });
+
+  it('fails when server returns an error', async () => {
+    apiStubs.getScratchOrgs.rejects(new SfError('Request to Hutte failed.'));
+
+    try {
+      await List.run([]);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/Request to Hutte failed/);
+    }
   });
 });

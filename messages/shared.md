@@ -38,3 +38,11 @@ Invalid credentials.
 
 - Verify your email and password are correct.
 - Reset your password at https://app.hutte.io if needed.
+
+# error.serverError
+
+Request to Hutte failed. Please try again later.
+
+# error.networkError
+
+Could not connect to Hutte. Please check your internet connection.
