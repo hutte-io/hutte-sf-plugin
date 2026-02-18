@@ -1,3 +1,8 @@
+import { Messages } from '@salesforce/core';
+
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
+
 type ILoginResponse = {
   userId: string;
   apiToken: string;
@@ -15,7 +20,7 @@ async function login(email: string, password: string): Promise<ILoginResponse> {
     });
 
     if (!response.ok) {
-      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+      throw sharedMessages.createError('error.authorization');
     }
 
     const body = (await response.json()) as { data: { api_token: string; user_id: string } };
@@ -25,7 +30,7 @@ async function login(email: string, password: string): Promise<ILoginResponse> {
     };
   } catch (e) {
     if (typeof e === 'string' && e.includes('error with authorization')) {
-      throw new Error('Invalid credentials');
+      throw sharedMessages.createError('error.invalidCredentials');
     }
     throw e;
   }
@@ -95,7 +100,7 @@ const getScratchOrgs = async (
   });
 
   if (!response.ok) {
-    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+    throw sharedMessages.createError('error.authorization');
   }
 
   const body = (await response.json()) as { data: IScratchOrgResponse[] };
@@ -145,17 +150,17 @@ const takeOrgFromPool = async (
     });
 
     if (!response.ok) {
-      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+      throw sharedMessages.createError('error.authorization');
     }
 
     const body = (await response.json()) as { data: IScratchOrgResponse };
     org = body.data;
   } catch (e) {
     if (typeof e === 'string' && e.includes('no_pool')) {
-      throw new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
+      throw sharedMessages.createError('error.noPool');
     }
     if (typeof e === 'string' && e.includes('no_active_org')) {
-      throw new Error('There is no active pool at the moment, try again later.');
+      throw sharedMessages.createError('error.noActiveOrg');
     }
     throw e;
   }
@@ -197,13 +202,11 @@ const terminateOrg = async (apiToken: string, repoName: string, orgId: string, p
   });
 
   if (response.status === 404) {
-    throw new Error(
-      'Could not find the scratch org on hutte. Are you sure you are in the correct project or the default org is set?'
-    );
+    throw sharedMessages.createError('error.orgNotFoundOnHutte');
   }
 
   if (response.status === 401) {
-    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+    throw sharedMessages.createError('error.authorization');
   }
 
   if (!response.ok) {

@@ -1,24 +1,28 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
 
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('hutte', 'hutte.org.list');
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
+
 export class List extends SfCommand<IScratchOrg[]> {
-  public static readonly summary = 'list hutte scratch orgs from current repository';
+  public static readonly summary = messages.getMessage('summary');
 
   public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({
       char: 't',
-      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
+      summary: sharedMessages.getMessage('flags.api-token.summary'),
     }),
     verbose: Flags.boolean({
-      summary: 'includes all information of scratch org, such as auth url',
+      summary: messages.getMessage('flags.verbose.summary'),
     }),
     all: Flags.boolean({
-      summary:
-        'when provided, the output includes all orgs from hutte project, otherwise (by default) only active orgs will be returned',
+      summary: messages.getMessage('flags.all.summary'),
       default: false,
     }),
   };

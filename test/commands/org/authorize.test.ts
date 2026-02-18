@@ -93,7 +93,7 @@ describe('hutte:org:authorize', () => {
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).cause).to.match(/There is not any scratch org to authorize by the provided name/);
+      expect((e as SfError).message).to.match(/There is not any scratch org to authorize by the provided name/);
     }
   });
 

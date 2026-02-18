@@ -1,7 +1,11 @@
 import { execSync } from 'node:child_process';
 import { parse as parseUrl } from 'node:url';
 import crossSpawn from 'cross-spawn';
+import { Messages } from '@salesforce/core';
 import { IScratchOrg } from './api.js';
+
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('hutte', 'hutte.common');
 
 function sfdxLogin(org: IScratchOrg): IScratchOrg {
   const response = crossSpawn.sync(
@@ -12,7 +16,7 @@ function sfdxLogin(org: IScratchOrg): IScratchOrg {
     }
   );
   if (response.status !== 0) {
-    throw new Error('The login failed.');
+    throw messages.createError('error.loginFailed');
   }
   if (org.revisionNumber) {
     crossSpawn.sync('sf', ['project', 'reset', 'tracking', '--revision', org.revisionNumber, '--no-prompt']);
@@ -25,7 +29,7 @@ function logoutFromDefault(): void {
   if (result.status === 0) {
     return;
   }
-  throw new Error('Failed logging out from the org');
+  throw messages.createError('error.logoutFailed');
 }
 
 type IDefaultOrgInfo = {
@@ -38,7 +42,7 @@ function getDefaultOrgInfo(): IDefaultOrgInfo {
     const data = JSON.parse(execSync('sf org display --json').toString()) as { result: IDefaultOrgInfo };
     return data.result;
   } catch {
-    throw new Error('Error reading the default scratch org');
+    throw messages.createError('error.readDefaultOrg');
   }
 }
 
