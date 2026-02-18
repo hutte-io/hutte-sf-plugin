@@ -28,8 +28,8 @@ describe('hutte:auth:login', () => {
     });
     const result = await Login.run(['--email', 'test@email.com', '--password', 'mockPassword']);
     expect(result.userId).to.equal('123');
-    expect(configStubs.storeUserInfo.calledOnce).to.be.true;
-    expect(configStubs.storeUserApiToken.calledOnce).to.be.true;
+    expect(configStubs.storeUserInfo.calledOnce).to.equal(true);
+    expect(configStubs.storeUserApiToken.calledOnce).to.equal(true);
   });
 
   it('login fails when credentials are incorrect', async () => {

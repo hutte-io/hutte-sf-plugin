@@ -6,7 +6,7 @@ import config from '../../../config.js';
 export class List extends SfCommand<IScratchOrg[]> {
   public static readonly summary = 'list hutte scratch orgs from current repository';
 
-  static readonly requiresProject = true;
+  public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({
@@ -35,17 +35,19 @@ export class List extends SfCommand<IScratchOrg[]> {
       data: result,
       columns: ['projectName', 'orgName', 'state', 'branchName', 'remainingDays', 'createdBy'],
       headerOptions: {
-        formatter: 'capitalCase'
+        formatter: 'capitalCase',
       },
     });
     return result;
   }
 
   private removeSensitiveInformation(orgs: IScratchOrg[]): IScratchOrg[] {
-    return orgs.map((org: IScratchOrg) => {
-      return Object.fromEntries(
-        Object.entries(org).filter(([key, value]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key)),
-      ) as IScratchOrg; // not yet possible with TypeScript
-    });
+    this.debug('Removing sensitive information from org list');
+    return orgs.map(
+      (org: IScratchOrg) =>
+        Object.fromEntries(
+          Object.entries(org).filter(([key]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key))
+        ) as IScratchOrg // not yet possible with TypeScript
+    );
   }
 }

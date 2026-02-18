@@ -50,16 +50,16 @@ export function createMockScratchOrgList(count: number): IScratchOrg[] {
       sfdxAuthUrl: `force://mockUrl${i + 1}`,
       salesforceId: `mockId${i + 1}`,
       globalId: `mockGlobalId${i + 1}`,
-    }),
+    })
   );
 }
 
-export interface ApiStubs {
+export type ApiStubs = {
   login: SinonStub;
   getScratchOrgs: SinonStub;
   takeOrgFromPool: SinonStub;
   terminateOrg: SinonStub;
-}
+};
 
 /**
  * Stubs all API methods and returns the stub references.
@@ -73,11 +73,11 @@ export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
   };
 }
 
-export interface ConfigStubs {
+export type ConfigStubs = {
   getApiToken: SinonStub;
   storeUserInfo: SinonStub;
   storeUserApiToken: SinonStub;
-}
+};
 
 /**
  * Stubs config and keychain methods with default resolved values.
@@ -90,19 +90,19 @@ export function stubConfigMethods(sandbox: SinonSandbox, apiToken = 't123'): Con
   };
 }
 
-export interface CommonStubs {
+export type CommonStubs = {
   projectRepoFromOrigin: SinonStub;
   sfdxLogin: SinonStub;
   getDefaultOrgInfo: SinonStub;
   logoutFromDefault: SinonStub;
-}
+};
 
 /**
  * Stubs common utility methods with default values.
  */
 export function stubCommonMethods(
   sandbox: SinonSandbox,
-  repoUrl = 'https://github.com/mock-org/mock-repo.git',
+  repoUrl = 'https://github.com/mock-org/mock-repo.git'
 ): CommonStubs {
   return {
     projectRepoFromOrigin: sandbox.stub(common, 'projectRepoFromOrigin').returns(repoUrl),

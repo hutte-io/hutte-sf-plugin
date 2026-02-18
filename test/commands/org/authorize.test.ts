@@ -53,7 +53,7 @@ describe('hutte:org:authorize', () => {
 
   it('authorize happy path', async () => {
     await Authorize.run([]);
-    expect(commonStubs.sfdxLogin.calledOnce).to.be.true;
+    expect(commonStubs.sfdxLogin.calledOnce).to.equal(true);
   });
 
   it('authorize fails on unstaged changes', async () => {
@@ -84,7 +84,7 @@ describe('hutte:org:authorize', () => {
 
   it('authorize org by name', async () => {
     await Authorize.run(['--org-name', 'Test Playground 1']);
-    expect(commonStubs.sfdxLogin.calledOnce).to.be.true;
+    expect(commonStubs.sfdxLogin.calledOnce).to.equal(true);
   });
 
   it('authorize fails when name does not exist', async () => {
@@ -93,16 +93,14 @@ describe('hutte:org:authorize', () => {
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).cause).to.match(
-        /There is not any scratch org to authorize by the provided name/,
-      );
+      expect((e as SfError).cause).to.match(/There is not any scratch org to authorize by the provided name/);
     }
   });
 
   it('skips git ops when --no-git is provided', async () => {
     await Authorize.run(['--no-git']);
 
-    expect(privateStubs.checkUnstagedChanges.called).to.be.false;
-    expect(privateStubs.checkoutGitBranch.called).to.be.false;
+    expect(privateStubs.checkUnstagedChanges.called).to.equal(false);
+    expect(privateStubs.checkoutGitBranch.called).to.equal(false);
   });
 });

@@ -6,7 +6,7 @@ import config from '../../../config.js';
 export class Take extends SfCommand<IScratchOrg> {
   public static readonly summary = 'take a scratch org from the pool';
 
-  static readonly requiresProject = true;
+  public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({
@@ -36,11 +36,9 @@ export class Take extends SfCommand<IScratchOrg> {
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
 
     const scratchOrg = await common.retryWithTimeout(
-      async () => {
-        return await api.takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name);
-      },
-      (e) => typeof e === 'string' && /try again later/.test(e),
-      flags.wait ? flags.timeout : 0,
+      async () => api.takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name),
+      (e) => typeof e === 'string' && e.includes('try again later'),
+      flags.wait ? flags.timeout : 0
     );
     common.sfdxLogin(scratchOrg);
     return scratchOrg;

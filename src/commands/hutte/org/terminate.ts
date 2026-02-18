@@ -6,7 +6,7 @@ import config from '../../../config.js';
 export class Terminate extends SfCommand<void> {
   public static readonly summary = 'terminates the default org on Hutte.io and logs out locally';
 
-  static readonly requiresProject = true;
+  public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({

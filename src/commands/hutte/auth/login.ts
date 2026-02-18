@@ -11,7 +11,7 @@ type LoginResult = {
 export class Login extends SfCommand<LoginResult> {
   public static readonly summary = 'authorize your hutte-io account';
 
-  public static readonly examples = [`$ <%= config.bin %> <%= command.id %> --email john.doe@example.org`];
+  public static readonly examples = ['$ <%= config.bin %> <%= command.id %> --email john.doe@example.org'];
 
   public static readonly flags = {
     email: Flags.string({
@@ -26,17 +26,17 @@ export class Login extends SfCommand<LoginResult> {
 
   public async run(): Promise<LoginResult> {
     const { flags } = await this.parse(Login);
-    const email = flags.email ?? (await inputPrompt({  message: 'Email:' }));
+    const email = flags.email ?? (await inputPrompt({ message: 'Email:' }));
     const password = flags.password ?? (await passwordPrompt({ message: 'Password:' }));
     const data = await api.login(email, password);
-    await this.store({ ...data, email });
+    await storeCredentials({ ...data, email });
     return {
       userId: data.userId,
     };
   }
+}
 
-  private async store(params: { email: string; userId: string; apiToken: string }): Promise<void> {
-    await keychain.storeUserApiToken(params);
-    await config.storeUserInfo(params);
-  }
+async function storeCredentials(params: { email: string; userId: string; apiToken: string }): Promise<void> {
+  await keychain.storeUserApiToken(params);
+  await config.storeUserInfo(params);
 }

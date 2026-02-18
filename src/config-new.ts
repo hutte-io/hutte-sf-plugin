@@ -10,8 +10,8 @@ class HutteConfigFile extends ConfigFile<ConfigFile.Options, HutteConfig> {
   protected static encryptedKeys = ['token'];
 }
 
-export async function getConfig() {
-  return await HutteConfigFile.create({
+export async function getConfig(): Promise<HutteConfigFile> {
+  return HutteConfigFile.create({
     isGlobal: true,
     stateFolder: '.hutte',
     filename: 'config.json',

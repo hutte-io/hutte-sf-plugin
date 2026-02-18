@@ -37,8 +37,8 @@ describe('hutte:org:terminate', () => {
   it('terminate scratch org happy path', async () => {
     apiStubs.terminateOrg.resolves();
     await Terminate.run([]);
-    expect(apiStubs.terminateOrg.calledOnce).to.be.true;
-    expect(commonStubs.logoutFromDefault.calledOnce).to.be.true;
+    expect(apiStubs.terminateOrg.calledOnce).to.equal(true);
+    expect(commonStubs.logoutFromDefault.calledOnce).to.equal(true);
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {

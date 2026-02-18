@@ -6,49 +6,49 @@ describe('common', () => {
   describe('retryWithTimeout', () => {
     it('should succeed the first time with timeout 0s', async () => {
       let i = 0;
-      const func = async () => {
+      const func = (): Promise<string> => {
         i++;
-        return 'success';
+        return Promise.resolve('success');
       };
-      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message));
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && e.message.includes('retry'));
       expect(res).to.equal('success');
       expect(i).to.equal(1);
     });
 
     it('should succeed the first time with timeout 5s', async () => {
       let i = 0;
-      const func = async () => {
+      const func = (): Promise<string> => {
         i++;
-        return 'success';
+        return Promise.resolve('success');
       };
-      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 5, 1);
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && e.message.includes('retry'), 5, 1);
       expect(res).to.equal('success');
       expect(i).to.equal(1);
     });
 
     it('should succeed second attempt with timeout 2s', async () => {
       let i = 0;
-      const func = async () => {
+      const func = (): Promise<string> => {
         i++;
         if (i <= 1) {
-          throw new Error('please retry again');
+          return Promise.reject(new Error('please retry again'));
         }
-        return 'success';
+        return Promise.resolve('success');
       };
-      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 2, 1);
+      const res = await common.retryWithTimeout(func, (e) => e instanceof Error && e.message.includes('retry'), 2, 1);
       expect(res).to.equal('success');
       expect(i).to.equal(2);
     });
 
     it('should fail immediately for non-retryable error', async () => {
       let i = 0;
-      const func = async () => {
+      const func = (): Promise<string> => {
         i++;
-        throw new Error('no no no');
+        return Promise.reject(new Error('no no no'));
       };
       let err;
       try {
-        await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 5, 1);
+        await common.retryWithTimeout(func, (e) => e instanceof Error && e.message.includes('retry'), 5, 1);
       } catch (e) {
         err = e;
       }
@@ -58,13 +58,13 @@ describe('common', () => {
 
     it('should fail all attempts with timeout 2s', async () => {
       let i = 0;
-      const func = async () => {
+      const func = (): Promise<string> => {
         i++;
-        throw new Error('please retry again');
+        return Promise.reject(new Error('please retry again'));
       };
       let err;
       try {
-        await common.retryWithTimeout(func, (e) => e instanceof Error && /retry/.test(e.message), 2, 1);
+        await common.retryWithTimeout(func, (e) => e instanceof Error && e.message.includes('retry'), 2, 1);
       } catch (e) {
         err = e;
       }
@@ -80,10 +80,10 @@ describe('common', () => {
     });
     it('should parse a Bitbucket Server repo URL', () => {
       expect(common.extractGithubRepoName('https://git.example.org/scm/orgname/reponame.git')).to.deep.equal(
-        'orgname/reponame',
+        'orgname/reponame'
       );
       expect(common.extractGithubRepoName('ssh://git@git.example.org/orgname/reponame.git')).to.deep.equal(
-        'orgname/reponame',
+        'orgname/reponame'
       );
     });
   });

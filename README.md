@@ -15,11 +15,12 @@ $ sf plugins install hutte
 ## Commands
 
 <!-- commands -->
-* [`sf hutte auth login`](#sf-hutte-auth-login)
-* [`sf hutte org authorize`](#sf-hutte-org-authorize)
-* [`sf hutte org list`](#sf-hutte-org-list)
-* [`sf hutte org terminate`](#sf-hutte-org-terminate)
-* [`sf hutte pool take`](#sf-hutte-pool-take)
+
+- [`sf hutte auth login`](#sf-hutte-auth-login)
+- [`sf hutte org authorize`](#sf-hutte-org-authorize)
+- [`sf hutte org list`](#sf-hutte-org-list)
+- [`sf hutte org terminate`](#sf-hutte-org-terminate)
+- [`sf hutte pool take`](#sf-hutte-pool-take)
 
 ## `sf hutte auth login`
 
@@ -125,4 +126,5 @@ GLOBAL FLAGS
 ```
 
 _See code: [lib/commands/hutte/pool/take.js](https://github.com/hutte-io/hutte-sf-plugin/blob/main/src/commands/hutte/pool/take.ts)_
+
 <!-- commandsstop -->

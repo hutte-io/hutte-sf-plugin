@@ -37,11 +37,13 @@ describe('hutte:pool:take', () => {
     apiStubs.takeOrgFromPool.resolves(mockOrg);
     const result = await Take.run(['--name', 'mockOrg', '--timeout', '60', '--wait']);
     expect(result.projectId).to.equal('mockProjectId');
-    expect(commonStubs.sfdxLogin.calledOnce).to.be.true;
+    expect(commonStubs.sfdxLogin.calledOnce).to.equal(true);
   });
 
   it('fails when taking an org from a pool fails', async () => {
-    const error = new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
+    const error = new Error(
+      "This project doesn't have a pool defined. Setup a pool with at least one organization first."
+    );
     apiStubs.takeOrgFromPool.rejects(error);
 
     try {
