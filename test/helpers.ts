@@ -59,6 +59,8 @@ export type ApiStubs = {
   getScratchOrgs: SinonStub;
   takeOrgFromPool: SinonStub;
   terminateOrg: SinonStub;
+  createScratchOrg: SinonStub;
+  getScratchOrg: SinonStub;
 };
 
 /**
@@ -70,6 +72,8 @@ export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
     getScratchOrgs: sandbox.stub(api, 'getScratchOrgs'),
     takeOrgFromPool: sandbox.stub(api, 'takeOrgFromPool'),
     terminateOrg: sandbox.stub(api, 'terminateOrg'),
+    createScratchOrg: sandbox.stub(api, 'createScratchOrg'),
+    getScratchOrg: sandbox.stub(api, 'getScratchOrg'),
   };
 }
 
@@ -95,6 +99,8 @@ export type CommonStubs = {
   sfdxLogin: SinonStub;
   getDefaultOrgInfo: SinonStub;
   logoutFromDefault: SinonStub;
+  getCurrentBranch: SinonStub;
+  pollForOrgStatus: SinonStub;
 };
 
 /**
@@ -109,6 +115,8 @@ export function stubCommonMethods(
     sfdxLogin: sandbox.stub(common, 'sfdxLogin'),
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
+    getCurrentBranch: sandbox.stub(common, 'getCurrentBranch').returns('main'),
+    pollForOrgStatus: sandbox.stub(common, 'pollForOrgStatus'),
   };
 }
 

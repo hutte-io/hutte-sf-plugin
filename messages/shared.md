@@ -43,6 +43,10 @@ Invalid credentials.
 
 Request to Hutte failed. Please try again later.
 
+# error.badRequest
+
+Request failed: %s
+
 # error.networkError
 
 Could not connect to Hutte. Please check your internet connection.

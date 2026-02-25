@@ -7,6 +7,18 @@ import { IScratchOrg } from './api.js';
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.common');
 
+const TERMINAL_STATES = ['active', 'failed', 'setup_failed', 'push_failed'];
+
+export type PollOptions = {
+  timeoutMs: number;
+  intervalMs: number;
+  onStatusChange?: (status: string) => void;
+};
+
+function isTerminalState(state: string): boolean {
+  return TERMINAL_STATES.includes(state);
+}
+
 function sfdxLogin(org: IScratchOrg): IScratchOrg {
   const response = crossSpawn.sync(
     'sf',
@@ -85,6 +97,42 @@ async function retryWithTimeout<T>(
   }
 }
 
+async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: PollOptions): Promise<IScratchOrg> {
+  const { timeoutMs, intervalMs, onStatusChange } = options;
+  const startTime = Date.now();
+  let lastStatus = '';
+
+  /* eslint-disable no-await-in-loop */
+  while (Date.now() - startTime < timeoutMs) {
+    const org = await fetchOrg();
+
+    if (org.state !== lastStatus) {
+      lastStatus = org.state;
+      if (onStatusChange) {
+        onStatusChange(org.state);
+      }
+    }
+
+    if (isTerminalState(org.state)) {
+      return org;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  /* eslint-enable no-await-in-loop */
+
+  throw messages.createError('error.pollTimeout');
+}
+
+function getCurrentBranch(): string {
+  try {
+    const result = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' });
+    return result.trim();
+  } catch {
+    throw messages.createError('error.gitBranchFailed');
+  }
+}
+
 export default {
   sfdxLogin,
   logoutFromDefault,
@@ -92,4 +140,8 @@ export default {
   projectRepoFromOrigin,
   extractGithubRepoName,
   retryWithTimeout,
+  pollForOrgStatus,
+  getCurrentBranch,
+  isTerminalState,
+  TERMINAL_STATES,
 };
