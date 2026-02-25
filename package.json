@@ -70,7 +70,7 @@
     "compile": "wireit",
     "format": "wireit",
     "lint": "wireit",
-    "postinstall": "yarn husky install",
+    "prepare": "husky install",
     "postpack": "sf-clean --ignore-signing-artifacts",
     "prepack": "sf-prepack",
     "test": "wireit",
