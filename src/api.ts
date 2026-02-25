@@ -1,35 +1,51 @@
+import { Messages } from '@salesforce/core';
 
-interface ILoginResponse {
-  userId: string;
-  apiToken: string;
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
+
+function apiUrl(path: string): string {
+  return `https://api.hutte.io/cli_api${path}`;
 }
 
-async function login(email: string, password: string): Promise<ILoginResponse> {
+async function apiFetch(url: string, options: RequestInit): Promise<Response> {
   try {
-    const response = await fetch(_apiUrl('/api_tokens'), {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
-    }
-
-    const body = await response.json() as { data: { api_token: string; user_id: string } };
-    return {
-      apiToken: body.data.api_token,
-      userId: body.data.user_id,
-    };
-  } catch (e) {
-    if (typeof e === 'string' && /error with authorization/.test(e)) {
-      throw new Error('Invalid credentials');
-    }
-    throw e;
+    return await fetch(url, options);
+  } catch (error) {
+    throw sharedMessages.createError('error.networkError', undefined, undefined, error as Error);
   }
+}
+
+function authHeaders(apiToken: string): Record<string, string> {
+  return {
+    Accept: 'application/json',
+    Authorization: `Token token=${apiToken}`,
+  };
+}
+
+type ILoginResponse = {
+  userId: string;
+  apiToken: string;
+};
+
+async function login(email: string, password: string): Promise<ILoginResponse> {
+  const response = await apiFetch(apiUrl('/api_tokens'), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  const body = (await response.json()) as { data: { api_token: string; user_id: string } };
+  return {
+    apiToken: body.data.api_token,
+    userId: body.data.user_id,
+  };
 }
 
 export type IScratchOrg = {
@@ -55,7 +71,7 @@ export type IScratchOrg = {
   pool: boolean;
 };
 
-export interface IScratchOrgResponse {
+export type IScratchOrgResponse = {
   id: string;
   branch_name: string;
   commit_sha: string;
@@ -76,96 +92,15 @@ export interface IScratchOrgResponse {
   slug: string;
   state: string;
   pool: boolean;
-}
-
-const getScratchOrgs = async (
-  apiToken: string,
-  repoName: string,
-  includeAll: boolean = false,
-): Promise<IScratchOrg[]> => {
-  const url = new URL(_apiUrl('/scratch_orgs'));
-  url.searchParams.set('repo_name', repoName);
-  url.searchParams.set('all', includeAll.toString());
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      Authorization: `Token token=${apiToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
-  }
-
-  const body = await response.json() as { data: IScratchOrgResponse[] };
-  return body.data.map((org) => ({
-    id: org.id,
-    branchName: org.branch_name,
-    commitSha: org.commit_sha,
-    createdAt: org.created_at,
-    createdBy: org.created_by,
-    devhubId: org.devhub_id,
-    devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
-    domain: org.domain,
-    globalId: org.gid,
-    initialBranchName: org.initial_branch_name,
-    orgName: org.name,
-    projectId: org.project_id,
-    projectName: org.project_name,
-    remainingDays: +org.remaining_days,
-    revisionNumber: org.revision_number,
-    salesforceId: org.salesforce_id,
-    sfdxAuthUrl: org.sfdx_auth_url,
-    slug: org.slug,
-    state: org.state,
-    pool: org.pool,
-  }));
 };
 
-const takeOrgFromPool = async (
-  apiToken: string,
-  repoName: string,
-  projectId?: string,
-  orgName?: string,
-): Promise<IScratchOrg> => {
-  let org: IScratchOrgResponse;
-  try {
-    const url = new URL(_apiUrl('/take_from_pool'));
-    url.searchParams.set('repo_name', repoName);
-    if (orgName) url.searchParams.set('name', orgName);
-    if (projectId) url.searchParams.set('project_id', projectId);
-
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        Authorization: `Token token=${apiToken}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
-    }
-
-    const body = await response.json() as { data: IScratchOrgResponse };
-    org = body.data;
-  } catch (e) {
-    if (typeof e === 'string' && /no_pool/.test(e)) {
-      throw new Error("This project doesn't have a pool defined. Setup a pool with at least one organization first.");
-    }
-    if (typeof e === 'string' && /no_active_org/.test(e)) {
-      throw new Error('There is no active pool at the moment, try again later.');
-    }
-    throw e;
-  }
+function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
   return {
     id: org.id,
     branchName: org.branch_name,
+    commitSha: org.commit_sha,
     createdAt: org.created_at,
     createdBy: org.created_by,
-    commitSha: org.commit_sha,
     devhubId: org.devhub_id,
     devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
     domain: org.domain,
@@ -182,44 +117,95 @@ const takeOrgFromPool = async (
     state: org.state,
     pool: org.pool,
   };
-};
+}
 
-const terminateOrg = async (
-  apiToken: string,
-  repoName: string,
-  orgId: string,
-  projectId?: string,
-): Promise<void> => {
-  const url = new URL(_apiUrl(`/scratch_orgs/${orgId}/terminate`));
+async function getScratchOrgs(apiToken: string, repoName: string, includeAll: boolean = false): Promise<IScratchOrg[]> {
+  const url = new URL(apiUrl('/scratch_orgs'));
   url.searchParams.set('repo_name', repoName);
-  if (projectId) url.searchParams.set('project_id', projectId);
+  url.searchParams.set('all', includeAll.toString());
 
-  const response = await fetch(url.toString(), {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      Authorization: `Token token=${apiToken}`,
-    },
+  const response = await apiFetch(url.toString(), {
+    method: 'GET',
+    headers: authHeaders(apiToken),
   });
 
-  if (response.status === 404) {
-    throw new Error('Could not find the scratch org on hutte. Are you sure you are in the correct project or the default org is set?');
-  }
-
   if (response.status === 401) {
-    throw new Error('There is an error with authorization. Run `$ sf hutte auth login -h` for more information.');
+    throw sharedMessages.createError('error.authorization');
   }
 
   if (!response.ok) {
-    const responseBody = await response.text();
-    throw new Error('Request to hutte failed ' + response.status + ' ' + responseBody);
+    throw sharedMessages.createError('error.serverError');
   }
-};
 
+  const body = (await response.json()) as { data: IScratchOrgResponse[] };
+  return body.data.map(mapScratchOrg);
+}
 
+async function takeOrgFromPool(
+  apiToken: string,
+  repoName: string,
+  projectId?: string,
+  orgName?: string
+): Promise<IScratchOrg> {
+  const url = new URL(apiUrl('/take_from_pool'));
+  url.searchParams.set('repo_name', repoName);
+  if (orgName) url.searchParams.set('name', orgName);
+  if (projectId) url.searchParams.set('project_id', projectId);
 
-function _apiUrl(path: string): string {
-  return `https://api.hutte.io/cli_api${path}`;
+  const response = await apiFetch(url.toString(), {
+    method: 'POST',
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.status === 400) {
+    const body = (await response.json()) as { error: string };
+    if (body.error === 'no_pool') {
+      throw sharedMessages.createError('error.noPool');
+    }
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  if (response.status === 404) {
+    const body = (await response.json()) as { error: string };
+    if (body.error === 'no_active_org') {
+      throw sharedMessages.createError('error.noActiveOrg');
+    }
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  const body = (await response.json()) as { data: IScratchOrgResponse };
+  return mapScratchOrg(body.data);
+}
+
+async function terminateOrg(apiToken: string, repoName: string, orgId: string, projectId?: string): Promise<void> {
+  const url = new URL(apiUrl(`/scratch_orgs/${orgId}/terminate`));
+  url.searchParams.set('repo_name', repoName);
+  if (projectId) url.searchParams.set('project_id', projectId);
+
+  const response = await apiFetch(url.toString(), {
+    method: 'POST',
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.status === 404) {
+    throw sharedMessages.createError('error.orgNotFoundOnHutte');
+  }
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
 }
 
 export default {
@@ -228,4 +214,3 @@ export default {
   takeOrgFromPool,
   terminateOrg,
 };
-

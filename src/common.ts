@@ -1,61 +1,65 @@
-import { execSync } from 'child_process';
-import cross_spawn from 'cross-spawn';
-import { parse as parseUrl } from 'url';
+import { execSync } from 'node:child_process';
+import { parse as parseUrl } from 'node:url';
+import crossSpawn from 'cross-spawn';
+import { Messages } from '@salesforce/core';
 import { IScratchOrg } from './api.js';
 
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('hutte', 'hutte.common');
+
 function sfdxLogin(org: IScratchOrg): IScratchOrg {
-  const response = cross_spawn.sync(
+  const response = crossSpawn.sync(
     'sf',
     ['org', 'login', 'sfdx-url', '--alias', `hutte-${org.slug}`, '--set-default', '--sfdx-url-stdin'],
     {
       input: org.sfdxAuthUrl!,
-    },
+    }
   );
   if (response.status !== 0) {
-    throw new Error('The login failed.');
+    throw messages.createError('error.loginFailed');
   }
   if (org.revisionNumber) {
-    cross_spawn.sync('sf', ['project', 'reset', 'tracking', '--revision', org.revisionNumber, '--no-prompt']);
+    crossSpawn.sync('sf', ['project', 'reset', 'tracking', '--revision', org.revisionNumber, '--no-prompt']);
   }
   return org;
 }
 
 function logoutFromDefault(): void {
-  const result = cross_spawn.sync('sf', ['org', 'logout', '--no-prompt']);
+  const result = crossSpawn.sync('sf', ['org', 'logout', '--no-prompt']);
   if (result.status === 0) {
     return;
   }
-  throw new Error('Failed logging out from the org');
+  throw messages.createError('error.logoutFailed');
 }
 
-interface IDefaultOrgInfo {
+type IDefaultOrgInfo = {
   id: string;
   username: string;
-}
+};
 
 function getDefaultOrgInfo(): IDefaultOrgInfo {
   try {
-    const data = JSON.parse(execSync('sf org display --json').toString());
+    const data = JSON.parse(execSync('sf org display --json').toString()) as { result: IDefaultOrgInfo };
     return data.result;
   } catch {
-    throw new Error('Error reading the default scratch org');
+    throw messages.createError('error.readDefaultOrg');
   }
 }
 
 function projectRepoFromOrigin(): string {
-  const gitConfigGetResult = cross_spawn.sync('git', ['config', '--get', 'remote.origin.url']);
+  const gitConfigGetResult = crossSpawn.sync('git', ['config', '--get', 'remote.origin.url']);
   return extractGithubRepoName(gitConfigGetResult.stdout.toString());
 }
 
 function extractGithubRepoName(remoteUrl: string): string {
   let url = parseUrl(remoteUrl).path!;
-  if (url[0] === '/') {
+  if (url.startsWith('/')) {
     url = url.substr(1);
   }
   if (url.includes(':')) {
     url = url.slice(url.indexOf(':') + 1);
   }
-  if (url.slice(-4) === '.git') {
+  if (url.endsWith('.git')) {
     url = url.slice(0, -4);
   }
   // the last two parts of the url path
@@ -68,7 +72,7 @@ async function retryWithTimeout<T>(
   retryOnFunc: (e: unknown) => boolean,
   timeoutSeconds = 0,
   sleepSeconds = 10,
-  iteration = 1,
+  iteration = 1
 ): Promise<T> {
   try {
     return await asyncFunction();

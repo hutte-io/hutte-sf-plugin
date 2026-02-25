@@ -1,26 +1,33 @@
 import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
-import { assert, expect } from 'chai';
-import api from '../../../src/api.js';
-import { Terminate } from '../../../src/commands/hutte/org/terminate.js';
-import common from '../../../src/common.js';
-import config from '../../../src/config.js';
+import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
+import { Terminate } from '../../../src/commands/hutte/org/terminate.js';
+import {
+  stubApiMethods,
+  stubConfigMethods,
+  stubCommonMethods,
+  type ApiStubs,
+  type CommonStubs,
+} from '../../helpers.js';
 
-describe('hutte:org:terminate', async () => {
+describe('hutte:org:terminate', () => {
   const testContext = new TestContext();
   const testOrg = new MockTestOrgData();
+  let apiStubs: ApiStubs;
+  let commonStubs: CommonStubs;
 
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
     stubSfCommandUx(testContext.SANDBOX);
-    testContext.SANDBOX.stub(common, 'projectRepoFromOrigin').returns('https://github.com/mock-org/mock-repo.git');
-    testContext.SANDBOX.stub(common, 'getDefaultOrgInfo').returns({
+    stubConfigMethods(testContext.SANDBOX);
+    commonStubs = stubCommonMethods(testContext.SANDBOX);
+    apiStubs = stubApiMethods(testContext.SANDBOX);
+
+    commonStubs.getDefaultOrgInfo.returns({
       id: 'mockOrgId',
       username: 'john.doe@example.com',
     });
-    testContext.SANDBOX.stub(config, 'getApiToken').resolves('t123');
-    testContext.SANDBOX.stub(common, 'logoutFromDefault').returns();
   });
 
   afterEach(() => {
@@ -28,34 +35,33 @@ describe('hutte:org:terminate', async () => {
   });
 
   it('terminate scratch org happy path', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').resolves();
+    apiStubs.terminateOrg.resolves();
     await Terminate.run([]);
-    expect(true);
+    expect(apiStubs.terminateOrg.calledOnce).to.equal(true);
+    expect(commonStubs.logoutFromDefault.calledOnce).to.equal(true);
   });
 
   it('fails when the scratch org cannot be found in Hutte', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').rejects(new Error('Could not find the scratch org on hutte'));
+    apiStubs.terminateOrg.rejects(new SfError('Could not find the scratch org on Hutte.'));
+
     try {
       await Terminate.run([]);
-      assert(false, 'should throw an error');
+      expect.fail('should throw an error');
     } catch (e) {
-      assert(e instanceof SfError);
-      if (e instanceof SfError) {
-        expect(e.message).to.match(/Could not find the scratch org on hutte/);
-      }
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/Could not find the scratch org on Hutte/);
     }
   });
 
   it('fails when Hutte API returns an error response', async () => {
-    testContext.SANDBOX.stub(api, 'terminateOrg').rejects(new Error('Request to hutte failed 500'));
+    apiStubs.terminateOrg.rejects(new SfError('Request to Hutte failed.'));
+
     try {
       await Terminate.run([]);
-      assert(false, 'should throw an error');
+      expect.fail('should throw an error');
     } catch (e) {
-      assert(e instanceof SfError);
-      if (e instanceof SfError) {
-        expect(e.message).to.match(/Request to hutte failed/);
-      }
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/Request to Hutte failed/);
     }
   });
 });

@@ -1,24 +1,28 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
 
-export class List extends SfCommand<IScratchOrg[]> {
-  public static readonly summary = 'list hutte scratch orgs from current repository';
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('hutte', 'hutte.org.list');
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
 
-  static readonly requiresProject = true;
+export class List extends SfCommand<IScratchOrg[]> {
+  public static readonly summary = messages.getMessage('summary');
+
+  public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({
       char: 't',
-      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
+      summary: sharedMessages.getMessage('flags.api-token.summary'),
     }),
     verbose: Flags.boolean({
-      summary: 'includes all information of scratch org, such as auth url',
+      summary: messages.getMessage('flags.verbose.summary'),
     }),
     all: Flags.boolean({
-      summary:
-        'when provided, the output includes all orgs from hutte project, otherwise (by default) only active orgs will be returned',
+      summary: messages.getMessage('flags.all.summary'),
       default: false,
     }),
   };
@@ -35,17 +39,19 @@ export class List extends SfCommand<IScratchOrg[]> {
       data: result,
       columns: ['projectName', 'orgName', 'state', 'branchName', 'remainingDays', 'createdBy'],
       headerOptions: {
-        formatter: 'capitalCase'
+        formatter: 'capitalCase',
       },
     });
     return result;
   }
 
   private removeSensitiveInformation(orgs: IScratchOrg[]): IScratchOrg[] {
-    return orgs.map((org: IScratchOrg) => {
-      return Object.fromEntries(
-        Object.entries(org).filter(([key, value]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key)),
-      ) as IScratchOrg; // not yet possible with TypeScript
-    });
+    this.debug('Removing sensitive information from org list');
+    return orgs.map(
+      (org: IScratchOrg) =>
+        Object.fromEntries(
+          Object.entries(org).filter(([key]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key))
+        ) as IScratchOrg // not yet possible with TypeScript
+    );
   }
 }

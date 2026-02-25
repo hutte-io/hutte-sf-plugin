@@ -1,21 +1,26 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
+import { Messages } from '@salesforce/core';
 import api from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
 
-export class Terminate extends SfCommand<void> {
-  public static readonly summary = 'terminates the default org on Hutte.io and logs out locally';
+Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
+const messages = Messages.loadMessages('hutte', 'hutte.org.terminate');
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
 
-  static readonly requiresProject = true;
+export class Terminate extends SfCommand<void> {
+  public static readonly summary = messages.getMessage('summary');
+
+  public static readonly requiresProject = true;
 
   public static readonly flags = {
     'api-token': Flags.string({
       char: 't',
-      summary: 'the api token. Only needed if you have not previously logged in using `sf hutte auth login`',
+      summary: sharedMessages.getMessage('flags.api-token.summary'),
     }),
     'project-id': Flags.string({
       char: 'p',
-      summary: 'the id of the project. Useful when multiple projects use the same git repository.',
+      summary: sharedMessages.getMessage('flags.project-id.summary'),
     }),
   };
 
