@@ -30,30 +30,6 @@ Number of minutes to wait for the scratch org to be ready.
 
 Waiting for org to be ready
 
-# spinner.authenticating
-
-Authenticating with SF CLI
-
-# info.status
-
-Status: %s
-
-# info.orgReady
-
-Scratch org '%s' is ready
-
 # info.alreadyActive
 
 Scratch org '%s' is already active
-
-# error.orgCreationFailed
-
-Scratch org creation failed.
-
-# error.setupFailed
-
-Scratch org setup failed.
-
-# error.pushFailed
-
-Scratch org push failed.

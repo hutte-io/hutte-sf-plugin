@@ -4,8 +4,7 @@ Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const sharedMessages = Messages.loadMessages('hutte', 'shared');
 
 function apiUrl(path: string): string {
-  // return `https://api.hutte.io/cli_api${path}`;
-  return `https://vini-hutte.eu.ngrok.io/cli_api${path}`;
+  return `https://api.hutte.io/cli_api${path}`;
 }
 
 async function apiFetch(url: string, options: RequestInit): Promise<Response> {
@@ -70,6 +69,7 @@ export type IScratchOrg = {
   slug: string;
   state: string;
   pool: boolean;
+  webUrl?: string;
 };
 
 export type ICreateScratchOrgRequest = {
@@ -107,6 +107,7 @@ export type IScratchOrgResponse = {
   slug: string;
   state: string;
   pool: boolean;
+  web_url: string;
 };
 
 function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
@@ -131,6 +132,7 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
     slug: org.slug,
     state: org.state,
     pool: org.pool,
+    webUrl: org.web_url,
   };
 }
 

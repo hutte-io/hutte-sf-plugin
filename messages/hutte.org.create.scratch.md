@@ -82,33 +82,9 @@ Creating scratch org
 
 Waiting for org to be ready
 
-# spinner.authenticating
-
-Authenticating with SF CLI
-
 # info.orgCreated
 
 Scratch org '%s' created with ID: %s
-
-# info.orgReady
-
-Scratch org '%s' is ready
-
-# info.status
-
-Status: %s
-
-# error.orgCreationFailed
-
-Scratch org creation failed.
-
-# error.setupFailed
-
-Scratch org setup failed.
-
-# error.pushFailed
-
-Scratch org push failed.
 
 # error.definitionFileNotFound
 

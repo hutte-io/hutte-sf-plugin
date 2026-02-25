@@ -108,6 +108,7 @@ describe('api', () => {
       slug: 'my-org',
       state: 'active',
       pool: false,
+      web_url: 'https://app.hutte.io/scratch-orgs/gid1',
     };
 
     it('returns mapped scratch orgs on success', async () => {
@@ -208,6 +209,7 @@ describe('api', () => {
       slug: 'pool-org',
       state: 'active',
       pool: true,
+      web_url: 'https://app.hutte.io/scratch-orgs/gid2',
     };
 
     it('returns mapped scratch org on success', async () => {

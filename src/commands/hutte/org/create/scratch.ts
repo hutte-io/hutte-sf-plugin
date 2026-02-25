@@ -4,6 +4,11 @@ import { Messages } from '@salesforce/core';
 import api, { ICreateScratchOrgRequest, IScratchOrg } from '../../../../api.js';
 import common from '../../../../common.js';
 import config from '../../../../config.js';
+import {
+  getTerminalStateError,
+  scratchOrgTableColumns,
+  getMessage as getSharedMessage,
+} from '../../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.create.scratch');
@@ -89,19 +94,6 @@ export class Scratch extends SfCommand<IScratchOrg> {
     }
   }
 
-  private static handleTerminalState(org: IScratchOrg): void {
-    switch (org.state) {
-      case 'failed':
-        throw messages.createError('error.orgCreationFailed');
-      case 'setup_failed':
-        throw messages.createError('error.setupFailed');
-      case 'push_failed':
-        throw messages.createError('error.pushFailed');
-      default:
-        break;
-    }
-  }
-
   public async run(): Promise<IScratchOrg> {
     const { flags } = await this.parse(Scratch);
     const repoName = common.projectRepoFromOrigin();
@@ -146,34 +138,40 @@ export class Scratch extends SfCommand<IScratchOrg> {
       timeoutMs,
       intervalMs,
       onStatusChange: (status) => {
-        this.spinner.status = messages.getMessage('info.status', [status]);
+        this.spinner.status = getSharedMessage('info.status', [status]);
       },
     });
 
     this.spinner.stop();
 
-    Scratch.handleTerminalState(finalOrg);
+    return this.handleTerminalOrg(finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
+  }
 
-    this.info(messages.getMessage('info.orgReady', [finalOrg.orgName]));
+  private handleTerminalOrg(org: IScratchOrg, successMessage: string): IScratchOrg {
+    if (org.state !== 'active') {
+      if (org.webUrl) {
+        this.info(getSharedMessage('info.viewDetailsInHutte', [org.webUrl]));
+      }
+      throw getTerminalStateError(org);
+    }
 
-    this.spinner.start(messages.getMessage('spinner.authenticating'));
-    common.sfdxLogin(finalOrg);
+    this.info(successMessage);
+    if (org.webUrl) {
+      this.info(getSharedMessage('info.openInHutte', [org.webUrl]));
+    }
+
+    this.spinner.start(getSharedMessage('spinner.authenticating'));
+    common.sfdxLogin(org);
     this.spinner.stop();
 
-    this.displayOrgInfo(finalOrg);
-    return finalOrg;
+    this.displayOrgInfo(org);
+    return org;
   }
 
   private displayOrgInfo(org: IScratchOrg): void {
     this.table({
       data: [org],
-      columns: [
-        { key: 'id', name: 'Scratch Org Id' },
-        { key: 'orgName', name: 'Org Name' },
-        { key: 'state', name: 'State' },
-        { key: 'branchName', name: 'Branch Name' },
-        { key: 'remainingDays', name: 'Remaining Days' },
-      ],
+      columns: scratchOrgTableColumns,
     });
   }
 }
