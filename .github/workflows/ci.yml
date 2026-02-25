@@ -18,3 +18,20 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
       - run: yarn test
+
+  install-test:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn pack --filename hutte-plugin.tgz
+      - run: npm install -g @salesforce/cli
+      - name: Test plugin install from tarball
+        run: |
+          echo y | sf plugins install "file://$(pwd)/hutte-plugin.tgz"
+          sf plugins | grep hutte
