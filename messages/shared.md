@@ -50,3 +50,32 @@ Request failed: %s
 # error.networkError
 
 Could not connect to Hutte. Please check your internet connection.
+
+# flags.no-git.summary
+
+Doesn't check out the scratch org's git branch.
+
+# flags.no-pull.summary
+
+Doesn't pull the source code from the scratch org.
+
+# error.unstagedChanges
+
+You have unstaged changes.
+
+# error.unstagedChanges.actions
+
+- Run `git stash` to temporarily save your changes.
+- Run `git commit` to commit your changes.
+
+# info.checkoutBranch
+
+Checking out remote branch %s
+
+# info.creatingBranch
+
+Remote branch does not exist. Creating based on %s...
+
+# spinner.pulling
+
+Pulling source from scratch org

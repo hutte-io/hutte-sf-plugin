@@ -1,10 +1,17 @@
 import { Messages } from '@salesforce/core';
 import { SfCommand } from '@salesforce/sf-plugins-core';
+import crossSpawn from 'cross-spawn';
 import { IScratchOrg } from './api.js';
 import common from './common.js';
 
+export type HandleTerminalOrgOptions = {
+  noGit?: boolean;
+  noPull?: boolean;
+};
+
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.scratch');
+const sharedMessages = Messages.loadMessages('hutte', 'shared');
 
 export function getTerminalStateError(org: IScratchOrg): Error {
   switch (org.state) {
@@ -37,7 +44,39 @@ export function displayOrgInfo(cmd: SfCommand<IScratchOrg>, org: IScratchOrg): v
   cmd.table({ data: [org], columns: scratchOrgTableColumns });
 }
 
-export function handleTerminalOrg(cmd: SfCommand<IScratchOrg>, org: IScratchOrg, successMessage: string): IScratchOrg {
+export function checkUnstagedChanges(): void {
+  const result = crossSpawn.sync('git', ['diff-index', '--quiet', 'HEAD', '--']);
+  if (result.status !== 0) {
+    throw sharedMessages.createError('error.unstagedChanges');
+  }
+}
+
+export function checkoutGitBranch(cmd: SfCommand<IScratchOrg>, org: IScratchOrg): void {
+  crossSpawn.sync('git', ['fetch', 'origin']);
+  cmd.info(sharedMessages.getMessage('info.checkoutBranch', [org.branchName]));
+  const checkoutResult = crossSpawn.sync('git', ['checkout', org.branchName]);
+  if (checkoutResult.status !== 0) {
+    cmd.info(sharedMessages.getMessage('info.creatingBranch', [org.commitSha]));
+    crossSpawn.sync('git', ['checkout', org.commitSha]);
+    crossSpawn.sync('git', ['checkout', '-b', org.branchName]);
+  }
+}
+
+export function pullSource(cmd: SfCommand<IScratchOrg>): void {
+  cmd.spinner.start(sharedMessages.getMessage('spinner.pulling'));
+  const result = crossSpawn.sync('sf', ['project', 'retrieve', 'start', '--ignore-conflicts']);
+  cmd.spinner.stop();
+  if (result.status !== 0) {
+    throw new Error(result.output.join('\n'));
+  }
+}
+
+export function handleTerminalOrg(
+  cmd: SfCommand<IScratchOrg>,
+  org: IScratchOrg,
+  successMessage: string,
+  options?: HandleTerminalOrgOptions
+): IScratchOrg {
   if (org.state !== 'active') {
     if (org.webUrl) {
       cmd.info(getMessage('info.viewDetailsInHutte', [org.webUrl]));
@@ -53,6 +92,15 @@ export function handleTerminalOrg(cmd: SfCommand<IScratchOrg>, org: IScratchOrg,
   cmd.spinner.start(getMessage('spinner.authenticating'));
   common.sfdxLogin(org);
   cmd.spinner.stop();
+
+  if (!options?.noGit) {
+    checkUnstagedChanges();
+    checkoutGitBranch(cmd, org);
+  }
+
+  if (!options?.noPull) {
+    pullSource(cmd);
+  }
 
   displayOrgInfo(cmd, org);
   return org;
