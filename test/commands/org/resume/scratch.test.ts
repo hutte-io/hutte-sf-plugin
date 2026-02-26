@@ -8,8 +8,10 @@ import {
   stubApiMethods,
   stubConfigMethods,
   stubCommonMethods,
+  stubCrossSpawnSync,
   type ApiStubs,
   type CommonStubs,
+  type CrossSpawnStubs,
 } from '../../../helpers.js';
 
 describe('hutte:org:resume:scratch', () => {
@@ -17,6 +19,7 @@ describe('hutte:org:resume:scratch', () => {
   const testOrg = new MockTestOrgData();
   let apiStubs: ApiStubs;
   let commonStubs: CommonStubs;
+  let crossSpawnStubs: CrossSpawnStubs;
 
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
@@ -24,6 +27,7 @@ describe('hutte:org:resume:scratch', () => {
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
     apiStubs = stubApiMethods(testContext.SANDBOX);
+    crossSpawnStubs = stubCrossSpawnSync(testContext.SANDBOX);
   });
 
   afterEach(() => {
@@ -188,5 +192,116 @@ describe('hutte:org:resume:scratch', () => {
       expect(e).to.be.instanceOf(SfError);
       expect((e as SfError).message).to.match(/creation failed/i);
     }
+  });
+
+  it('runs git checkout and source pull by default', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({
+      id: 'org-123',
+      state: 'active',
+      branchName: 'feature/test',
+      commitSha: 'abc123',
+    });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+
+    await Scratch.run(['--scratch-org-id', 'org-123']);
+
+    const calls = crossSpawnStubs.sync.args as Array<[string, string[]]>;
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'diff-index')).to.equal(true);
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'fetch')).to.equal(true);
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'checkout' && args[1] === 'feature/test')).to.equal(
+      true
+    );
+    expect(calls.some(([cmd, args]) => cmd === 'sf' && args.includes('retrieve'))).to.equal(true);
+  });
+
+  it('skips git operations when --no-git is provided', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({ id: 'org-123', state: 'active' });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+
+    await Scratch.run(['--scratch-org-id', 'org-123', '--no-git']);
+
+    const calls = crossSpawnStubs.sync.args as Array<[string, string[]]>;
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'diff-index')).to.equal(false);
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'fetch')).to.equal(false);
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'checkout')).to.equal(false);
+  });
+
+  it('skips source pull when --no-pull is provided', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({ id: 'org-123', state: 'active' });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+
+    await Scratch.run(['--scratch-org-id', 'org-123', '--no-pull']);
+
+    const calls = crossSpawnStubs.sync.args as Array<[string, string[]]>;
+    expect(calls.some(([cmd, args]) => cmd === 'sf' && args.includes('retrieve'))).to.equal(false);
+  });
+
+  it('throws error on unstaged changes', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({ id: 'org-123', state: 'active' });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+    crossSpawnStubs.sync.withArgs('git', ['diff-index', '--quiet', 'HEAD', '--']).returns({
+      status: 1,
+      signal: null,
+      pid: 0,
+      output: [],
+      stdout: Buffer.from(''),
+      stderr: Buffer.from(''),
+    });
+
+    try {
+      await Scratch.run(['--scratch-org-id', 'org-123']);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/unstaged changes/i);
+    }
+  });
+
+  it('creates branch from commitSha when checkout fails', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({
+      id: 'org-123',
+      state: 'active',
+      branchName: 'new-branch',
+      commitSha: 'abc123',
+    });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+    crossSpawnStubs.sync.withArgs('git', ['checkout', 'new-branch']).returns({
+      status: 1,
+      signal: null,
+      pid: 0,
+      output: [],
+      stdout: Buffer.from(''),
+      stderr: Buffer.from(''),
+    });
+
+    await Scratch.run(['--scratch-org-id', 'org-123']);
+
+    const calls = crossSpawnStubs.sync.args as Array<[string, string[]]>;
+    expect(calls.some(([cmd, args]) => cmd === 'git' && args[0] === 'checkout' && args[1] === 'abc123')).to.equal(true);
+    expect(
+      calls.some(
+        ([cmd, args]) => cmd === 'git' && args[0] === 'checkout' && args[1] === '-b' && args[2] === 'new-branch'
+      )
+    ).to.equal(true);
   });
 });

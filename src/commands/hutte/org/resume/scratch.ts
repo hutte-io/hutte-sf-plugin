@@ -27,6 +27,14 @@ export class Scratch extends SfCommand<IScratchOrg> {
       summary: messages.getMessage('flags.wait.summary'),
       default: 10,
     }),
+    'no-git': Flags.boolean({
+      default: false,
+      summary: sharedMessages.getMessage('flags.no-git.summary'),
+    }),
+    'no-pull': Flags.boolean({
+      default: false,
+      summary: sharedMessages.getMessage('flags.no-pull.summary'),
+    }),
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
@@ -42,7 +50,10 @@ export class Scratch extends SfCommand<IScratchOrg> {
     const currentOrg = await api.getScratchOrg(apiToken, repoName, orgId);
 
     if (common.isTerminalState(currentOrg.state)) {
-      return handleTerminalOrg(this, currentOrg, messages.getMessage('info.alreadyActive', [currentOrg.orgName]));
+      return handleTerminalOrg(this, currentOrg, messages.getMessage('info.alreadyActive', [currentOrg.orgName]), {
+        noGit: flags['no-git'],
+        noPull: flags['no-pull'],
+      });
     }
 
     const timeoutMs = flags.wait * 60 * 1000;
@@ -61,6 +72,9 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.stop();
 
-    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
+    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]), {
+      noGit: flags['no-git'],
+      noPull: flags['no-pull'],
+    });
   }
 }

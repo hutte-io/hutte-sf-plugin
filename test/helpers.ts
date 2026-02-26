@@ -1,4 +1,5 @@
 import { type SinonSandbox, type SinonStub } from 'sinon';
+import crossSpawn from 'cross-spawn';
 import api, { type IScratchOrg } from '../src/api.js';
 import common from '../src/common.js';
 import config from '../src/config.js';
@@ -113,6 +114,21 @@ export function stubCommonMethods(
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
     pollForOrgStatus: sandbox.stub(common, 'pollForOrgStatus'),
+  };
+}
+
+export type CrossSpawnStubs = {
+  sync: SinonStub;
+};
+
+/**
+ * Stubs cross-spawn sync with a default success response.
+ */
+export function stubCrossSpawnSync(sandbox: SinonSandbox): CrossSpawnStubs {
+  return {
+    sync: sandbox
+      .stub(crossSpawn, 'sync')
+      .returns({ status: 0, signal: null, pid: 0, output: [], stdout: Buffer.from(''), stderr: Buffer.from('') }),
   };
 }
 

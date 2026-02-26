@@ -67,6 +67,14 @@ export class Scratch extends SfCommand<IScratchOrg> {
       summary: messages.getMessage('flags.definition-file.summary'),
       exists: true,
     }),
+    'no-git': Flags.boolean({
+      default: false,
+      summary: sharedMessages.getMessage('flags.no-git.summary'),
+    }),
+    'no-pull': Flags.boolean({
+      default: false,
+      summary: sharedMessages.getMessage('flags.no-pull.summary'),
+    }),
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
@@ -140,6 +148,9 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.stop();
 
-    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
+    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]), {
+      noGit: flags['no-git'],
+      noPull: flags['no-pull'],
+    });
   }
 }
