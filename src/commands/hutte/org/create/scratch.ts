@@ -125,6 +125,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
     this.logSuccess(messages.getMessage('info.orgCreated', [scratchOrg.orgName, scratchOrg.id]));
 
     if (flags.async) {
+      this.info(getSharedMessage('info.resumeHint', [scratchOrg.id]));
       this.displayOrgInfo(scratchOrg);
       return scratchOrg;
     }
@@ -140,10 +141,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
       onStatusChange: (status) => {
         this.spinner.status = getSharedMessage('info.status', [status]);
       },
-      timeoutActions: [
-        `Run \`sf hutte org resume scratch --scratch-org-id ${scratchOrg.id}\` to continue waiting.`,
-        'Use `--wait <minutes>` to increase the timeout (default: 10 minutes).',
-      ],
+      timeoutActions: [getSharedMessage('info.resumeHint', [scratchOrg.id]), getSharedMessage('info.increaseWaitHint')],
     });
 
     this.spinner.stop();

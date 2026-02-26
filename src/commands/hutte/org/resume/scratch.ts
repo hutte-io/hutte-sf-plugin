@@ -60,7 +60,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
       onStatusChange: (status) => {
         this.spinner.status = getSharedMessage('info.status', [status]);
       },
-      timeoutActions: ['Use `--wait <minutes>` to increase the timeout (default: 10 minutes).'],
+      timeoutActions: [getSharedMessage('info.increaseWaitHint')],
     });
 
     this.spinner.stop();

@@ -30,6 +30,14 @@ Scratch org '%s' is ready
 
 Status: %s
 
+# info.resumeHint
+
+Run `sf hutte org resume scratch --scratch-org-id %s` to poll for the result.
+
+# info.increaseWaitHint
+
+Use `--wait <minutes>` to increase the timeout (default: 10 minutes).
+
 # spinner.authenticating
 
 Authenticating with SF CLI
