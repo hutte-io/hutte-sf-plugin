@@ -60,6 +60,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
       onStatusChange: (status) => {
         this.spinner.status = getSharedMessage('info.status', [status]);
       },
+      timeoutActions: ['Use `--wait <minutes>` to increase the timeout (default: 10 minutes).'],
     });
 
     this.spinner.stop();
@@ -75,7 +76,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
       throw getTerminalStateError(org);
     }
 
-    this.info(successMessage);
+    this.logSuccess(successMessage);
     if (org.webUrl) {
       this.info(getSharedMessage('info.openInHutte', [org.webUrl]));
     }

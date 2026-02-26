@@ -13,6 +13,7 @@ export type PollOptions = {
   timeoutMs: number;
   intervalMs: number;
   onStatusChange?: (status: string) => void;
+  timeoutActions?: string[];
 };
 
 function isTerminalState(state: string): boolean {
@@ -98,7 +99,7 @@ async function retryWithTimeout<T>(
 }
 
 async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: PollOptions): Promise<IScratchOrg> {
-  const { timeoutMs, intervalMs, onStatusChange } = options;
+  const { timeoutMs, intervalMs, onStatusChange, timeoutActions } = options;
   const startTime = Date.now();
   let lastStatus = '';
 
@@ -121,7 +122,11 @@ async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: P
   }
   /* eslint-enable no-await-in-loop */
 
-  throw messages.createError('error.pollTimeout');
+  const error = messages.createError('error.pollTimeout');
+  if (timeoutActions) {
+    error.actions = timeoutActions;
+  }
+  throw error;
 }
 
 function getCurrentBranch(): string {

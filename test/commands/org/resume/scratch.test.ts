@@ -137,6 +137,21 @@ describe('hutte:org:resume:scratch', () => {
     }
   });
 
+  it('passes timeout actions with wait suggestion to pollForOrgStatus', async () => {
+    const creatingOrg = createMockScratchOrg({ id: 'org-123', state: 'creating' });
+    const activeOrg = createMockScratchOrg({ id: 'org-123', state: 'active' });
+
+    apiStubs.getScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+
+    await Scratch.run(['--scratch-org-id', 'org-123']);
+
+    const pollOptions = commonStubs.pollForOrgStatus.firstCall.args[1] as { timeoutActions: string[] };
+    expect(pollOptions.timeoutActions).to.be.an('array').with.lengthOf(1);
+    expect(pollOptions.timeoutActions[0]).to.include('--wait');
+  });
+
   it('handles org not found error', async () => {
     apiStubs.getScratchOrg.rejects(new SfError('Could not find the scratch org on Hutte.'));
 

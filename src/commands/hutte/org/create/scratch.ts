@@ -122,7 +122,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
     const scratchOrg = await api.createScratchOrg(apiToken, request);
     this.spinner.stop();
 
-    this.info(messages.getMessage('info.orgCreated', [scratchOrg.orgName, scratchOrg.id]));
+    this.logSuccess(messages.getMessage('info.orgCreated', [scratchOrg.orgName, scratchOrg.id]));
 
     if (flags.async) {
       this.displayOrgInfo(scratchOrg);
@@ -140,6 +140,10 @@ export class Scratch extends SfCommand<IScratchOrg> {
       onStatusChange: (status) => {
         this.spinner.status = getSharedMessage('info.status', [status]);
       },
+      timeoutActions: [
+        `Run \`sf hutte org resume scratch --scratch-org-id ${scratchOrg.id}\` to continue waiting.`,
+        'Use `--wait <minutes>` to increase the timeout (default: 10 minutes).',
+      ],
     });
 
     this.spinner.stop();
@@ -155,7 +159,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
       throw getTerminalStateError(org);
     }
 
-    this.info(successMessage);
+    this.logSuccess(successMessage);
     if (org.webUrl) {
       this.info(getSharedMessage('info.openInHutte', [org.webUrl]));
     }

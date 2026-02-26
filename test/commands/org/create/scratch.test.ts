@@ -137,6 +137,23 @@ describe('hutte:org:create:scratch', () => {
     }
   });
 
+  it('passes timeout actions with resume suggestion to pollForOrgStatus', async () => {
+    const creatingOrg = createMockScratchOrg({ state: 'creating' });
+    const activeOrg = createMockScratchOrg({ state: 'active' });
+
+    apiStubs.createScratchOrg.resolves(creatingOrg);
+    commonStubs.pollForOrgStatus.resolves(activeOrg);
+    commonStubs.sfdxLogin.returns(activeOrg);
+
+    await Scratch.run(['--name', 'Test Org']);
+
+    const pollOptions = commonStubs.pollForOrgStatus.firstCall.args[1] as { timeoutActions: string[] };
+    expect(pollOptions.timeoutActions).to.be.an('array').with.lengthOf(2);
+    expect(pollOptions.timeoutActions[0]).to.include(`--scratch-org-id ${creatingOrg.id}`);
+    expect(pollOptions.timeoutActions[0]).to.include('sf hutte org resume scratch');
+    expect(pollOptions.timeoutActions[1]).to.include('--wait');
+  });
+
   it('handles authorization error', async () => {
     apiStubs.createScratchOrg.rejects(new SfError('There is an error with authorization.'));
 
