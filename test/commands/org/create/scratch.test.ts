@@ -181,22 +181,6 @@ describe('hutte:org:create:scratch', () => {
     expect(callArgs[1].initialBranchName).to.equal('develop');
   });
 
-  it('uses current branch when initial-branch flag not provided', async () => {
-    const creatingOrg = createMockScratchOrg({ state: 'creating' });
-    const activeOrg = createMockScratchOrg({ state: 'active' });
-
-    commonStubs.getCurrentBranch.returns('feature/my-feature');
-    apiStubs.createScratchOrg.resolves(creatingOrg);
-    commonStubs.pollForOrgStatus.resolves(activeOrg);
-    commonStubs.sfdxLogin.returns(activeOrg);
-
-    await Scratch.run(['--name', 'Test Org']);
-
-    expect(commonStubs.getCurrentBranch.calledOnce).to.equal(true);
-    const callArgs = apiStubs.createScratchOrg.firstCall.args as [string, ICreateScratchOrgRequest];
-    expect(callArgs[1].initialBranchName).to.equal('feature/my-feature');
-  });
-
   it('passes optional flags to API', async () => {
     const creatingOrg = createMockScratchOrg({ state: 'creating' });
     const activeOrg = createMockScratchOrg({ state: 'active' });

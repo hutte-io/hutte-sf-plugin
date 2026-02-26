@@ -99,13 +99,11 @@ export class Scratch extends SfCommand<IScratchOrg> {
     const repoName = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
 
-    const initialBranchName = flags['initial-branch'] ?? common.getCurrentBranch();
-
     const request: ICreateScratchOrgRequest = {
       repoName,
       name: flags.name,
       projectId: flags['project-id'],
-      initialBranchName,
+      initialBranchName: flags['initial-branch'],
       branchName: flags.branch,
       durationDays: flags['duration-days'],
       noAncestors: flags['no-ancestors'] || undefined,

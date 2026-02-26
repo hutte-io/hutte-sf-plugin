@@ -129,15 +129,6 @@ async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: P
   throw error;
 }
 
-function getCurrentBranch(): string {
-  try {
-    const result = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' });
-    return result.trim();
-  } catch {
-    throw messages.createError('error.gitBranchFailed');
-  }
-}
-
 export default {
   sfdxLogin,
   logoutFromDefault,
@@ -146,7 +137,6 @@ export default {
   extractGithubRepoName,
   retryWithTimeout,
   pollForOrgStatus,
-  getCurrentBranch,
   isTerminalState,
   TERMINAL_STATES,
 };

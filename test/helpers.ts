@@ -97,7 +97,6 @@ export type CommonStubs = {
   sfdxLogin: SinonStub;
   getDefaultOrgInfo: SinonStub;
   logoutFromDefault: SinonStub;
-  getCurrentBranch: SinonStub;
   pollForOrgStatus: SinonStub;
 };
 
@@ -113,7 +112,6 @@ export function stubCommonMethods(
     sfdxLogin: sandbox.stub(common, 'sfdxLogin'),
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
-    getCurrentBranch: sandbox.stub(common, 'getCurrentBranch').returns('main'),
     pollForOrgStatus: sandbox.stub(common, 'pollForOrgStatus'),
   };
 }
