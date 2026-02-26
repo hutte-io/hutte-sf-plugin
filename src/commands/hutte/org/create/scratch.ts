@@ -4,11 +4,7 @@ import { Messages } from '@salesforce/core';
 import api, { ICreateScratchOrgRequest, IScratchOrg } from '../../../../api.js';
 import common from '../../../../common.js';
 import config from '../../../../config.js';
-import {
-  getTerminalStateError,
-  scratchOrgTableColumns,
-  getMessage as getSharedMessage,
-} from '../../../../scratch-org-utils.js';
+import { displayOrgInfo, handleTerminalOrg, getMessage as getSharedMessage } from '../../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.create.scratch');
@@ -124,7 +120,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     if (flags.async) {
       this.info(getSharedMessage('info.resumeHint', [scratchOrg.id]));
-      this.displayOrgInfo(scratchOrg);
+      displayOrgInfo(this, scratchOrg);
       return scratchOrg;
     }
 
@@ -144,34 +140,6 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.stop();
 
-    return this.handleTerminalOrg(finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
-  }
-
-  private handleTerminalOrg(org: IScratchOrg, successMessage: string): IScratchOrg {
-    if (org.state !== 'active') {
-      if (org.webUrl) {
-        this.info(getSharedMessage('info.viewDetailsInHutte', [org.webUrl]));
-      }
-      throw getTerminalStateError(org);
-    }
-
-    this.logSuccess(successMessage);
-    if (org.webUrl) {
-      this.info(getSharedMessage('info.openInHutte', [org.webUrl]));
-    }
-
-    this.spinner.start(getSharedMessage('spinner.authenticating'));
-    common.sfdxLogin(org);
-    this.spinner.stop();
-
-    this.displayOrgInfo(org);
-    return org;
-  }
-
-  private displayOrgInfo(org: IScratchOrg): void {
-    this.table({
-      data: [org],
-      columns: scratchOrgTableColumns,
-    });
+    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
   }
 }

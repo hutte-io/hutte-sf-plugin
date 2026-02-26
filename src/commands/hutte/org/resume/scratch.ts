@@ -3,11 +3,7 @@ import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../../api.js';
 import common from '../../../../common.js';
 import config from '../../../../config.js';
-import {
-  getTerminalStateError,
-  scratchOrgTableColumns,
-  getMessage as getSharedMessage,
-} from '../../../../scratch-org-utils.js';
+import { handleTerminalOrg, getMessage as getSharedMessage } from '../../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.resume.scratch');
@@ -46,7 +42,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
     const currentOrg = await api.getScratchOrg(apiToken, repoName, orgId);
 
     if (common.isTerminalState(currentOrg.state)) {
-      return this.handleTerminalOrg(currentOrg, messages.getMessage('info.alreadyActive', [currentOrg.orgName]));
+      return handleTerminalOrg(this, currentOrg, messages.getMessage('info.alreadyActive', [currentOrg.orgName]));
     }
 
     const timeoutMs = flags.wait * 60 * 1000;
@@ -65,34 +61,6 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.stop();
 
-    return this.handleTerminalOrg(finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
-  }
-
-  private handleTerminalOrg(org: IScratchOrg, successMessage: string): IScratchOrg {
-    if (org.state !== 'active') {
-      if (org.webUrl) {
-        this.info(getSharedMessage('info.viewDetailsInHutte', [org.webUrl]));
-      }
-      throw getTerminalStateError(org);
-    }
-
-    this.logSuccess(successMessage);
-    if (org.webUrl) {
-      this.info(getSharedMessage('info.openInHutte', [org.webUrl]));
-    }
-
-    this.spinner.start(getSharedMessage('spinner.authenticating'));
-    common.sfdxLogin(org);
-    this.spinner.stop();
-
-    this.displayOrgInfo(org);
-    return org;
-  }
-
-  private displayOrgInfo(org: IScratchOrg): void {
-    this.table({
-      data: [org],
-      columns: scratchOrgTableColumns,
-    });
+    return handleTerminalOrg(this, finalOrg, getSharedMessage('info.orgReady', [finalOrg.orgName]));
   }
 }
