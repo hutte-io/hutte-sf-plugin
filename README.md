@@ -74,7 +74,8 @@ Create a scratch org via Hutte.
 ```
 USAGE
   $ sf hutte org create scratch -n <value> [--json] [--flags-dir <value>] [--async] [-w <value>] [-b <value>] [--branch
-    <value>] [-y <value>] [-c] [-m] [--issue <value>] [--notes <value>] [-f <value>] [-t <value>] [-p <value>]
+    <value>] [-y <value>] [-c] [-m] [--issue <value>] [--notes <value>] [-f <value>] [--no-git] [--no-pull] [-t <value>]
+    [-p <value>]
 
 FLAGS
   -b, --initial-branch=<value>   Source branch used to push (deploy) code to the org.
@@ -90,6 +91,8 @@ FLAGS
       --async                    Do not wait for the scratch org to be ready.
       --branch=<value>           Feature/dev branch name created from the initial branch.
       --issue=<value>            Link to the related issue in your issue tracking tool (e.g., Jira, Linear).
+      --no-git                   Doesn't check out the scratch org's git branch.
+      --no-pull                  Doesn't pull the source code from the scratch org.
       --notes=<value>            Notes for the scratch org.
 
 GLOBAL FLAGS
@@ -155,13 +158,16 @@ Resume waiting for a scratch org that was created asynchronously.
 
 ```
 USAGE
-  $ sf hutte org resume scratch -i <value> [--json] [--flags-dir <value>] [-w <value>] [-t <value>]
+  $ sf hutte org resume scratch -i <value> [--json] [--flags-dir <value>] [-w <value>] [--no-git] [--no-pull] [-t
+  <value>]
 
 FLAGS
   -i, --scratch-org-id=<value>  (required) ID of the scratch org to resume.
   -t, --api-token=<value>       The API token. Only needed if you have not previously logged in using `sf hutte auth
                                 login`.
   -w, --wait=<value>            [default: 10] Number of minutes to wait for the scratch org to be ready.
+      --no-git                  Doesn't check out the scratch org's git branch.
+      --no-pull                 Doesn't pull the source code from the scratch org.
 
 GLOBAL FLAGS
   --flags-dir=<value>  Import flag values from a directory.
