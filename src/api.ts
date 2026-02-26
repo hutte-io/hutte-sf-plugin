@@ -54,8 +54,6 @@ export type IScratchOrg = {
   commitSha: string;
   createdAt: string;
   createdBy: string;
-  devhubId: string;
-  devhubSfdxAuthUrl?: string;
   domain: string;
   globalId: string;
   initialBranchName: string;
@@ -92,8 +90,6 @@ export type IScratchOrgResponse = {
   commit_sha: string;
   created_at: string;
   created_by: string;
-  devhub_id: string;
-  devhub_sfdx_auth_url: string;
   domain: string;
   gid: string;
   initial_branch_name: string;
@@ -117,8 +113,6 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
     commitSha: org.commit_sha,
     createdAt: org.created_at,
     createdBy: org.created_by,
-    devhubId: org.devhub_id,
-    devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
     domain: org.domain,
     globalId: org.gid,
     initialBranchName: org.initial_branch_name,

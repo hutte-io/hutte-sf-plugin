@@ -37,7 +37,6 @@ describe('hutte:org:list', () => {
     expect(result[0].orgName).to.equal('Test Playground 1');
     expect(result[0].projectName).to.equal('Test Playground 1');
     expect(result[0].state).to.equal('active');
-    expect(result[0].devhubSfdxAuthUrl).to.equal('force://mockDevHubUrl');
     expect(result[0].sfdxAuthUrl).to.equal('force://mockUrl1');
   });
 
@@ -47,7 +46,6 @@ describe('hutte:org:list', () => {
     expect(result[0].orgName).to.equal('Test Playground 1');
     expect(result[0].projectName).to.equal('Test Playground 1');
     expect(result[0].state).to.equal('active');
-    expect(result[0].devhubSfdxAuthUrl).to.equal(undefined);
     expect(result[0].sfdxAuthUrl).to.equal(undefined);
   });
 

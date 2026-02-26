@@ -11,8 +11,6 @@ const DEFAULT_SCRATCH_ORG: IScratchOrg = {
   id: 'mockId',
   branchName: 'mockBranch1',
   commitSha: '1234567890',
-  devhubId: '00D7Q000005YnXXXXX',
-  devhubSfdxAuthUrl: 'force://mockDevHubUrl',
   orgName: 'Test Playground 1',
   projectName: 'Test Playground 1',
   sfdxAuthUrl: 'force://mockUrl1',

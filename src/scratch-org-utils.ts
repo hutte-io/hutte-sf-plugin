@@ -20,9 +20,11 @@ export function getTerminalStateError(org: IScratchOrg): Error {
 export const scratchOrgTableColumns: Array<{ key: keyof IScratchOrg; name: string }> = [
   { key: 'id', name: 'Scratch Org Id' },
   { key: 'orgName', name: 'Org Name' },
+  { key: 'projectName', name: 'Project Name' },
   { key: 'state', name: 'State' },
   { key: 'branchName', name: 'Branch Name' },
   { key: 'remainingDays', name: 'Remaining Days' },
+  { key: 'createdBy', name: 'Created By' },
 ];
 
 export function getMessage(key: string, tokens?: string[]): string {
