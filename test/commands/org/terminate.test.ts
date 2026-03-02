@@ -3,6 +3,7 @@ import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
 import { Terminate } from '../../../src/commands/hutte/org/terminate.js';
+import hutteProjectConfig from '../../../src/hutte-project-config.js';
 import {
   stubApiMethods,
   stubConfigMethods,
@@ -22,6 +23,7 @@ describe('hutte:org:terminate', () => {
     stubSfCommandUx(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
+    testContext.SANDBOX.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined);
     apiStubs = stubApiMethods(testContext.SANDBOX);
 
     commonStubs.getDefaultOrgInfo.returns({

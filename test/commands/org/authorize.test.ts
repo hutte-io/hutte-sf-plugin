@@ -4,13 +4,12 @@ import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
 import { type SinonStub } from 'sinon';
 import { Authorize } from '../../../src/commands/hutte/org/authorize.js';
+import hutteProjectConfig from '../../../src/hutte-project-config.js';
 import {
   createMockScratchOrg,
   stubApiMethods,
   stubConfigMethods,
   stubCommonMethods,
-  TEST_REPO_URL,
-  TEST_API_TOKEN,
   type ApiStubs,
   type CommonStubs,
 } from '../../helpers.js';
@@ -33,8 +32,9 @@ describe('hutte:org:authorize', () => {
     apiStubs = stubApiMethods(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
+    testContext.SANDBOX.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined);
 
-    apiStubs.getScratchOrgs.withArgs(TEST_API_TOKEN, TEST_REPO_URL).resolves([mockOrg]);
+    apiStubs.getScratchOrgs.resolves([mockOrg]);
     commonStubs.sfdxLogin.returns(mockOrg);
 
     privateStubs = {

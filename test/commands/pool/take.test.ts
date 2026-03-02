@@ -3,6 +3,7 @@ import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
 import { Take } from '../../../src/commands/hutte/pool/take.js';
+import hutteProjectConfig from '../../../src/hutte-project-config.js';
 import {
   createMockScratchOrg,
   stubApiMethods,
@@ -24,6 +25,7 @@ describe('hutte:pool:take', () => {
     stubSfCommandUx(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
+    testContext.SANDBOX.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined);
     apiStubs = stubApiMethods(testContext.SANDBOX);
 
     commonStubs.sfdxLogin.returns(mockOrg);

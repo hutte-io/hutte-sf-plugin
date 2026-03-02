@@ -1,8 +1,10 @@
 import { type SinonSandbox, type SinonStub } from 'sinon';
-import api, { type IScratchOrg } from '../src/api.js';
+import api, { type IScratchOrg, type IProject } from '../src/api.js';
 import common from '../src/common.js';
 import config from '../src/config.js';
 import keychain from '../src/keychain.js';
+import hutteProjectConfig from '../src/hutte-project-config.js';
+import projectResolution from '../src/project-resolution.js';
 
 /**
  * Default mock scratch org data for testing.
@@ -54,8 +56,40 @@ export function createMockScratchOrgList(count: number): IScratchOrg[] {
   );
 }
 
+/**
+ * Default mock project data for testing.
+ */
+const DEFAULT_PROJECT: IProject = {
+  id: 'mockProjectId',
+  name: 'Mock Project',
+  repository: 'mock-org/mock-repo',
+  projectType: 'scratch_org',
+};
+
+/**
+ * Creates a mock IProject object with optional overrides.
+ */
+export function createMockProject(overrides?: Partial<IProject>): IProject {
+  return { ...DEFAULT_PROJECT, ...overrides };
+}
+
+/**
+ * Creates multiple mock projects with incrementing values.
+ */
+export function createMockProjectList(count: number): IProject[] {
+  return Array.from({ length: count }, (_, i) =>
+    createMockProject({
+      id: `mockProjectId${i + 1}`,
+      name: `Mock Project ${i + 1}`,
+      repository: `mock-org/mock-repo-${i + 1}`,
+    })
+  );
+}
+
 export type ApiStubs = {
   login: SinonStub;
+  getMe: SinonStub;
+  getProjects: SinonStub;
   getScratchOrgs: SinonStub;
   takeOrgFromPool: SinonStub;
   terminateOrg: SinonStub;
@@ -67,6 +101,8 @@ export type ApiStubs = {
 export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
   return {
     login: sandbox.stub(api, 'login'),
+    getMe: sandbox.stub(api, 'getMe'),
+    getProjects: sandbox.stub(api, 'getProjects'),
     getScratchOrgs: sandbox.stub(api, 'getScratchOrgs'),
     takeOrgFromPool: sandbox.stub(api, 'takeOrgFromPool'),
     terminateOrg: sandbox.stub(api, 'terminateOrg'),
@@ -109,6 +145,39 @@ export function stubCommonMethods(
     sfdxLogin: sandbox.stub(common, 'sfdxLogin'),
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
+  };
+}
+
+export type ProjectConfigStubs = {
+  getDefaultProject: SinonStub;
+  storeDefaultProject: SinonStub;
+  clearDefaultProject: SinonStub;
+};
+
+/**
+ * Stubs hutte-project-config methods.
+ */
+export function stubProjectConfigMethods(sandbox: SinonSandbox): ProjectConfigStubs {
+  return {
+    getDefaultProject: sandbox.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined),
+    storeDefaultProject: sandbox.stub(hutteProjectConfig, 'storeDefaultProject').resolves(),
+    clearDefaultProject: sandbox.stub(hutteProjectConfig, 'clearDefaultProject').resolves(),
+  };
+}
+
+export type ProjectResolutionStubs = {
+  resolveProject: SinonStub;
+};
+
+/**
+ * Stubs project resolution with a default git-based resolution.
+ */
+export function stubProjectResolution(sandbox: SinonSandbox, repoName = 'mock-org/mock-repo'): ProjectResolutionStubs {
+  return {
+    resolveProject: sandbox.stub(projectResolution, 'resolveProject').resolves({
+      repoName,
+      source: 'git' as const,
+    }),
   };
 }
 

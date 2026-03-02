@@ -3,6 +3,7 @@ import { Messages } from '@salesforce/core';
 import api from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
+import projectResolution from '../../../project-resolution.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.terminate');
@@ -26,10 +27,10 @@ export class Terminate extends SfCommand<void> {
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Terminate);
-    const repoName = common.projectRepoFromOrigin();
-    const orgInfo = common.getDefaultOrgInfo();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    await api.terminateOrg(apiToken, repoName, orgInfo.id, flags['project-id']);
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
+    const orgInfo = common.getDefaultOrgInfo();
+    await api.terminateOrg(apiToken, resolved, orgInfo.id);
     common.logoutFromDefault();
   }
 }

@@ -53,6 +53,9 @@
     "topics": {
       "hutte": {
         "description": "manage scratch orgs using Hutte"
+      },
+      "hutte project": {
+        "description": "manage Hutte project configuration"
       }
     },
     "additionalHelpFlags": [

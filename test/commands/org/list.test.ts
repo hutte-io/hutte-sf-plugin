@@ -3,6 +3,7 @@ import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
 import { List } from '../../../src/commands/hutte/org/list.js';
+import hutteProjectConfig from '../../../src/hutte-project-config.js';
 import {
   createMockScratchOrgList,
   stubApiMethods,
@@ -22,6 +23,7 @@ describe('hutte:org:list', () => {
     stubSfCommandUx(testContext.SANDBOX);
     stubCommonMethods(testContext.SANDBOX, '');
     stubConfigMethods(testContext.SANDBOX);
+    testContext.SANDBOX.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined);
     apiStubs = stubApiMethods(testContext.SANDBOX);
 
     apiStubs.getScratchOrgs.resolves(mockOrgList);
