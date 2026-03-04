@@ -9,7 +9,7 @@ CLI for [Hutte](https://hutte.io)
 ## Installation
 
 ```sh-session
-$ sf plugins install hutte
+sf plugins install hutte
 ```
 
 ## Commands
