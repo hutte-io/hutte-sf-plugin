@@ -51,11 +51,11 @@ export class Authorize extends SfCommand<void> {
       : await this.chooseScratchOrg(scratchOrgs);
     if (!flags['no-git']) {
       checkUnstagedChanges();
-      checkoutGitBranch(this as unknown as SfCommand<IScratchOrg>, scratchOrg);
+      checkoutGitBranch(this, scratchOrg);
     }
     common.sfdxLogin(scratchOrg);
     if (!flags['no-pull']) {
-      pullSource(this as unknown as SfCommand<IScratchOrg>);
+      pullSource(this);
     }
   }
 

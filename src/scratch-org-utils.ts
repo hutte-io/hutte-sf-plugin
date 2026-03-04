@@ -40,7 +40,9 @@ export function getMessage(key: string, tokens?: string[]): string {
   return messages.getMessage(key, tokens);
 }
 
-export function displayOrgInfo(cmd: SfCommand<IScratchOrg>, org: IScratchOrg): void {
+type AnySfCommand = SfCommand<unknown>;
+
+export function displayOrgInfo(cmd: AnySfCommand, org: IScratchOrg): void {
   cmd.table({ data: [org], columns: scratchOrgTableColumns });
 }
 
@@ -51,7 +53,7 @@ export function checkUnstagedChanges(): void {
   }
 }
 
-export function checkoutGitBranch(cmd: SfCommand<IScratchOrg>, org: IScratchOrg): void {
+export function checkoutGitBranch(cmd: AnySfCommand, org: IScratchOrg): void {
   crossSpawn.sync('git', ['fetch', 'origin']);
   cmd.info(sharedMessages.getMessage('info.checkoutBranch', [org.branchName]));
   const checkoutResult = crossSpawn.sync('git', ['checkout', org.branchName]);
@@ -62,7 +64,7 @@ export function checkoutGitBranch(cmd: SfCommand<IScratchOrg>, org: IScratchOrg)
   }
 }
 
-export function pullSource(cmd: SfCommand<IScratchOrg>): void {
+export function pullSource(cmd: AnySfCommand): void {
   cmd.spinner.start(sharedMessages.getMessage('spinner.pulling'));
   const result = crossSpawn.sync('sf', ['project', 'retrieve', 'start', '--ignore-conflicts']);
   cmd.spinner.stop();
@@ -72,7 +74,7 @@ export function pullSource(cmd: SfCommand<IScratchOrg>): void {
 }
 
 export function handleTerminalOrg(
-  cmd: SfCommand<IScratchOrg>,
+  cmd: AnySfCommand,
   org: IScratchOrg,
   successMessage: string,
   options?: HandleTerminalOrgOptions
