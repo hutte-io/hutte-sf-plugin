@@ -1,4 +1,5 @@
 import { type SinonSandbox, type SinonStub } from 'sinon';
+import crossSpawn from 'cross-spawn';
 import api, { type IScratchOrg } from '../src/api.js';
 import common from '../src/common.js';
 import config from '../src/config.js';
@@ -11,8 +12,6 @@ const DEFAULT_SCRATCH_ORG: IScratchOrg = {
   id: 'mockId',
   branchName: 'mockBranch1',
   commitSha: '1234567890',
-  devhubId: '00D7Q000005YnXXXXX',
-  devhubSfdxAuthUrl: 'force://mockDevHubUrl',
   orgName: 'Test Playground 1',
   projectName: 'Test Playground 1',
   sfdxAuthUrl: 'force://mockUrl1',
@@ -59,6 +58,8 @@ export type ApiStubs = {
   getScratchOrgs: SinonStub;
   takeOrgFromPool: SinonStub;
   terminateOrg: SinonStub;
+  createScratchOrg: SinonStub;
+  getScratchOrg: SinonStub;
 };
 
 /**
@@ -70,6 +71,8 @@ export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
     getScratchOrgs: sandbox.stub(api, 'getScratchOrgs'),
     takeOrgFromPool: sandbox.stub(api, 'takeOrgFromPool'),
     terminateOrg: sandbox.stub(api, 'terminateOrg'),
+    createScratchOrg: sandbox.stub(api, 'createScratchOrg'),
+    getScratchOrg: sandbox.stub(api, 'getScratchOrg'),
   };
 }
 
@@ -95,6 +98,7 @@ export type CommonStubs = {
   sfdxLogin: SinonStub;
   getDefaultOrgInfo: SinonStub;
   logoutFromDefault: SinonStub;
+  pollForOrgStatus: SinonStub;
 };
 
 /**
@@ -109,6 +113,22 @@ export function stubCommonMethods(
     sfdxLogin: sandbox.stub(common, 'sfdxLogin'),
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
+    pollForOrgStatus: sandbox.stub(common, 'pollForOrgStatus'),
+  };
+}
+
+export type CrossSpawnStubs = {
+  sync: SinonStub;
+};
+
+/**
+ * Stubs cross-spawn sync with a default success response.
+ */
+export function stubCrossSpawnSync(sandbox: SinonSandbox): CrossSpawnStubs {
+  return {
+    sync: sandbox
+      .stub(crossSpawn, 'sync')
+      .returns({ status: 0, signal: null, pid: 0, output: [], stdout: Buffer.from(''), stderr: Buffer.from('') }),
   };
 }
 

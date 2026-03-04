@@ -54,8 +54,6 @@ export type IScratchOrg = {
   commitSha: string;
   createdAt: string;
   createdBy: string;
-  devhubId: string;
-  devhubSfdxAuthUrl?: string;
   domain: string;
   globalId: string;
   initialBranchName: string;
@@ -69,6 +67,21 @@ export type IScratchOrg = {
   slug: string;
   state: string;
   pool: boolean;
+  webUrl?: string;
+};
+
+export type ICreateScratchOrgRequest = {
+  repoName: string;
+  name: string;
+  projectId?: string;
+  initialBranchName?: string;
+  durationDays?: number;
+  branchName?: string;
+  noAncestors?: boolean;
+  noNamespace?: boolean;
+  issueReference?: string;
+  notes?: string;
+  configJson?: Record<string, unknown>;
 };
 
 export type IScratchOrgResponse = {
@@ -77,8 +90,6 @@ export type IScratchOrgResponse = {
   commit_sha: string;
   created_at: string;
   created_by: string;
-  devhub_id: string;
-  devhub_sfdx_auth_url: string;
   domain: string;
   gid: string;
   initial_branch_name: string;
@@ -92,6 +103,7 @@ export type IScratchOrgResponse = {
   slug: string;
   state: string;
   pool: boolean;
+  web_url: string;
 };
 
 function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
@@ -101,8 +113,6 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
     commitSha: org.commit_sha,
     createdAt: org.created_at,
     createdBy: org.created_by,
-    devhubId: org.devhub_id,
-    devhubSfdxAuthUrl: org.devhub_sfdx_auth_url,
     domain: org.domain,
     globalId: org.gid,
     initialBranchName: org.initial_branch_name,
@@ -116,6 +126,7 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
     slug: org.slug,
     state: org.state,
     pool: org.pool,
+    webUrl: org.web_url,
   };
 }
 
@@ -208,9 +219,98 @@ async function terminateOrg(apiToken: string, repoName: string, orgId: string, p
   }
 }
 
+type ICreateScratchOrgRequestBody = {
+  /* eslint-disable camelcase */
+  repo_name: string;
+  name: string;
+  project_id?: string;
+  initial_branch_name?: string;
+  duration_days?: number;
+  branch_name?: string;
+  no_ancestors?: boolean;
+  no_namespace?: boolean;
+  issue_reference?: string;
+  notes?: string;
+  config_json?: Record<string, unknown>;
+  /* eslint-enable camelcase */
+};
+
+async function createScratchOrg(apiToken: string, request: ICreateScratchOrgRequest): Promise<IScratchOrg> {
+  const url = new URL(apiUrl('/scratch_orgs'));
+
+  /* eslint-disable camelcase */
+  const body: ICreateScratchOrgRequestBody = {
+    repo_name: request.repoName,
+    name: request.name,
+  };
+
+  if (request.projectId) body.project_id = request.projectId;
+  if (request.initialBranchName) body.initial_branch_name = request.initialBranchName;
+  if (request.durationDays) body.duration_days = request.durationDays;
+  if (request.branchName) body.branch_name = request.branchName;
+  if (request.noAncestors !== undefined) body.no_ancestors = request.noAncestors;
+  if (request.noNamespace !== undefined) body.no_namespace = request.noNamespace;
+  if (request.issueReference) body.issue_reference = request.issueReference;
+  if (request.notes) body.notes = request.notes;
+  if (request.configJson) body.config_json = request.configJson;
+  /* eslint-enable camelcase */
+
+  const response = await apiFetch(url.toString(), {
+    method: 'POST',
+    headers: {
+      ...authHeaders(apiToken),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.status === 400 || response.status === 422) {
+    const errorBody = (await response.json()) as { error?: string };
+    throw sharedMessages.createError('error.badRequest', [errorBody.error ?? 'Bad request']);
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  const responseBody = (await response.json()) as { data: IScratchOrgResponse };
+  return mapScratchOrg(responseBody.data);
+}
+
+async function getScratchOrg(apiToken: string, repoName: string, orgId: string): Promise<IScratchOrg> {
+  const url = new URL(apiUrl(`/scratch_orgs/${orgId}`));
+  url.searchParams.set('repo_name', repoName);
+
+  const response = await apiFetch(url.toString(), {
+    method: 'GET',
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.status === 404) {
+    throw sharedMessages.createError('error.orgNotFoundOnHutte');
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  const responseBody = (await response.json()) as { data: IScratchOrgResponse };
+  return mapScratchOrg(responseBody.data);
+}
+
 export default {
   login,
   getScratchOrgs,
   takeOrgFromPool,
   terminateOrg,
+  createScratchOrg,
+  getScratchOrg,
 };

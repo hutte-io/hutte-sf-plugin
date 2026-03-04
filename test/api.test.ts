@@ -93,8 +93,6 @@ describe('api', () => {
       commit_sha: 'abc123',
       created_at: '2024-01-01T00:00:00Z',
       created_by: 'user@example.com',
-      devhub_id: 'devhub1',
-      devhub_sfdx_auth_url: 'force://devhub',
       domain: 'CS1',
       gid: 'gid1',
       initial_branch_name: 'main',
@@ -108,6 +106,7 @@ describe('api', () => {
       slug: 'my-org',
       state: 'active',
       pool: false,
+      web_url: 'https://app.hutte.io/scratch-orgs/gid1',
     };
 
     it('returns mapped scratch orgs on success', async () => {
@@ -193,8 +192,6 @@ describe('api', () => {
       commit_sha: 'def456',
       created_at: '2024-01-01T00:00:00Z',
       created_by: 'pool@example.com',
-      devhub_id: 'devhub1',
-      devhub_sfdx_auth_url: 'force://devhub',
       domain: 'CS2',
       gid: 'gid2',
       initial_branch_name: 'main',
@@ -208,6 +205,7 @@ describe('api', () => {
       slug: 'pool-org',
       state: 'active',
       pool: true,
+      web_url: 'https://app.hutte.io/scratch-orgs/gid2',
     };
 
     it('returns mapped scratch org on success', async () => {

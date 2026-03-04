@@ -2,17 +2,18 @@ import { MockTestOrgData, TestContext } from '@salesforce/core/testSetup';
 import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
-import { type SinonStub } from 'sinon';
 import { Authorize } from '../../../src/commands/hutte/org/authorize.js';
 import {
   createMockScratchOrg,
   stubApiMethods,
   stubConfigMethods,
   stubCommonMethods,
+  stubCrossSpawnSync,
   TEST_REPO_URL,
   TEST_API_TOKEN,
   type ApiStubs,
   type CommonStubs,
+  type CrossSpawnStubs,
 } from '../../helpers.js';
 
 describe('hutte:org:authorize', () => {
@@ -21,11 +22,7 @@ describe('hutte:org:authorize', () => {
   const mockOrg = createMockScratchOrg();
   let apiStubs: ApiStubs;
   let commonStubs: CommonStubs;
-  let privateStubs: {
-    checkoutGitBranch: SinonStub;
-    sfdxPull: SinonStub;
-    checkUnstagedChanges: SinonStub;
-  };
+  let crossSpawnStubs: CrossSpawnStubs;
 
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
@@ -33,18 +30,10 @@ describe('hutte:org:authorize', () => {
     apiStubs = stubApiMethods(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
+    crossSpawnStubs = stubCrossSpawnSync(testContext.SANDBOX);
 
     apiStubs.getScratchOrgs.withArgs(TEST_API_TOKEN, TEST_REPO_URL).resolves([mockOrg]);
     commonStubs.sfdxLogin.returns(mockOrg);
-
-    privateStubs = {
-      // @ts-expect-error private instance method
-      checkoutGitBranch: testContext.SANDBOX.stub(Authorize.prototype, 'checkoutGitBranch').returns(mockOrg),
-      // @ts-expect-error private instance method
-      sfdxPull: testContext.SANDBOX.stub(Authorize.prototype, 'sfdxPull').returns(mockOrg),
-      // @ts-expect-error private instance method
-      checkUnstagedChanges: testContext.SANDBOX.stub(Authorize.prototype, 'checkUnstagedChanges').returns(),
-    };
   });
 
   afterEach(() => {
@@ -57,15 +46,16 @@ describe('hutte:org:authorize', () => {
   });
 
   it('authorize fails on unstaged changes', async () => {
-    const error = new Error('You have unstaged changes. Please commit or stash them before proceeding.');
-    privateStubs.checkUnstagedChanges.throws(error);
+    crossSpawnStubs.sync
+      .withArgs('git', ['diff-index', '--quiet', 'HEAD', '--'])
+      .returns({ status: 1, signal: null, pid: 0, output: [], stdout: Buffer.from(''), stderr: Buffer.from('') });
 
     try {
       await Authorize.run([]);
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).cause).to.equal(error);
+      expect((e as SfError).message).to.match(/unstaged changes/);
     }
   });
 
@@ -100,7 +90,7 @@ describe('hutte:org:authorize', () => {
   it('skips git ops when --no-git is provided', async () => {
     await Authorize.run(['--no-git']);
 
-    expect(privateStubs.checkUnstagedChanges.called).to.equal(false);
-    expect(privateStubs.checkoutGitBranch.called).to.equal(false);
+    const gitCalls = crossSpawnStubs.sync.args.filter((args: unknown[]) => args[0] === 'git');
+    expect(gitCalls).to.have.lengthOf(0);
   });
 });
