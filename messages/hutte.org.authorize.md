@@ -23,15 +23,6 @@ There is not any scratch org to authorize by the provided name.
 - Remove the --org-name flag to choose from a list.
 - Visit https://app.hutte.io to see available orgs.
 
-# error.unstagedChanges
-
-You have unstaged changes.
-
-# error.unstagedChanges.actions
-
-- Run `git stash` to temporarily save your changes.
-- Run `git commit` to commit your changes.
-
 # error.noOrgsToAuthorize
 
 You don't have any scratch orgs to authorize.
@@ -47,11 +38,3 @@ No org selected.
 # prompt.chooseOrg
 
 Which scratch org would you like to authorize?
-
-# info.checkoutBranch
-
-Checking out remote branch %s
-
-# info.creatingBranch
-
-Remote branch does not exist. Creating based on %s...

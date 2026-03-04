@@ -7,6 +7,19 @@ import { IScratchOrg } from './api.js';
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.common');
 
+const TERMINAL_STATES = ['active', 'failed', 'setup_failed', 'push_failed'];
+
+export type PollOptions = {
+  timeoutMs: number;
+  intervalMs: number;
+  onStatusChange?: (status: string) => void;
+  timeoutActions?: string[];
+};
+
+function isTerminalState(state: string): boolean {
+  return TERMINAL_STATES.includes(state);
+}
+
 function sfdxLogin(org: IScratchOrg): IScratchOrg {
   const response = crossSpawn.sync(
     'sf',
@@ -85,6 +98,37 @@ async function retryWithTimeout<T>(
   }
 }
 
+async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: PollOptions): Promise<IScratchOrg> {
+  const { timeoutMs, intervalMs, onStatusChange, timeoutActions } = options;
+  const startTime = Date.now();
+  let lastStatus = '';
+
+  /* eslint-disable no-await-in-loop */
+  while (Date.now() - startTime < timeoutMs) {
+    const org = await fetchOrg();
+
+    if (org.state !== lastStatus) {
+      lastStatus = org.state;
+      if (onStatusChange) {
+        onStatusChange(org.state);
+      }
+    }
+
+    if (isTerminalState(org.state)) {
+      return org;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  /* eslint-enable no-await-in-loop */
+
+  const error = messages.createError('error.pollTimeout');
+  if (timeoutActions) {
+    error.actions = timeoutActions;
+  }
+  throw error;
+}
+
 export default {
   sfdxLogin,
   logoutFromDefault,
@@ -92,4 +136,7 @@ export default {
   projectRepoFromOrigin,
   extractGithubRepoName,
   retryWithTimeout,
+  pollForOrgStatus,
+  isTerminalState,
+  TERMINAL_STATES,
 };

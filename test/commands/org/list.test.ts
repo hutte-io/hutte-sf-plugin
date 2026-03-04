@@ -3,12 +3,12 @@ import { stubSfCommandUx } from '@salesforce/sf-plugins-core';
 import { expect } from 'chai';
 import { SfError } from '@salesforce/core';
 import { List } from '../../../src/commands/hutte/org/list.js';
-import hutteProjectConfig from '../../../src/hutte-project-config.js';
 import {
   createMockScratchOrgList,
   stubApiMethods,
   stubConfigMethods,
   stubCommonMethods,
+  stubProjectResolution,
   type ApiStubs,
 } from '../../helpers.js';
 
@@ -23,7 +23,7 @@ describe('hutte:org:list', () => {
     stubSfCommandUx(testContext.SANDBOX);
     stubCommonMethods(testContext.SANDBOX, '');
     stubConfigMethods(testContext.SANDBOX);
-    testContext.SANDBOX.stub(hutteProjectConfig, 'getDefaultProject').resolves(undefined);
+    stubProjectResolution(testContext.SANDBOX);
     apiStubs = stubApiMethods(testContext.SANDBOX);
 
     apiStubs.getScratchOrgs.resolves(mockOrgList);
@@ -39,7 +39,6 @@ describe('hutte:org:list', () => {
     expect(result[0].orgName).to.equal('Test Playground 1');
     expect(result[0].projectName).to.equal('Test Playground 1');
     expect(result[0].state).to.equal('active');
-    expect(result[0].devhubSfdxAuthUrl).to.equal('force://mockDevHubUrl');
     expect(result[0].sfdxAuthUrl).to.equal('force://mockUrl1');
   });
 
@@ -49,7 +48,6 @@ describe('hutte:org:list', () => {
     expect(result[0].orgName).to.equal('Test Playground 1');
     expect(result[0].projectName).to.equal('Test Playground 1');
     expect(result[0].state).to.equal('active');
-    expect(result[0].devhubSfdxAuthUrl).to.equal(undefined);
     expect(result[0].sfdxAuthUrl).to.equal(undefined);
   });
 

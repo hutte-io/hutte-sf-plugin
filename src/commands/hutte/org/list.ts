@@ -3,6 +3,7 @@ import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../api.js';
 import config from '../../../config.js';
 import projectResolution from '../../../project-resolution.js';
+import { scratchOrgTableColumns } from '../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.org.list');
@@ -41,10 +42,7 @@ export class List extends SfCommand<IScratchOrg[]> {
     }
     this.table({
       data: result,
-      columns: ['projectName', 'orgName', 'state', 'branchName', 'remainingDays', 'createdBy'],
-      headerOptions: {
-        formatter: 'capitalCase',
-      },
+      columns: scratchOrgTableColumns.map((col) => ({ key: col.key, name: col.name })),
     });
     return result;
   }
@@ -53,9 +51,7 @@ export class List extends SfCommand<IScratchOrg[]> {
     this.debug('Removing sensitive information from org list');
     return orgs.map(
       (org: IScratchOrg) =>
-        Object.fromEntries(
-          Object.entries(org).filter(([key]) => !['devhubSfdxAuthUrl', 'sfdxAuthUrl'].includes(key))
-        ) as IScratchOrg // not yet possible with TypeScript
+        Object.fromEntries(Object.entries(org).filter(([key]) => key !== 'sfdxAuthUrl')) as IScratchOrg // not yet possible with TypeScript
     );
   }
 }
