@@ -4,6 +4,7 @@ import { Messages } from '@salesforce/core';
 import api, { ICreateScratchOrgRequest, IScratchOrg } from '../../../../api.js';
 import common from '../../../../common.js';
 import config from '../../../../config.js';
+import projectResolution from '../../../../project-resolution.js';
 import { displayOrgInfo, handleTerminalOrg, getMessage as getSharedMessage } from '../../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -100,13 +101,12 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
   public async run(): Promise<IScratchOrg> {
     const { flags } = await this.parse(Scratch);
-    const repoName = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
 
     const request: ICreateScratchOrgRequest = {
-      repoName,
+      project: resolved,
       name: flags.name,
-      projectId: flags['project-id'],
       initialBranchName: flags['initial-branch'],
       branchName: flags.branch,
       durationDays: flags['duration-days'],
@@ -137,7 +137,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.start(messages.getMessage('spinner.waiting'));
 
-    const finalOrg = await common.pollForOrgStatus(() => api.getScratchOrg(apiToken, repoName, scratchOrg.id), {
+    const finalOrg = await common.pollForOrgStatus(() => api.getScratchOrg(apiToken, resolved, scratchOrg.id), {
       timeoutMs,
       intervalMs,
       onStatusChange: (status) => {

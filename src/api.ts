@@ -1,4 +1,5 @@
 import { Messages } from '@salesforce/core';
+import { type ResolvedProject } from './types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const sharedMessages = Messages.loadMessages('hutte', 'shared');
@@ -48,6 +49,20 @@ async function login(email: string, password: string): Promise<ILoginResponse> {
   };
 }
 
+export type IProject = {
+  id: string;
+  name: string;
+  repository: string | null;
+  projectType: string;
+};
+
+type IProjectResponse = {
+  id: string;
+  name: string;
+  repo_full_name: string | null;
+  project_type: string;
+};
+
 export type IScratchOrg = {
   id: string;
   branchName: string;
@@ -71,9 +86,8 @@ export type IScratchOrg = {
 };
 
 export type ICreateScratchOrgRequest = {
-  repoName: string;
+  project: ResolvedProject;
   name: string;
-  projectId?: string;
   initialBranchName?: string;
   durationDays?: number;
   branchName?: string;
@@ -130,9 +144,41 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
   };
 }
 
-async function getScratchOrgs(apiToken: string, repoName: string, includeAll: boolean = false): Promise<IScratchOrg[]> {
+async function getProjects(apiToken: string): Promise<IProject[]> {
+  const response = await apiFetch(apiUrl('/projects'), {
+    method: 'GET',
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  const body = (await response.json()) as { data: IProjectResponse[] };
+  return body.data.map((p) => ({
+    id: p.id,
+    name: p.name,
+    repository: p.repo_full_name,
+    projectType: p.project_type,
+  }));
+}
+
+function setProjectParams(url: URL, project: ResolvedProject): void {
+  if (project.repoName) url.searchParams.set('repo_name', project.repoName);
+  if (project.projectId) url.searchParams.set('project_id', project.projectId);
+}
+
+async function getScratchOrgs(
+  apiToken: string,
+  project: ResolvedProject,
+  includeAll: boolean = false
+): Promise<IScratchOrg[]> {
   const url = new URL(apiUrl('/scratch_orgs'));
-  url.searchParams.set('repo_name', repoName);
+  setProjectParams(url, project);
   url.searchParams.set('all', includeAll.toString());
 
   const response = await apiFetch(url.toString(), {
@@ -152,16 +198,10 @@ async function getScratchOrgs(apiToken: string, repoName: string, includeAll: bo
   return body.data.map(mapScratchOrg);
 }
 
-async function takeOrgFromPool(
-  apiToken: string,
-  repoName: string,
-  projectId?: string,
-  orgName?: string
-): Promise<IScratchOrg> {
+async function takeOrgFromPool(apiToken: string, project: ResolvedProject, orgName?: string): Promise<IScratchOrg> {
   const url = new URL(apiUrl('/take_from_pool'));
-  url.searchParams.set('repo_name', repoName);
+  setProjectParams(url, project);
   if (orgName) url.searchParams.set('name', orgName);
-  if (projectId) url.searchParams.set('project_id', projectId);
 
   const response = await apiFetch(url.toString(), {
     method: 'POST',
@@ -196,10 +236,9 @@ async function takeOrgFromPool(
   return mapScratchOrg(body.data);
 }
 
-async function terminateOrg(apiToken: string, repoName: string, orgId: string, projectId?: string): Promise<void> {
+async function terminateOrg(apiToken: string, project: ResolvedProject, orgId: string): Promise<void> {
   const url = new URL(apiUrl(`/scratch_orgs/${orgId}/terminate`));
-  url.searchParams.set('repo_name', repoName);
-  if (projectId) url.searchParams.set('project_id', projectId);
+  setProjectParams(url, project);
 
   const response = await apiFetch(url.toString(), {
     method: 'POST',
@@ -219,9 +258,46 @@ async function terminateOrg(apiToken: string, repoName: string, orgId: string, p
   }
 }
 
+export type IUser = {
+  id: string;
+  name: string;
+  email: string;
+  organizationName: string;
+};
+
+type IUserResponse = {
+  id: string;
+  name: string;
+  email: string;
+  organization_name: string;
+};
+
+async function getMe(apiToken: string): Promise<IUser> {
+  const response = await apiFetch(apiUrl('/me'), {
+    method: 'GET',
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.status === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (!response.ok) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  const body = (await response.json()) as { data: IUserResponse };
+  return {
+    id: body.data.id,
+    name: body.data.name,
+    email: body.data.email,
+    organizationName: body.data.organization_name,
+  };
+}
+
 type ICreateScratchOrgRequestBody = {
   /* eslint-disable camelcase */
-  repo_name: string;
+  repo_name?: string;
   name: string;
   project_id?: string;
   initial_branch_name?: string;
@@ -240,11 +316,11 @@ async function createScratchOrg(apiToken: string, request: ICreateScratchOrgRequ
 
   /* eslint-disable camelcase */
   const body: ICreateScratchOrgRequestBody = {
-    repo_name: request.repoName,
     name: request.name,
   };
 
-  if (request.projectId) body.project_id = request.projectId;
+  if (request.project.repoName) body.repo_name = request.project.repoName;
+  if (request.project.projectId) body.project_id = request.project.projectId;
   if (request.initialBranchName) body.initial_branch_name = request.initialBranchName;
   if (request.durationDays) body.duration_days = request.durationDays;
   if (request.branchName) body.branch_name = request.branchName;
@@ -281,9 +357,9 @@ async function createScratchOrg(apiToken: string, request: ICreateScratchOrgRequ
   return mapScratchOrg(responseBody.data);
 }
 
-async function getScratchOrg(apiToken: string, repoName: string, orgId: string): Promise<IScratchOrg> {
+async function getScratchOrg(apiToken: string, project: ResolvedProject, orgId: string): Promise<IScratchOrg> {
   const url = new URL(apiUrl(`/scratch_orgs/${orgId}`));
-  url.searchParams.set('repo_name', repoName);
+  setProjectParams(url, project);
 
   const response = await apiFetch(url.toString(), {
     method: 'GET',
@@ -308,6 +384,8 @@ async function getScratchOrg(apiToken: string, repoName: string, orgId: string):
 
 export default {
   login,
+  getMe,
+  getProjects,
   getScratchOrgs,
   takeOrgFromPool,
   terminateOrg,

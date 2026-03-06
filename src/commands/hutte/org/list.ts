@@ -1,8 +1,8 @@
 import { Flags, SfCommand } from '@salesforce/sf-plugins-core';
 import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../api.js';
-import common from '../../../common.js';
 import config from '../../../config.js';
+import projectResolution from '../../../project-resolution.js';
 import { scratchOrgTableColumns } from '../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -26,13 +26,17 @@ export class List extends SfCommand<IScratchOrg[]> {
       summary: messages.getMessage('flags.all.summary'),
       default: false,
     }),
+    'project-id': Flags.string({
+      char: 'p',
+      summary: sharedMessages.getMessage('flags.project-id.summary'),
+    }),
   };
 
   public async run(): Promise<IScratchOrg[]> {
     const { flags } = await this.parse(List);
-    const repoName: string = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    let result: IScratchOrg[] = await api.getScratchOrgs(apiToken, repoName, flags.all);
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
+    let result: IScratchOrg[] = await api.getScratchOrgs(apiToken, resolved, flags.all);
     if (!flags.verbose) {
       result = this.removeSensitiveInformation(result);
     }

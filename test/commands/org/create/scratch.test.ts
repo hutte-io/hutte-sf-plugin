@@ -10,6 +10,7 @@ import {
   stubConfigMethods,
   stubCommonMethods,
   stubCrossSpawnSync,
+  stubProjectResolution,
   type ApiStubs,
   type CommonStubs,
   type CrossSpawnStubs,
@@ -28,6 +29,7 @@ describe('hutte:org:create:scratch', () => {
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
     apiStubs = stubApiMethods(testContext.SANDBOX);
+    stubProjectResolution(testContext.SANDBOX);
     crossSpawnStubs = stubCrossSpawnSync(testContext.SANDBOX);
   });
 

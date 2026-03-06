@@ -8,6 +8,7 @@ import {
   stubApiMethods,
   stubConfigMethods,
   stubCommonMethods,
+  stubProjectResolution,
   type ApiStubs,
 } from '../../helpers.js';
 
@@ -22,6 +23,7 @@ describe('hutte:org:list', () => {
     stubSfCommandUx(testContext.SANDBOX);
     stubCommonMethods(testContext.SANDBOX, '');
     stubConfigMethods(testContext.SANDBOX);
+    stubProjectResolution(testContext.SANDBOX);
     apiStubs = stubApiMethods(testContext.SANDBOX);
 
     apiStubs.getScratchOrgs.resolves(mockOrgList);

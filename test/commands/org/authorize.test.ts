@@ -9,8 +9,7 @@ import {
   stubConfigMethods,
   stubCommonMethods,
   stubCrossSpawnSync,
-  TEST_REPO_URL,
-  TEST_API_TOKEN,
+  stubProjectResolution,
   type ApiStubs,
   type CommonStubs,
   type CrossSpawnStubs,
@@ -30,9 +29,10 @@ describe('hutte:org:authorize', () => {
     apiStubs = stubApiMethods(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
+    stubProjectResolution(testContext.SANDBOX);
     crossSpawnStubs = stubCrossSpawnSync(testContext.SANDBOX);
 
-    apiStubs.getScratchOrgs.withArgs(TEST_API_TOKEN, TEST_REPO_URL).resolves([mockOrg]);
+    apiStubs.getScratchOrgs.resolves([mockOrg]);
     commonStubs.sfdxLogin.returns(mockOrg);
   });
 

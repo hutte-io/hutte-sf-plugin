@@ -3,6 +3,7 @@ import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../../api.js';
 import common from '../../../../common.js';
 import config from '../../../../config.js';
+import projectResolution from '../../../../project-resolution.js';
 import { handleTerminalOrg, getMessage as getSharedMessage } from '../../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -39,15 +40,19 @@ export class Scratch extends SfCommand<IScratchOrg> {
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
     }),
+    'project-id': Flags.string({
+      char: 'p',
+      summary: sharedMessages.getMessage('flags.project-id.summary'),
+    }),
   };
 
   public async run(): Promise<IScratchOrg> {
     const { flags } = await this.parse(Scratch);
-    const repoName = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
     const orgId = flags['scratch-org-id'];
 
-    const currentOrg = await api.getScratchOrg(apiToken, repoName, orgId);
+    const currentOrg = await api.getScratchOrg(apiToken, resolved, orgId);
 
     if (common.isTerminalState(currentOrg.state)) {
       return handleTerminalOrg(this, currentOrg, messages.getMessage('info.alreadyActive', [currentOrg.orgName]), {
@@ -61,7 +66,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
 
     this.spinner.start(messages.getMessage('spinner.polling'));
 
-    const finalOrg = await common.pollForOrgStatus(() => api.getScratchOrg(apiToken, repoName, orgId), {
+    const finalOrg = await common.pollForOrgStatus(() => api.getScratchOrg(apiToken, resolved, orgId), {
       timeoutMs,
       intervalMs,
       onStatusChange: (status) => {

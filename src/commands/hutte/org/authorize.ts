@@ -6,6 +6,7 @@ import { search as searchPrompt } from '@inquirer/prompts';
 import api, { IScratchOrg } from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
+import projectResolution from '../../../project-resolution.js';
 import { checkUnstagedChanges, checkoutGitBranch, pullSource } from '../../../scratch-org-utils.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
@@ -34,23 +35,27 @@ export class Authorize extends SfCommand<void> {
       char: 'n',
       summary: messages.getMessage('flags.org-name.summary'),
     }),
+    'project-id': Flags.string({
+      char: 'p',
+      summary: sharedMessages.getMessage('flags.project-id.summary'),
+    }),
   };
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Authorize);
-    const repoName = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    const scratchOrgs: IScratchOrg[] = await api.getScratchOrgs(apiToken, repoName);
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
+    const scratchOrgs: IScratchOrg[] = await api.getScratchOrgs(apiToken, resolved);
     const scratchOrg: IScratchOrg = flags['org-name']
       ? this.findScratchOrg(scratchOrgs, flags['org-name'])
       : await this.chooseScratchOrg(scratchOrgs);
     if (!flags['no-git']) {
       checkUnstagedChanges();
-      checkoutGitBranch(this as unknown as SfCommand<IScratchOrg>, scratchOrg);
+      checkoutGitBranch(this, scratchOrg);
     }
     common.sfdxLogin(scratchOrg);
     if (!flags['no-pull']) {
-      pullSource(this as unknown as SfCommand<IScratchOrg>);
+      pullSource(this);
     }
   }
 

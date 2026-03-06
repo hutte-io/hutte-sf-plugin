@@ -3,6 +3,9 @@ import { expect } from 'chai';
 import sinon, { type SinonStub } from 'sinon';
 import { SfError } from '@salesforce/core';
 import api, { type IScratchOrgResponse } from '../src/api.js';
+import { type ResolvedProject } from '../src/types.js';
+
+const gitProject = (repoName: string): ResolvedProject => ({ repoName, source: 'git' });
 
 describe('api', () => {
   let fetchStub: SinonStub;
@@ -112,7 +115,7 @@ describe('api', () => {
     it('returns mapped scratch orgs on success', async () => {
       fetchStub.resolves(mockResponse(200, { data: [mockOrgData] }));
 
-      const result = await api.getScratchOrgs('token123', 'my-repo');
+      const result = await api.getScratchOrgs('token123', gitProject('my-repo'));
 
       expect(result).to.have.lengthOf(1);
       expect(result[0].id).to.equal('org1');
@@ -129,7 +132,7 @@ describe('api', () => {
     it('passes includeAll parameter', async () => {
       fetchStub.resolves(mockResponse(200, { data: [] }));
 
-      await api.getScratchOrgs('token123', 'my-repo', true);
+      await api.getScratchOrgs('token123', gitProject('my-repo'), true);
 
       const callArgs = fetchStub.firstCall.args as [string, RequestInit];
       const [url] = callArgs;
@@ -140,7 +143,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(401));
 
       try {
-        await api.getScratchOrgs('invalid-token', 'my-repo');
+        await api.getScratchOrgs('invalid-token', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -152,7 +155,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(500));
 
       try {
-        await api.getScratchOrgs('token123', 'my-repo');
+        await api.getScratchOrgs('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -164,7 +167,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(503));
 
       try {
-        await api.getScratchOrgs('token123', 'my-repo');
+        await api.getScratchOrgs('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -176,7 +179,7 @@ describe('api', () => {
       fetchStub.rejects(new TypeError('fetch failed'));
 
       try {
-        await api.getScratchOrgs('token123', 'my-repo');
+        await api.getScratchOrgs('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -211,7 +214,7 @@ describe('api', () => {
     it('returns mapped scratch org on success', async () => {
       fetchStub.resolves(mockResponse(200, { data: mockOrgData }));
 
-      const result = await api.takeOrgFromPool('token123', 'my-repo');
+      const result = await api.takeOrgFromPool('token123', gitProject('my-repo'));
 
       expect(result.id).to.equal('org1');
       expect(result.orgName).to.equal('Pool Org');
@@ -226,7 +229,7 @@ describe('api', () => {
     it('passes orgName parameter', async () => {
       fetchStub.resolves(mockResponse(200, { data: mockOrgData }));
 
-      await api.takeOrgFromPool('token123', 'my-repo', undefined, 'my-org-name');
+      await api.takeOrgFromPool('token123', gitProject('my-repo'), 'my-org-name');
 
       const callArgs = fetchStub.firstCall.args as [string, RequestInit];
       const [url] = callArgs;
@@ -236,7 +239,7 @@ describe('api', () => {
     it('passes projectId parameter', async () => {
       fetchStub.resolves(mockResponse(200, { data: mockOrgData }));
 
-      await api.takeOrgFromPool('token123', 'my-repo', 'project-123');
+      await api.takeOrgFromPool('token123', { repoName: 'my-repo', projectId: 'project-123', source: 'flag' });
 
       const callArgs = fetchStub.firstCall.args as [string, RequestInit];
       const [url] = callArgs;
@@ -247,7 +250,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(401));
 
       try {
-        await api.takeOrgFromPool('invalid-token', 'my-repo');
+        await api.takeOrgFromPool('invalid-token', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -259,7 +262,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(400, { error: 'no_pool' }));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -271,7 +274,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(400, { error: 'unknown_error' }));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -283,7 +286,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(404, { error: 'no_active_org' }));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -295,7 +298,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(404, { error: 'other_error' }));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -307,7 +310,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(500));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -319,7 +322,297 @@ describe('api', () => {
       fetchStub.rejects(new TypeError('fetch failed'));
 
       try {
-        await api.takeOrgFromPool('token123', 'my-repo');
+        await api.takeOrgFromPool('token123', gitProject('my-repo'));
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('Could not connect to Hutte');
+      }
+    });
+  });
+
+  describe('createScratchOrg', () => {
+    it('creates scratch org and returns mapped result', async () => {
+      const mockOrgResponse: IScratchOrgResponse = {
+        id: 'new-org-1',
+        branch_name: 'feature-1',
+        commit_sha: 'abc123',
+        created_at: '2024-01-01T00:00:00Z',
+        created_by: 'user@example.com',
+        domain: 'CS1',
+        gid: 'gid1',
+        initial_branch_name: 'main',
+        name: 'New Org',
+        project_id: 'proj1',
+        project_name: 'My Project',
+        remaining_days: '7',
+        revision_number: null,
+        salesforce_id: 'sf1',
+        sfdx_auth_url: 'force://neworg',
+        slug: 'new-org',
+        state: 'creating',
+        pool: false,
+        web_url: 'https://app.hutte.io/scratch-orgs/gid1',
+      };
+
+      fetchStub.resolves(mockResponse(200, { data: mockOrgResponse }));
+
+      const result = await api.createScratchOrg('token123', {
+        project: gitProject('my-repo'),
+        name: 'New Org',
+      });
+
+      expect(result.id).to.equal('new-org-1');
+      expect(result.orgName).to.equal('New Org');
+      expect(result.state).to.equal('creating');
+
+      const callArgs = fetchStub.firstCall.args as [string, RequestInit];
+      const [url, options] = callArgs;
+      expect(url).to.include('/scratch_orgs');
+      expect(options.method).to.equal('POST');
+
+      const body = JSON.parse(options.body as string) as Record<string, unknown>;
+      expect(body.repo_name).to.equal('my-repo');
+      expect(body.name).to.equal('New Org');
+    });
+
+    it('passes project_id when resolved by project ID', async () => {
+      fetchStub.resolves(
+        mockResponse(200, {
+          data: {
+            id: 'org1',
+            branch_name: '',
+            commit_sha: '',
+            created_at: '',
+            created_by: '',
+            domain: '',
+            gid: '',
+            initial_branch_name: '',
+            name: '',
+            project_id: '',
+            project_name: '',
+            remaining_days: '0',
+            revision_number: null,
+            salesforce_id: '',
+            sfdx_auth_url: '',
+            slug: '',
+            state: 'creating',
+            pool: false,
+            web_url: '',
+          },
+        })
+      );
+
+      await api.createScratchOrg('token123', {
+        project: { repoName: 'my-repo', projectId: 'project-123', source: 'flag' },
+        name: 'Test Org',
+      });
+
+      const callArgs = fetchStub.firstCall.args as [string, RequestInit];
+      const body = JSON.parse(callArgs[1].body as string) as Record<string, unknown>;
+      expect(body.project_id).to.equal('project-123');
+      expect(body.repo_name).to.equal('my-repo');
+    });
+
+    it('passes optional fields', async () => {
+      fetchStub.resolves(
+        mockResponse(200, {
+          data: {
+            id: 'org1',
+            branch_name: '',
+            commit_sha: '',
+            created_at: '',
+            created_by: '',
+            domain: '',
+            gid: '',
+            initial_branch_name: '',
+            name: '',
+            project_id: '',
+            project_name: '',
+            remaining_days: '0',
+            revision_number: null,
+            salesforce_id: '',
+            sfdx_auth_url: '',
+            slug: '',
+            state: 'creating',
+            pool: false,
+            web_url: '',
+          },
+        })
+      );
+
+      await api.createScratchOrg('token123', {
+        project: gitProject('my-repo'),
+        name: 'Test Org',
+        initialBranchName: 'develop',
+        durationDays: 14,
+        branchName: 'feature/test',
+        noAncestors: true,
+        noNamespace: false,
+        issueReference: 'JIRA-123',
+        notes: 'test notes',
+      });
+
+      const callArgs = fetchStub.firstCall.args as [string, RequestInit];
+      const body = JSON.parse(callArgs[1].body as string) as Record<string, unknown>;
+      expect(body.initial_branch_name).to.equal('develop');
+      expect(body.duration_days).to.equal(14);
+      expect(body.branch_name).to.equal('feature/test');
+      expect(body.no_ancestors).to.equal(true);
+      expect(body.no_namespace).to.equal(false);
+      expect(body.issue_reference).to.equal('JIRA-123');
+      expect(body.notes).to.equal('test notes');
+    });
+
+    it('throws authorization error on 401', async () => {
+      fetchStub.resolves(mockResponse(401));
+
+      try {
+        await api.createScratchOrg('invalid-token', { project: gitProject('my-repo'), name: 'Test' });
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('authorization');
+      }
+    });
+
+    it('throws bad request error on 400', async () => {
+      fetchStub.resolves(mockResponse(400, { error: 'Invalid config' }));
+
+      try {
+        await api.createScratchOrg('token123', { project: gitProject('my-repo'), name: 'Test' });
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('Invalid config');
+      }
+    });
+
+    it('throws server error on 500', async () => {
+      fetchStub.resolves(mockResponse(500));
+
+      try {
+        await api.createScratchOrg('token123', { project: gitProject('my-repo'), name: 'Test' });
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('Request to Hutte failed');
+      }
+    });
+  });
+
+  describe('getScratchOrg', () => {
+    it('returns mapped scratch org on success', async () => {
+      const mockOrgResponse: IScratchOrgResponse = {
+        id: 'org1',
+        branch_name: 'feature-1',
+        commit_sha: 'abc123',
+        created_at: '2024-01-01T00:00:00Z',
+        created_by: 'user@example.com',
+        domain: 'CS1',
+        gid: 'gid1',
+        initial_branch_name: 'main',
+        name: 'My Org',
+        project_id: 'proj1',
+        project_name: 'My Project',
+        remaining_days: '7',
+        revision_number: '1',
+        salesforce_id: 'sf1',
+        sfdx_auth_url: 'force://org',
+        slug: 'my-org',
+        state: 'active',
+        pool: false,
+        web_url: 'https://app.hutte.io/scratch-orgs/gid1',
+      };
+
+      fetchStub.resolves(mockResponse(200, { data: mockOrgResponse }));
+
+      const result = await api.getScratchOrg('token123', gitProject('my-repo'), 'org1');
+
+      expect(result.id).to.equal('org1');
+      expect(result.orgName).to.equal('My Org');
+
+      const callArgs = fetchStub.firstCall.args as [string, RequestInit];
+      const [url] = callArgs;
+      expect(url).to.include('/scratch_orgs/org1');
+      expect(url).to.include('repo_name=my-repo');
+    });
+
+    it('passes project_id parameter', async () => {
+      fetchStub.resolves(
+        mockResponse(200, {
+          data: {
+            id: 'org1',
+            branch_name: '',
+            commit_sha: '',
+            created_at: '',
+            created_by: '',
+            domain: '',
+            gid: '',
+            initial_branch_name: '',
+            name: '',
+            project_id: '',
+            project_name: '',
+            remaining_days: '0',
+            revision_number: null,
+            salesforce_id: '',
+            sfdx_auth_url: '',
+            slug: '',
+            state: 'active',
+            pool: false,
+            web_url: '',
+          },
+        })
+      );
+
+      await api.getScratchOrg('token123', { repoName: 'my-repo', projectId: 'project-123', source: 'flag' }, 'org1');
+
+      const callArgs = fetchStub.firstCall.args as [string, RequestInit];
+      const [url] = callArgs;
+      expect(url).to.include('project_id=project-123');
+    });
+
+    it('throws authorization error on 401', async () => {
+      fetchStub.resolves(mockResponse(401));
+
+      try {
+        await api.getScratchOrg('invalid-token', gitProject('my-repo'), 'org1');
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('authorization');
+      }
+    });
+
+    it('throws orgNotFoundOnHutte error on 404', async () => {
+      fetchStub.resolves(mockResponse(404));
+
+      try {
+        await api.getScratchOrg('token123', gitProject('my-repo'), 'nonexistent');
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('Could not find the scratch org on Hutte');
+      }
+    });
+
+    it('throws server error on 500', async () => {
+      fetchStub.resolves(mockResponse(500));
+
+      try {
+        await api.getScratchOrg('token123', gitProject('my-repo'), 'org1');
+        expect.fail('should throw an error');
+      } catch (e) {
+        expect(e).to.be.instanceOf(SfError);
+        expect((e as SfError).message).to.include('Request to Hutte failed');
+      }
+    });
+
+    it('throws network error when fetch fails', async () => {
+      fetchStub.rejects(new TypeError('fetch failed'));
+
+      try {
+        await api.getScratchOrg('token123', gitProject('my-repo'), 'org1');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -332,7 +625,7 @@ describe('api', () => {
     it('resolves on success', async () => {
       fetchStub.resolves(mockResponse(200));
 
-      await api.terminateOrg('token123', 'my-repo', 'org-id');
+      await api.terminateOrg('token123', gitProject('my-repo'), 'org-id');
 
       const callArgs = fetchStub.firstCall.args as [string, RequestInit];
       const [url, options] = callArgs;
@@ -344,7 +637,7 @@ describe('api', () => {
     it('passes projectId parameter', async () => {
       fetchStub.resolves(mockResponse(200));
 
-      await api.terminateOrg('token123', 'my-repo', 'org-id', 'project-123');
+      await api.terminateOrg('token123', { repoName: 'my-repo', projectId: 'project-123', source: 'flag' }, 'org-id');
 
       const callArgs = fetchStub.firstCall.args as [string, RequestInit];
       const [url] = callArgs;
@@ -355,7 +648,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(404));
 
       try {
-        await api.terminateOrg('token123', 'my-repo', 'nonexistent-org');
+        await api.terminateOrg('token123', gitProject('my-repo'), 'nonexistent-org');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -367,7 +660,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(401));
 
       try {
-        await api.terminateOrg('invalid-token', 'my-repo', 'org-id');
+        await api.terminateOrg('invalid-token', gitProject('my-repo'), 'org-id');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -379,7 +672,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(500));
 
       try {
-        await api.terminateOrg('token123', 'my-repo', 'org-id');
+        await api.terminateOrg('token123', gitProject('my-repo'), 'org-id');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -391,7 +684,7 @@ describe('api', () => {
       fetchStub.resolves(mockResponse(503));
 
       try {
-        await api.terminateOrg('token123', 'my-repo', 'org-id');
+        await api.terminateOrg('token123', gitProject('my-repo'), 'org-id');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);
@@ -403,7 +696,7 @@ describe('api', () => {
       fetchStub.rejects(new TypeError('fetch failed'));
 
       try {
-        await api.terminateOrg('token123', 'my-repo', 'org-id');
+        await api.terminateOrg('token123', gitProject('my-repo'), 'org-id');
         expect.fail('should throw an error');
       } catch (e) {
         expect(e).to.be.instanceOf(SfError);

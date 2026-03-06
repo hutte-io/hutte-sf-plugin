@@ -3,6 +3,7 @@ import { Messages } from '@salesforce/core';
 import api, { IScratchOrg } from '../../../api.js';
 import common from '../../../common.js';
 import config from '../../../config.js';
+import projectResolution from '../../../project-resolution.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const messages = Messages.loadMessages('hutte', 'hutte.pool.take');
@@ -37,11 +38,11 @@ export class Take extends SfCommand<IScratchOrg> {
 
   public async run(): Promise<IScratchOrg> {
     const { flags } = await this.parse(Take);
-    const repoName = common.projectRepoFromOrigin();
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
+    const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
 
     const scratchOrg = await common.retryWithTimeout(
-      async () => api.takeOrgFromPool(apiToken, repoName, flags['project-id'], flags.name),
+      async () => api.takeOrgFromPool(apiToken, resolved, flags.name),
       (e) => typeof e === 'string' && e.includes('try again later'),
       flags.wait ? flags.timeout : 0
     );
