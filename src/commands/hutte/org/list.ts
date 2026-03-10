@@ -18,6 +18,7 @@ export class List extends SfCommand<IScratchOrg[]> {
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
+      env: 'HUTTE_API_TOKEN',
     }),
     verbose: Flags.boolean({
       summary: messages.getMessage('flags.verbose.summary'),
@@ -29,6 +30,7 @@ export class List extends SfCommand<IScratchOrg[]> {
     'project-id': Flags.string({
       char: 'p',
       summary: sharedMessages.getMessage('flags.project-id.summary'),
+      env: 'HUTTE_PROJECT_ID',
     }),
   };
 

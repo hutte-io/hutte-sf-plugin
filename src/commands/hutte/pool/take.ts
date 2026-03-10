@@ -18,6 +18,7 @@ export class Take extends SfCommand<IScratchOrg> {
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
+      env: 'HUTTE_API_TOKEN',
     }),
     name: Flags.string({
       char: 'n',
@@ -26,6 +27,7 @@ export class Take extends SfCommand<IScratchOrg> {
     'project-id': Flags.string({
       char: 'p',
       summary: sharedMessages.getMessage('flags.project-id.summary'),
+      env: 'HUTTE_PROJECT_ID',
     }),
     timeout: Flags.integer({
       summary: messages.getMessage('flags.timeout.summary'),

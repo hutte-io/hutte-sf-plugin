@@ -22,6 +22,7 @@ export class Authorize extends SfCommand<void> {
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
+      env: 'HUTTE_API_TOKEN',
     }),
     'no-git': Flags.boolean({
       default: false,
@@ -38,6 +39,7 @@ export class Authorize extends SfCommand<void> {
     'project-id': Flags.string({
       char: 'p',
       summary: sharedMessages.getMessage('flags.project-id.summary'),
+      env: 'HUTTE_PROJECT_ID',
     }),
   };
 

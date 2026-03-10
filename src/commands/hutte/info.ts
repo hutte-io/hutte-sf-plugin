@@ -21,6 +21,7 @@ export class Info extends SfCommand<InfoResult> {
     'api-token': Flags.string({
       char: 't',
       summary: messages.getMessage('flags.api-token.summary'),
+      env: 'HUTTE_API_TOKEN',
     }),
   };
 
