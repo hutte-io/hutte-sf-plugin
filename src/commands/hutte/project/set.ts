@@ -27,6 +27,7 @@ export class ProjectSet extends SfCommand<void> {
     'project-id': Flags.string({
       char: 'p',
       summary: sharedMessages.getMessage('flags.project-id.summary'),
+      env: 'HUTTE_PROJECT_ID',
     }),
     clear: Flags.boolean({
       summary: messages.getMessage('flags.clear.summary'),

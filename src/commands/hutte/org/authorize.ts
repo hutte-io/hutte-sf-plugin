@@ -39,6 +39,7 @@ export class Authorize extends SfCommand<void> {
     'project-id': Flags.string({
       char: 'p',
       summary: sharedMessages.getMessage('flags.project-id.summary'),
+      env: 'HUTTE_PROJECT_ID',
     }),
   };
 
