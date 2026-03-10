@@ -39,6 +39,7 @@ export class Scratch extends SfCommand<IScratchOrg> {
     'api-token': Flags.string({
       char: 't',
       summary: sharedMessages.getMessage('flags.api-token.summary'),
+      env: 'HUTTE_API_TOKEN',
     }),
     'project-id': Flags.string({
       char: 'p',
