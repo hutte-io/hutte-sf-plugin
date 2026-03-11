@@ -1,18 +1,23 @@
 import { Messages } from '@salesforce/core';
+import { RequestError, type OptionsOfJSONResponseBody, type Response } from 'got';
+import { getHttpClient } from './http-client.js';
 import { type ResolvedProject } from './types.js';
 
 Messages.importMessagesDirectoryFromMetaUrl(import.meta.url);
 const sharedMessages = Messages.loadMessages('hutte', 'shared');
 
-function apiUrl(path: string): string {
-  return `https://api.hutte.io/cli_api${path}`;
-}
-
-async function apiFetch(url: string, options: RequestInit): Promise<Response> {
+async function apiRequest<T>(
+  method: 'get' | 'post',
+  path: string,
+  options?: OptionsOfJSONResponseBody
+): Promise<Response<T>> {
   try {
-    return await fetch(url, options);
+    return await getHttpClient()(path, { method, ...options });
   } catch (error) {
-    throw sharedMessages.createError('error.networkError', undefined, undefined, error as Error);
+    if (error instanceof RequestError) {
+      throw sharedMessages.createError('error.networkError', undefined, undefined, error);
+    }
+    throw error;
   }
 }
 
@@ -23,29 +28,36 @@ function authHeaders(apiToken: string): Record<string, string> {
   };
 }
 
+function projectParams(project: ResolvedProject): Record<string, string> {
+  /* eslint-disable camelcase */
+  const params: Record<string, string> = {};
+  if (project.repoName) params.repo_name = project.repoName;
+  if (project.projectId) params.project_id = project.projectId;
+  return params;
+  /* eslint-enable camelcase */
+}
+
 type ILoginResponse = {
   userId: string;
   apiToken: string;
 };
 
 async function login(email: string, password: string): Promise<ILoginResponse> {
-  const response = await apiFetch(apiUrl('/api_tokens'), {
-    method: 'POST',
+  const response = await apiRequest<{ data: { api_token: string; user_id: string } }>('post', 'api_tokens', {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, password }),
+    json: { email, password },
   });
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  const body = (await response.json()) as { data: { api_token: string; user_id: string } };
   return {
-    apiToken: body.data.api_token,
-    userId: body.data.user_id,
+    apiToken: response.body.data.api_token,
+    userId: response.body.data.user_id,
   };
 }
 
@@ -145,21 +157,19 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
 }
 
 async function getProjects(apiToken: string): Promise<IProject[]> {
-  const response = await apiFetch(apiUrl('/projects'), {
-    method: 'GET',
+  const response = await apiRequest<{ data: IProjectResponse[] }>('get', 'projects', {
     headers: authHeaders(apiToken),
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const body = (await response.json()) as { data: IProjectResponse[] };
-  return body.data.map((p) => ({
+  return response.body.data.map((p) => ({
     id: p.id,
     name: p.name,
     repository: p.repo_full_name,
@@ -167,93 +177,81 @@ async function getProjects(apiToken: string): Promise<IProject[]> {
   }));
 }
 
-function setProjectParams(url: URL, project: ResolvedProject): void {
-  if (project.repoName) url.searchParams.set('repo_name', project.repoName);
-  if (project.projectId) url.searchParams.set('project_id', project.projectId);
-}
-
 async function getScratchOrgs(
   apiToken: string,
   project: ResolvedProject,
   includeAll: boolean = false
 ): Promise<IScratchOrg[]> {
-  const url = new URL(apiUrl('/scratch_orgs'));
-  setProjectParams(url, project);
-  url.searchParams.set('all', includeAll.toString());
-
-  const response = await apiFetch(url.toString(), {
-    method: 'GET',
+  const response = await apiRequest<{ data: IScratchOrgResponse[] }>('get', 'scratch_orgs', {
     headers: authHeaders(apiToken),
+    searchParams: {
+      ...projectParams(project),
+      all: includeAll.toString(),
+    },
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const body = (await response.json()) as { data: IScratchOrgResponse[] };
-  return body.data.map(mapScratchOrg);
+  return response.body.data.map(mapScratchOrg);
 }
 
 async function takeOrgFromPool(apiToken: string, project: ResolvedProject, orgName?: string): Promise<IScratchOrg> {
-  const url = new URL(apiUrl('/take_from_pool'));
-  setProjectParams(url, project);
-  if (orgName) url.searchParams.set('name', orgName);
+  const searchParams: Record<string, string> = { ...projectParams(project) };
+  if (orgName) searchParams.name = orgName;
 
-  const response = await apiFetch(url.toString(), {
-    method: 'POST',
+  const response = await apiRequest<{ data: IScratchOrgResponse; error?: string }>('post', 'take_from_pool', {
     headers: authHeaders(apiToken),
+    searchParams,
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (response.status === 400) {
-    const body = (await response.json()) as { error: string };
+  if (response.statusCode === 400) {
+    const body = response.body as { error: string };
     if (body.error === 'no_pool') {
       throw sharedMessages.createError('error.noPool');
     }
     throw sharedMessages.createError('error.serverError');
   }
 
-  if (response.status === 404) {
-    const body = (await response.json()) as { error: string };
+  if (response.statusCode === 404) {
+    const body = response.body as { error: string };
     if (body.error === 'no_active_org') {
       throw sharedMessages.createError('error.noActiveOrg');
     }
     throw sharedMessages.createError('error.serverError');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const body = (await response.json()) as { data: IScratchOrgResponse };
-  return mapScratchOrg(body.data);
+  return mapScratchOrg(response.body.data);
 }
 
 async function terminateOrg(apiToken: string, project: ResolvedProject, orgId: string): Promise<void> {
-  const url = new URL(apiUrl(`/scratch_orgs/${orgId}/terminate`));
-  setProjectParams(url, project);
-
-  const response = await apiFetch(url.toString(), {
-    method: 'POST',
+  const response = await apiRequest('post', `scratch_orgs/${orgId}/terminate`, {
     headers: authHeaders(apiToken),
+    searchParams: projectParams(project),
   });
 
-  if (response.status === 404) {
+  if (response.statusCode === 404) {
     throw sharedMessages.createError('error.orgNotFoundOnHutte');
   }
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 }
@@ -273,25 +271,23 @@ type IUserResponse = {
 };
 
 async function getMe(apiToken: string): Promise<IUser> {
-  const response = await apiFetch(apiUrl('/me'), {
-    method: 'GET',
+  const response = await apiRequest<{ data: IUserResponse }>('get', 'me', {
     headers: authHeaders(apiToken),
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const body = (await response.json()) as { data: IUserResponse };
   return {
-    id: body.data.id,
-    name: body.data.name,
-    email: body.data.email,
-    organizationName: body.data.organization_name,
+    id: response.body.data.id,
+    name: response.body.data.name,
+    email: response.body.data.email,
+    organizationName: response.body.data.organization_name,
   };
 }
 
@@ -312,8 +308,6 @@ type ICreateScratchOrgRequestBody = {
 };
 
 async function createScratchOrg(apiToken: string, request: ICreateScratchOrgRequest): Promise<IScratchOrg> {
-  const url = new URL(apiUrl('/scratch_orgs'));
-
   /* eslint-disable camelcase */
   const body: ICreateScratchOrgRequestBody = {
     name: request.name,
@@ -331,55 +325,49 @@ async function createScratchOrg(apiToken: string, request: ICreateScratchOrgRequ
   if (request.configJson) body.config_json = request.configJson;
   /* eslint-enable camelcase */
 
-  const response = await apiFetch(url.toString(), {
-    method: 'POST',
+  const response = await apiRequest<{ data: IScratchOrgResponse; error?: string }>('post', 'scratch_orgs', {
     headers: {
       ...authHeaders(apiToken),
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body),
+    json: body,
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (response.status === 400 || response.status === 422) {
-    const errorBody = (await response.json()) as { error?: string };
+  if (response.statusCode === 400 || response.statusCode === 422) {
+    const errorBody = response.body as { error?: string };
     throw sharedMessages.createError('error.badRequest', [errorBody.error ?? 'Bad request']);
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const responseBody = (await response.json()) as { data: IScratchOrgResponse };
-  return mapScratchOrg(responseBody.data);
+  return mapScratchOrg(response.body.data);
 }
 
 async function getScratchOrg(apiToken: string, project: ResolvedProject, orgId: string): Promise<IScratchOrg> {
-  const url = new URL(apiUrl(`/scratch_orgs/${orgId}`));
-  setProjectParams(url, project);
-
-  const response = await apiFetch(url.toString(), {
-    method: 'GET',
+  const response = await apiRequest<{ data: IScratchOrgResponse }>('get', `scratch_orgs/${orgId}`, {
     headers: authHeaders(apiToken),
+    searchParams: projectParams(project),
   });
 
-  if (response.status === 401) {
+  if (response.statusCode === 401) {
     throw sharedMessages.createError('error.authorization');
   }
 
-  if (response.status === 404) {
+  if (response.statusCode === 404) {
     throw sharedMessages.createError('error.orgNotFoundOnHutte');
   }
 
-  if (!response.ok) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
 
-  const responseBody = (await response.json()) as { data: IScratchOrgResponse };
-  return mapScratchOrg(responseBody.data);
+  return mapScratchOrg(response.body.data);
 }
 
 export default {
