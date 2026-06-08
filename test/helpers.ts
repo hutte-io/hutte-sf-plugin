@@ -173,6 +173,7 @@ export function stubConfigMethods(sandbox: SinonSandbox, apiToken = 't123'): Con
 export type CommonStubs = {
   projectRepoFromOrigin: SinonStub;
   sfdxLogin: SinonStub;
+  sandboxSfdxLogin: SinonStub;
   getDefaultOrgInfo: SinonStub;
   logoutFromDefault: SinonStub;
   pollForOrgStatus: SinonStub;
@@ -188,6 +189,7 @@ export function stubCommonMethods(
   return {
     projectRepoFromOrigin: sandbox.stub(common, 'projectRepoFromOrigin').returns(repoUrl),
     sfdxLogin: sandbox.stub(common, 'sfdxLogin'),
+    sandboxSfdxLogin: sandbox.stub(common, 'sandboxSfdxLogin'),
     getDefaultOrgInfo: sandbox.stub(common, 'getDefaultOrgInfo'),
     logoutFromDefault: sandbox.stub(common, 'logoutFromDefault'),
     pollForOrgStatus: sandbox.stub(common, 'pollForOrgStatus'),
