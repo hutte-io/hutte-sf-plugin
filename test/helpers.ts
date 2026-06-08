@@ -1,6 +1,6 @@
 import { type SinonSandbox, type SinonStub } from 'sinon';
 import crossSpawn from 'cross-spawn';
-import api, { type IScratchOrg, type IProject } from '../src/api.js';
+import api, { type IScratchOrg, type IProject, type ISandbox } from '../src/api.js';
 import common from '../src/common.js';
 import config from '../src/config.js';
 import keychain from '../src/keychain.js';
@@ -85,6 +85,43 @@ export function createMockProjectList(count: number): IProject[] {
   );
 }
 
+/**
+ * Default mock sandbox data for testing.
+ */
+const DEFAULT_SANDBOX: ISandbox = {
+  id: 'mockSandboxId',
+  name: 'uat01',
+  displayName: 'UAT 01',
+  projectId: 'mockProjectId',
+  projectName: 'Mock Project',
+  pool: false,
+  licenseType: 'DEVELOPER',
+  createSandboxFrom: null,
+  salesforceUser: { id: '005XX', name: 'Test SF User' },
+  salesforceStatus: 'completed',
+  lastRefreshedAt: '2026-05-01T10:00:00.000Z',
+};
+
+/**
+ * Creates a mock ISandbox object with optional overrides.
+ */
+export function createMockSandbox(overrides?: Partial<ISandbox>): ISandbox {
+  return { ...DEFAULT_SANDBOX, ...overrides };
+}
+
+/**
+ * Creates multiple mock sandboxes with incrementing values.
+ */
+export function createMockSandboxList(count: number): ISandbox[] {
+  return Array.from({ length: count }, (_, i) =>
+    createMockSandbox({
+      id: `mockSandboxId${i + 1}`,
+      name: `uat0${i + 1}`,
+      displayName: `UAT 0${i + 1}`,
+    })
+  );
+}
+
 export type ApiStubs = {
   login: SinonStub;
   getMe: SinonStub;
@@ -94,6 +131,8 @@ export type ApiStubs = {
   terminateOrg: SinonStub;
   createScratchOrg: SinonStub;
   getScratchOrg: SinonStub;
+  getSandboxes: SinonStub;
+  getSandboxAuthUrl: SinonStub;
 };
 
 /**
@@ -109,6 +148,8 @@ export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
     terminateOrg: sandbox.stub(api, 'terminateOrg'),
     createScratchOrg: sandbox.stub(api, 'createScratchOrg'),
     getScratchOrg: sandbox.stub(api, 'getScratchOrg'),
+    getSandboxes: sandbox.stub(api, 'getSandboxes'),
+    getSandboxAuthUrl: sandbox.stub(api, 'getSandboxAuthUrl'),
   };
 }
 

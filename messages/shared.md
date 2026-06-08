@@ -79,3 +79,15 @@ Remote branch does not exist. Creating based on %s...
 # spinner.pulling
 
 Pulling source from scratch org
+
+# error.sandboxAuthorizeForbidden
+
+Only project admins can authorize sandboxes.
+
+# error.sandboxAuthorizeForbidden.actions
+
+- Ask a project admin to authorize the sandbox, or request project admin access at https://app.hutte.io.
+
+# error.sandboxNotFoundOnHutte
+
+Could not find the sandbox on Hutte. Are you sure you are in the correct project?

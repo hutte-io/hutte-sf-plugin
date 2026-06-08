@@ -156,6 +156,57 @@ function mapScratchOrg(org: IScratchOrgResponse): IScratchOrg {
   };
 }
 
+export type ISalesforceUser = {
+  id: string;
+  name: string;
+};
+
+export type ISandbox = {
+  id: string;
+  name: string;
+  displayName: string | null;
+  projectId: string;
+  projectName: string;
+  pool: boolean;
+  licenseType: string | null;
+  createSandboxFrom: string | null;
+  salesforceUser: ISalesforceUser | null;
+  salesforceStatus: string;
+  lastRefreshedAt: string | null;
+};
+
+type ISandboxResponse = {
+  /* eslint-disable camelcase */
+  id: string;
+  name: string;
+  display_name: string | null;
+  project_id: string;
+  project_name: string;
+  pool: boolean;
+  license_type: string | null;
+  create_sandbox_from: string | null;
+  salesforce_user: { id: string; name: string } | null;
+  salesforce_status: string;
+  last_refreshed_at: string | null;
+  /* eslint-enable camelcase */
+};
+
+function mapSandbox(sandbox: ISandboxResponse): ISandbox {
+  return {
+    id: sandbox.id,
+    name: sandbox.name,
+    displayName: sandbox.display_name,
+    projectId: sandbox.project_id,
+    projectName: sandbox.project_name,
+    pool: sandbox.pool,
+    licenseType: sandbox.license_type,
+    createSandboxFrom: sandbox.create_sandbox_from,
+    salesforceUser: sandbox.salesforce_user,
+    salesforceStatus: sandbox.salesforce_status,
+    lastRefreshedAt: sandbox.last_refreshed_at,
+  };
+}
+
 async function getProjects(apiToken: string): Promise<IProject[]> {
   const response = await apiRequest<{ data: IProjectResponse[] }>('get', 'projects', {
     headers: authHeaders(apiToken),
@@ -370,6 +421,47 @@ async function getScratchOrg(apiToken: string, project: ResolvedProject, orgId: 
   return mapScratchOrg(response.body.data);
 }
 
+async function getSandboxes(apiToken: string, project: ResolvedProject): Promise<ISandbox[]> {
+  const response = await apiRequest<{ data: ISandboxResponse[] }>('get', 'sandboxes', {
+    headers: authHeaders(apiToken),
+    searchParams: projectParams(project),
+  });
+
+  if (response.statusCode === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  return response.body.data.map(mapSandbox);
+}
+
+async function getSandboxAuthUrl(apiToken: string, sandboxId: string): Promise<string> {
+  const response = await apiRequest<{ data: { sfdx_auth_url: string } }>('get', `sandboxes/${sandboxId}/auth_url`, {
+    headers: authHeaders(apiToken),
+  });
+
+  if (response.statusCode === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.statusCode === 403) {
+    throw sharedMessages.createError('error.sandboxAuthorizeForbidden');
+  }
+
+  if (response.statusCode === 404) {
+    throw sharedMessages.createError('error.sandboxNotFoundOnHutte');
+  }
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  return response.body.data.sfdx_auth_url;
+}
+
 export default {
   login,
   getMe,
@@ -379,4 +471,6 @@ export default {
   terminateOrg,
   createScratchOrg,
   getScratchOrg,
+  getSandboxes,
+  getSandboxAuthUrl,
 };
