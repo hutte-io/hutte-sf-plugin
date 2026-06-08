@@ -91,3 +91,11 @@ Only project admins can authorize sandboxes.
 # error.sandboxNotFoundOnHutte
 
 Could not find the sandbox on Hutte. Are you sure you are in the correct project?
+
+# error.sandboxAuthUrlUnavailable
+
+Hutte could not generate an auth URL for this sandbox.
+
+# error.sandboxAuthUrlUnavailable.actions
+
+- The sandbox may need to be reconnected. Check it at https://app.hutte.io.

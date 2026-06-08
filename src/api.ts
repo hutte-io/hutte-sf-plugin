@@ -455,6 +455,10 @@ async function getSandboxAuthUrl(apiToken: string, sandboxId: string): Promise<s
     throw sharedMessages.createError('error.sandboxNotFoundOnHutte');
   }
 
+  if (response.statusCode === 422) {
+    throw sharedMessages.createError('error.sandboxAuthUrlUnavailable');
+  }
+
   if (response.statusCode < 200 || response.statusCode >= 300) {
     throw sharedMessages.createError('error.serverError');
   }
