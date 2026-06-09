@@ -111,28 +111,26 @@ describe('hutte:project:set', () => {
     }
   });
 
-  it('filters out sandbox projects', async () => {
+  it('sets a sandbox project as default from a mixed list', async () => {
     const mixedProjects = [
       createMockProject({ id: 'scratch1', name: 'Scratch Project', projectType: 'scratch_org' }),
       createMockProject({ id: 'sandbox1', name: 'Sandbox Project', projectType: 'sandbox' }),
     ];
     apiStubs.getProjects.resolves(mixedProjects);
 
-    await ProjectSet.run(['--project-id', 'scratch1']);
+    await ProjectSet.run(['--project-id', 'sandbox1']);
 
     expect(storeStub.calledOnce).to.equal(true);
-    expect(storeStub.firstCall.args[0]).to.deep.include({ id: 'scratch1' });
+    expect(storeStub.firstCall.args[0]).to.deep.include({ id: 'sandbox1', projectType: 'sandbox' });
   });
 
-  it('fails when only sandbox projects exist', async () => {
+  it('sets a sandbox project as default when only sandbox projects exist', async () => {
     const sandboxOnly = [createMockProject({ id: 'sandbox1', name: 'Sandbox Project', projectType: 'sandbox' })];
     apiStubs.getProjects.resolves(sandboxOnly);
 
-    try {
-      await ProjectSet.run(['--project-id', 'sandbox1']);
-      expect.fail('should throw an error');
-    } catch (e) {
-      expect(e).to.be.instanceOf(SfError);
-    }
+    await ProjectSet.run(['--project-id', 'sandbox1']);
+
+    expect(storeStub.calledOnce).to.equal(true);
+    expect(storeStub.firstCall.args[0]).to.deep.include({ id: 'sandbox1', projectType: 'sandbox' });
   });
 });
