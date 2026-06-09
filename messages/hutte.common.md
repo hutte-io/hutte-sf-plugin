@@ -13,3 +13,7 @@ Error reading the default scratch org.
 # error.pollTimeout
 
 Timed out waiting for scratch org to be ready.
+
+# error.sandboxLoginFailed
+
+Failed to log in to the sandbox: %s

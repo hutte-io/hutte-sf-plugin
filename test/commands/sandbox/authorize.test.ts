@@ -76,6 +76,28 @@ describe('hutte:sandbox:authorize', () => {
     }
   });
 
+  it('surfaces the underlying sf error when the login fails', async () => {
+    // Run the real sandboxSfdxLogin with cross-spawn stubbed to fail.
+    commonStubs.sandboxSfdxLogin.restore();
+    const crossSpawnStubs = stubCrossSpawnSync(testContext.SANDBOX);
+    crossSpawnStubs.sync.returns({
+      status: 1,
+      signal: null,
+      pid: 0,
+      output: [],
+      stdout: Buffer.from(''),
+      stderr: Buffer.from('Invalid SFDX auth URL'),
+    });
+
+    try {
+      await Authorize.run([]);
+      expect.fail('should throw an error');
+    } catch (e) {
+      expect(e).to.be.instanceOf(SfError);
+      expect((e as SfError).message).to.match(/Invalid SFDX auth URL/);
+    }
+  });
+
   it('runs no git commands, only the sf login (login only)', async () => {
     // Restore the helper stub so the REAL sandboxSfdxLogin runs (with crossSpawn stubbed).
     commonStubs.sandboxSfdxLogin.restore();

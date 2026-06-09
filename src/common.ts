@@ -46,7 +46,8 @@ function sandboxSfdxLogin(sandboxName: string, sfdxAuthUrl: string): void {
     }
   );
   if (response.status !== 0) {
-    throw messages.createError('error.loginFailed');
+    const details = response.stderr?.toString().trim();
+    throw messages.createError('error.sandboxLoginFailed', [details || 'unknown error']);
   }
 }
 
