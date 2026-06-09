@@ -133,6 +133,7 @@ export type ApiStubs = {
   getScratchOrg: SinonStub;
   getSandboxes: SinonStub;
   getSandboxAuthUrl: SinonStub;
+  getSandboxAuthUrlByName: SinonStub;
 };
 
 /**
@@ -150,6 +151,7 @@ export function stubApiMethods(sandbox: SinonSandbox): ApiStubs {
     getScratchOrg: sandbox.stub(api, 'getScratchOrg'),
     getSandboxes: sandbox.stub(api, 'getSandboxes'),
     getSandboxAuthUrl: sandbox.stub(api, 'getSandboxAuthUrl'),
+    getSandboxAuthUrlByName: sandbox.stub(api, 'getSandboxAuthUrlByName'),
   };
 }
 

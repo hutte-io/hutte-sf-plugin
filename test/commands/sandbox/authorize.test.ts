@@ -31,6 +31,7 @@ describe('hutte:sandbox:authorize', () => {
 
     apiStubs.getSandboxes.resolves([mockSandbox]);
     apiStubs.getSandboxAuthUrl.resolves('force://proxy@app.hutte.io');
+    apiStubs.getSandboxAuthUrlByName.resolves('force://proxy@app.hutte.io');
   });
 
   afterEach(() => {
@@ -43,23 +44,28 @@ describe('hutte:sandbox:authorize', () => {
     expect(commonStubs.sandboxSfdxLogin.calledOnceWith(mockSandbox.name, 'force://proxy@app.hutte.io')).to.equal(true);
   });
 
-  it('authorizes a sandbox by name', async () => {
+  it('authorizes a sandbox by name via the by-name endpoint', async () => {
     await Authorize.run(['--sandbox-name', 'uat01']);
-    expect(commonStubs.sandboxSfdxLogin.calledOnce).to.equal(true);
+    expect(apiStubs.getSandboxes.called).to.equal(false);
+    expect(apiStubs.getSandboxAuthUrlByName.calledOnce).to.equal(true);
+    expect(apiStubs.getSandboxAuthUrlByName.firstCall.args[2]).to.equal('uat01');
+    expect(commonStubs.sandboxSfdxLogin.calledOnceWith('uat01', 'force://proxy@app.hutte.io')).to.equal(true);
   });
 
   it('fails when the sandbox name does not exist', async () => {
+    apiStubs.getSandboxAuthUrlByName.rejects(new SfError('Could not find a sandbox with that name in this project.'));
+
     try {
       await Authorize.run(['--sandbox-name', 'nonexistent']);
       expect.fail('should throw an error');
     } catch (e) {
       expect(e).to.be.instanceOf(SfError);
-      expect((e as SfError).message).to.match(/not any sandbox to authorize/);
+      expect((e as SfError).message).to.match(/Could not find a sandbox with that name/);
     }
   });
 
   it('surfaces the forbidden error for non-admins', async () => {
-    apiStubs.getSandboxAuthUrl.rejects(new SfError('Only project admins can authorize sandboxes.'));
+    apiStubs.getSandboxAuthUrlByName.rejects(new SfError('Only project admins can authorize sandboxes.'));
 
     try {
       await Authorize.run(['--sandbox-name', 'uat01']);

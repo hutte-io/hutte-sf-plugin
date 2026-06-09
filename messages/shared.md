@@ -99,3 +99,12 @@ Hutte could not generate an auth URL for this sandbox.
 # error.sandboxAuthUrlUnavailable.actions
 
 - The sandbox may need to be reconnected. Check it at https://app.hutte.io.
+
+# error.sandboxNotFound
+
+Could not find a sandbox with that name in this project.
+
+# error.sandboxNotFound.actions
+
+- Run `sf hutte sandbox list` to see available sandboxes.
+- Or omit --sandbox-name to choose from a list.

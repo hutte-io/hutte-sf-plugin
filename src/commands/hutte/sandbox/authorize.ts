@@ -36,21 +36,21 @@ export class Authorize extends SfCommand<void> {
     const { flags } = await this.parse(Authorize);
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
     const resolved = await projectResolution.resolveProject(apiToken, flags['project-id']);
-    const sandboxes = await api.getSandboxes(apiToken, resolved);
-    const sandbox = flags['sandbox-name']
-      ? this.findSandbox(sandboxes, flags['sandbox-name'])
-      : await this.chooseSandbox(sandboxes);
-    const sfdxAuthUrl = await api.getSandboxAuthUrl(apiToken, sandbox.id);
-    common.sandboxSfdxLogin(sandbox.name, sfdxAuthUrl);
-  }
 
-  private findSandbox(sandboxes: ISandbox[], nameToFind: string): ISandbox {
-    this.debug(`Finding sandbox with name: ${nameToFind}`);
-    const result = sandboxes.find((sandbox: ISandbox) => sandbox.name === nameToFind);
-    if (!result) {
-      throw messages.createError('error.sandboxNotFound');
+    let sandboxName: string;
+    let sfdxAuthUrl: string;
+
+    if (flags['sandbox-name']) {
+      sandboxName = flags['sandbox-name'];
+      sfdxAuthUrl = await api.getSandboxAuthUrlByName(apiToken, resolved, sandboxName);
+    } else {
+      const sandboxes = await api.getSandboxes(apiToken, resolved);
+      const sandbox = await this.chooseSandbox(sandboxes);
+      sandboxName = sandbox.name;
+      sfdxAuthUrl = await api.getSandboxAuthUrl(apiToken, sandbox.id);
     }
-    return result;
+
+    common.sandboxSfdxLogin(sandboxName, sfdxAuthUrl);
   }
 
   private async chooseSandbox(sandboxes: ISandbox[]): Promise<ISandbox> {

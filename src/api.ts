@@ -466,6 +466,35 @@ async function getSandboxAuthUrl(apiToken: string, sandboxId: string): Promise<s
   return response.body.data.sfdx_auth_url;
 }
 
+async function getSandboxAuthUrlByName(apiToken: string, project: ResolvedProject, name: string): Promise<string> {
+  const response = await apiRequest<{ data: { sfdx_auth_url: string } }>('get', 'sandboxes/auth_url_by_name', {
+    headers: authHeaders(apiToken),
+    searchParams: { ...projectParams(project), name },
+  });
+
+  if (response.statusCode === 401) {
+    throw sharedMessages.createError('error.authorization');
+  }
+
+  if (response.statusCode === 403) {
+    throw sharedMessages.createError('error.sandboxAuthorizeForbidden');
+  }
+
+  if (response.statusCode === 404) {
+    throw sharedMessages.createError('error.sandboxNotFound');
+  }
+
+  if (response.statusCode === 422) {
+    throw sharedMessages.createError('error.sandboxAuthUrlUnavailable');
+  }
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw sharedMessages.createError('error.serverError');
+  }
+
+  return response.body.data.sfdx_auth_url;
+}
+
 export default {
   login,
   getMe,
@@ -477,4 +506,5 @@ export default {
   getScratchOrg,
   getSandboxes,
   getSandboxAuthUrl,
+  getSandboxAuthUrlByName,
 };
