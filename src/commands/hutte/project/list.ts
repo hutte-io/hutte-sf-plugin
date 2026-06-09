@@ -23,15 +23,33 @@ export class List extends SfCommand<IProject[]> {
   public async run(): Promise<IProject[]> {
     const { flags } = await this.parse(List);
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    const allProjects = await api.getProjects(apiToken);
-    const result = allProjects.filter((p) => p.projectType === 'scratch_org');
+    const projects = await api.getProjects(apiToken);
+
+    const rows = projects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      repository: project.repository ?? '',
+      type: formatProjectType(project.projectType),
+    }));
+
     this.table({
-      data: result,
-      columns: ['id', 'name', 'repository'],
-      headerOptions: {
-        formatter: 'capitalCase',
-      },
+      data: rows,
+      columns: [
+        { key: 'id', name: 'Id' },
+        { key: 'name', name: 'Name' },
+        { key: 'repository', name: 'Repository' },
+        { key: 'type', name: 'Type' },
+      ],
     });
-    return result;
+
+    return projects;
   }
+}
+
+function formatProjectType(projectType: string): string {
+  return projectType
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

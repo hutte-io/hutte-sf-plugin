@@ -44,7 +44,7 @@ describe('hutte:project:list', () => {
     expect(apiStubs.getProjects.calledWith('custom-token')).to.equal(true);
   });
 
-  it('filters out sandbox projects', async () => {
+  it('includes sandbox projects', async () => {
     const mixedProjects = [
       createMockProject({ id: 'scratch1', name: 'Scratch Project', projectType: 'scratch_org' }),
       createMockProject({ id: 'sandbox1', name: 'Sandbox Project', projectType: 'sandbox' }),
@@ -52,8 +52,8 @@ describe('hutte:project:list', () => {
     apiStubs.getProjects.resolves(mixedProjects);
 
     const result = await List.run([]);
-    expect(result).to.have.lengthOf(1);
-    expect(result[0].id).to.equal('scratch1');
+    expect(result).to.have.lengthOf(2);
+    expect(result.map((p) => p.id)).to.deep.equal(['scratch1', 'sandbox1']);
   });
 
   it('fails when authorization fails', async () => {
