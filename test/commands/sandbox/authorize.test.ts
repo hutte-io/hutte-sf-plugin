@@ -20,10 +20,11 @@ describe('hutte:sandbox:authorize', () => {
   const mockSandbox = createMockSandbox();
   let apiStubs: ApiStubs;
   let commonStubs: CommonStubs;
+  let uxStubs: ReturnType<typeof stubSfCommandUx>;
 
   beforeEach(async () => {
     await testContext.stubAuths(testOrg);
-    stubSfCommandUx(testContext.SANDBOX);
+    uxStubs = stubSfCommandUx(testContext.SANDBOX);
     apiStubs = stubApiMethods(testContext.SANDBOX);
     stubConfigMethods(testContext.SANDBOX);
     commonStubs = stubCommonMethods(testContext.SANDBOX);
@@ -112,5 +113,31 @@ describe('hutte:sandbox:authorize', () => {
       (args: unknown[]) => args[0] === 'sf' && Array.isArray(args[1]) && (args[1] as string[]).includes('sfdx-url')
     );
     expect(sfLoginCalls).to.have.lengthOf(1);
+  });
+
+  it('reports success with the logged-in username', async () => {
+    commonStubs.getDefaultOrgInfo.returns({ id: '00D000000000000', username: 'jane@acme.com.uat01' });
+
+    await Authorize.run([]);
+
+    expect(uxStubs.logSuccess.calledOnce).to.equal(true);
+    expect(uxStubs.logSuccess.firstCall.args[0]).to.match(/Authorized sandbox uat01 as/);
+    expect(uxStubs.logSuccess.firstCall.args[0]).to.match(/jane@acme\.com\.uat01/);
+  });
+
+  it('reports success without a username when org display fails', async () => {
+    commonStubs.getDefaultOrgInfo.throws(new Error('no default org'));
+
+    await Authorize.run([]);
+
+    expect(uxStubs.logSuccess.calledOnce).to.equal(true);
+    expect(uxStubs.logSuccess.firstCall.args[0]).to.match(/Authorized sandbox uat01/);
+  });
+
+  it('announces the auto-selected sandbox when only one exists', async () => {
+    await Authorize.run([]);
+
+    expect(uxStubs.info.calledOnce).to.equal(true);
+    expect(uxStubs.info.firstCall.args[0]).to.match(/uat01/);
   });
 });

@@ -50,7 +50,17 @@ export class Authorize extends SfCommand<void> {
       sfdxAuthUrl = await api.getSandboxAuthUrl(apiToken, sandbox.id);
     }
 
+    this.spinner.start(messages.getMessage('spinner.authorizing', [sandboxName]));
     common.sandboxSfdxLogin(sandboxName, sfdxAuthUrl);
+    this.spinner.stop();
+
+    const alias = `hutte-${sandboxName}`;
+    const username = resolveDefaultUsername();
+    this.logSuccess(
+      username
+        ? messages.getMessage('success.authorizedAs', [sandboxName, username, alias])
+        : messages.getMessage('success.authorized', [sandboxName, alias])
+    );
   }
 
   private async chooseSandbox(sandboxes: ISandbox[]): Promise<ISandbox> {
@@ -59,6 +69,7 @@ export class Authorize extends SfCommand<void> {
       throw messages.createError('error.noSandboxesToAuthorize');
     }
     if (sandboxes.length === 1) {
+      this.info(messages.getMessage('info.autoSelected', [sandboxes[0].name]));
       return sandboxes[0];
     }
 
@@ -81,5 +92,14 @@ export class Authorize extends SfCommand<void> {
       throw messages.createError('error.noSandboxSelected');
     }
     return selected;
+  }
+}
+
+function resolveDefaultUsername(): string | undefined {
+  try {
+    return common.getDefaultOrgInfo().username;
+  } catch {
+    // Best-effort: a display hiccup must not turn a successful login into a failure.
+    return undefined;
   }
 }
