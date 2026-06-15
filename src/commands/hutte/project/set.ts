@@ -51,8 +51,7 @@ export class ProjectSet extends SfCommand<void> {
     }
 
     const apiToken = flags['api-token'] ?? (await config.getApiToken());
-    const allProjects = await api.getProjects(apiToken);
-    const projects = allProjects.filter((p) => p.projectType === 'scratch_org');
+    const projects = await api.getProjects(apiToken);
 
     if (projects.length === 0) {
       throw messages.createError('error.noProjects');

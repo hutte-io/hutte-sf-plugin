@@ -58,6 +58,9 @@
       },
       "hutte project": {
         "description": "manage Hutte project configuration"
+      },
+      "hutte sandbox": {
+        "description": "manage Hutte sandboxes"
       }
     },
     "additionalHelpFlags": [

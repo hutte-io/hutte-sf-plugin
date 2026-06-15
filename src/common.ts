@@ -37,6 +37,20 @@ function sfdxLogin(org: IScratchOrg): IScratchOrg {
   return org;
 }
 
+function sandboxSfdxLogin(sandboxName: string, sfdxAuthUrl: string): void {
+  const response = crossSpawn.sync(
+    'sf',
+    ['org', 'login', 'sfdx-url', '--alias', `hutte-${sandboxName}`, '--set-default', '--sfdx-url-stdin'],
+    {
+      input: sfdxAuthUrl,
+    }
+  );
+  if (response.status !== 0) {
+    const details = response.stderr?.toString().trim();
+    throw messages.createError('error.sandboxLoginFailed', [details || 'unknown error']);
+  }
+}
+
 function logoutFromDefault(): void {
   const result = crossSpawn.sync('sf', ['org', 'logout', '--no-prompt']);
   if (result.status === 0) {
@@ -131,6 +145,7 @@ async function pollForOrgStatus(fetchOrg: () => Promise<IScratchOrg>, options: P
 
 export default {
   sfdxLogin,
+  sandboxSfdxLogin,
   logoutFromDefault,
   getDefaultOrgInfo,
   projectRepoFromOrigin,
